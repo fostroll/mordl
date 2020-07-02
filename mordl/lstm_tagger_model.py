@@ -20,7 +20,15 @@ class LstmTaggerModel(BaseModel):
                  cnn_emb_dim=None, cnn_kernels=range(1, 7), emb_out_dim=512,
                  lstm_hidden_dim=256, lstm_layers=1, lstm_do=0,
                  bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4):
-        super().__init__()
+        super().__init__(
+            tags_count, tags_pad_idx=tags_pad_idx, vec_emb_dim=vec_emb_dim,
+            alphabet_size=alphabet_size, char_pad_idx=char_pad_idx,
+            rnn_emb_dim=rnn_emb_dim, cnn_emb_dim=cnn_emb_dim,
+            cnn_kernels=cnn_kernels, emb_out_dim=emb_out_dim,
+            lstm_hidden_dim=lstm_hidden_dim, lstm_layers=lstm_layers,
+            lstm_do=lstm_do, bn1=bn1, do1=do1, bn2=bn2, do2=do2,
+            bn3=bn3, do3=do3
+        )
         self.vec_emb_dim = vec_emb_dim
 
         if rnn_emb_dim:

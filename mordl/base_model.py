@@ -15,7 +15,7 @@ class BaseModel(nn.Module):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
-        self._config = (args, kwargs)
+        self._config = args, kwargs
 
     def save_config(self, f, log_file=LOG_FILE):
         need_close = False
