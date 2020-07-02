@@ -84,6 +84,10 @@ class PosTagger(BaseTagger):
 
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
+        if model_config_file is True and isinstance(model_file, str):
+            pref, suff = os.path.splitext(f)
+            model_config_file = prev + '.config' + suff
+
         def best_model_backup_method(model, model_score):
             if log_file:
                 print('{}: new maximum score {:.8f}'
