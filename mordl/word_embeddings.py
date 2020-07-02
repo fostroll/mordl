@@ -46,7 +46,7 @@ class WordEmbeddings:
             save_to = '{}_{}_{}'.format(model_name, max_len, epochs)
 
         if log_file:
-            print("Tune the model '{}'. The result's model name will be '{}'"
+            print("Tune BERT model '{}'. The result's model name will be '{}'"
                       .format(model_name, save_to),
                   file=log_file)
 
@@ -76,7 +76,7 @@ class WordEmbeddings:
             [t2y[x] for x in [cls_label, sep_label, pad_label]]
 
         if log_file:
-            print('Loading BERT tokenizer...', file=log_file)
+            print('Loading tokenizer...', file=log_file)
         tokenizer = BertTokenizer.from_pretrained(model_name)
         if log_file:
             print('Tokenizer is loaded. Vocab size:', tokenizer.vocab_size,
@@ -198,7 +198,7 @@ class WordEmbeddings:
                                  collate_fn=collate)
 
         if log_file:
-            print("Loading BERT model '{}'...".format(model_name), end=' ',
+            print("Loading model '{}'...".format(model_name), end=' ',
                   file=log_file)
             log_file.flush()
         model = BertForTokenClassification.from_pretrained(
@@ -299,8 +299,9 @@ class WordEmbeddings:
 
             # Training loop
             for step, batch in enumerate(train_loader):
-                # move batch to GPU
-                batch = tuple(t.to(DEVICE) for t in batch)
+                if device:
+                    # move batch to the specified device
+                    batch = tuple(t.to(device) for t in batch)
                 b_input_ids, b_input_mask, b_labels, lens = batch
                 # Always clear any previously calculated gradients
                 #before performing a backward pass.
@@ -355,7 +356,8 @@ class WordEmbeddings:
                 nb_eval_steps, nb_eval_examples = 0, 0
                 gold_labels, pred_labels = [], []
                 for batch in test_loader:
-                    batch = tuple(t.to(DEVICE) for t in batch)
+                    if device:
+                        batch = tuple(t.to(device) for t in batch)
                     b_input_ids, b_input_mask, b_labels, lens = batch
 
                     # Telling the model not to compute or store gradients,
