@@ -8,5 +8,5 @@ MorDL provides tools for complete morphological sentence parsing and
 named-entity recognition.
 """
 from mordl._version import __version__
-from morld.pos_tagger import PosTagger
+from mordl.pos_tagger import PosTagger
 from mordl.word_embeddings import WordEmbeddings
