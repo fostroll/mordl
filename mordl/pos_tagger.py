@@ -69,6 +69,8 @@ class PosTagger(BaseTagger):
                              keep_empty=False)
             ds.add('y', y, with_lens=False)
 
+        return ds
+
     def train(self, model_file, model_config_file=True, device=None,
               epochs=sys.maxsize, min_epochs=0, bad_epochs=5,
               batch_size=32, control_metric='accuracy', max_grad_norm=None,
