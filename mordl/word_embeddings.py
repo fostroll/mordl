@@ -45,7 +45,7 @@ class WordEmbeddings:
             save_to = '{}_{}_{}'.format(model_name, max_len, epochs)
 
         if log_file:
-            print("Tune the model '{}'. The result will be saved to {}"
+            print("Tune the model '{}'. The result's model name will be '{}'"
                       .format(model_name, save_to),
                   file=log_file)
 
@@ -74,7 +74,12 @@ class WordEmbeddings:
         cls_y, sep_y, pad_y = \
             [t2y[x] for x in [cls_label, sep_label, pad_label]]
 
+        if log_file:
+            print('Loading BERT tokenizer...', log_file=log_file)
         tokenizer = BertTokenizer.from_pretrained(model_name)
+        if log_file:
+            print('Tokenizer is loaded. Vocab size:', tokenizer.vocab_size,
+                  log_file=log_file)
 
         def prepare_corpus(sentences, labels, max_len=None):
                 
@@ -132,10 +137,15 @@ class WordEmbeddings:
                     for sent, labs in zip(sentences, labels)
             ]), max_len)
 
+        if log_file:
+            print('Prepare corpora...', end=' ', log_file=log_file)
+            log_file.flush()
         train_sentences_, train_labels_ = \
             prepare_corpus(train_sentences, train_labels, max_len)
         test_sentences_, test_labels_ = \
             prepare_corpus(test_sentences, test_labels, max_len)
+        if log_file:
+            print('done.', log_file=log_file)
 
         def collate(batch):
             sents, tags = zip(*batch)
@@ -179,19 +189,25 @@ class WordEmbeddings:
         train_dataset = SubwordDataset(train_sentences_, train_labels_)
         test_dataset = SubwordDataset(test_sentences_, test_labels_)
 
-        train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE,
+        train_loader = DataLoader(train_dataset, batch_size=batch_size,
                                   num_workers=0, shuffle=True,
                                   collate_fn=collate)
-        test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE,
+        test_loader = DataLoader(test_dataset, batch_size=batch_size,
                                  num_workers=0, shuffle=False, 
                                  collate_fn=collate)
 
+        if log_file:
+            print("Loading BERT model '{}'...".format(model_name), end=' ',
+                  log_file=log_file)
+            log_file.flush()
         model = BertForTokenClassification.from_pretrained(
             model_name, num_labels=len(t2y),
             output_attentions = False, output_hidden_states = False
         )
         if device:
             model.to(device)
+        if log_file:
+            print('done.', log_file=log_file)
 
         FULL_FINETUNING = True
         if FULL_FINETUNING:
