@@ -42,7 +42,7 @@ class WordEmbeddings:
                   log_file=LOG_FILE):
 
         if not save_to:
-            save_to = '{}_{}_{}'.format(bert_model_name, max_len, epochs)
+            save_to = '{}_{}_{}'.format(model_name, max_len, epochs)
 
         if log_file:
             print("Tune the model '{}'. The result will be saved to {}"
@@ -65,14 +65,16 @@ class WordEmbeddings:
 
             return seq2ix
 
-        cls_tag, sep_tag, pad_tag = 'CLS', 'SEP', 'PAD'
+        cls_label, sep_label, pad_label = 'CLS', 'SEP', 'PAD'
 
-        t2y = seq2ix(train_labels, extra_tags=[cls_label, sep_label, pad_label])
+        t2y = seq2ix(train_labels,
+                     extra_labels=[cls_label, sep_label, pad_label])
         y2t = {v:k for k, v in t2y.items()}
 
-        cls_y, sep_y, pad_y = [t2y[x] for x in [cls_tag, sep_tag, pad_tag]]
+        cls_y, sep_y, pad_y = \
+            [t2y[x] for x in [cls_label, sep_label, pad_label]]
 
-        tokenizer = BertTokenizer.from_pretrained(bert_model_name)
+        tokenizer = BertTokenizer.from_pretrained(model_name)
 
         def prepare_corpus(sentences, labels, max_len=None):
                 
@@ -185,7 +187,7 @@ class WordEmbeddings:
                                  collate_fn=collate)
 
         model = BertForTokenClassification.from_pretrained(
-            bert_model_name, num_labels=len(t2y),
+            model_name, num_labels=len(t2y),
             output_attentions = False, output_hidden_states = False
         )
         if device:
@@ -419,7 +421,7 @@ class WordEmbeddings:
 
         del model
 
-        return {'bert_model_name': save_to,
+        return {'model_name': save_to,
                 'best_accuracy': best_accuracy,
                 'best_test_golds': best_test_golds,
                 'best_test_preds': best_test_preds,
@@ -577,7 +579,7 @@ class WordEmbeddings:
     def save_dataset(ds, f, config_f=True, with_data=True):
         if config_f is True and isinstance(f, str):
             pref, suff = os.path.splitext(f)
-            config_f = prev + '.config' + suff
+            config_f = pref + '.config' + suff
         if config_f:
             need_close = False
             if isinstance(config_f, str):
@@ -600,7 +602,7 @@ class WordEmbeddings:
             assert isinstance(f, str), \
                    'ERROR: config_f can be True only with f of str type'
             pref, suff = os.path.splitext(f)
-            config_f_ = prev + '.config' + suff
+            config_f_ = pref + '.config' + suff
             if os.path.isfile(config_f_):
                 config_f = config_f_
         if config_f:

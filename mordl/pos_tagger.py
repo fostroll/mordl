@@ -87,8 +87,8 @@ class PosTagger(BaseTagger):
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
         if model_config_file is True and isinstance(model_file, str):
-            pref, suff = os.path.splitext(f)
-            model_config_file = prev + '.config' + suff
+            pref, suff = os.path.splitext(model_file)
+            model_config_file = pref + '.config' + suff
 
         def best_model_backup_method(model, model_score):
             if log_file:
@@ -129,7 +129,7 @@ class PosTagger(BaseTagger):
                         emb_tune_params['log_file'] = log_file
                     emb_path = WordEmbeddings.bert_tune(
                         train, train_labels, **emb_tune_params
-                    )['bert_model_name']
+                    )['model_name']
                 else:
                     raise ValueError("ERROR: tune method for '{}' embeddings "
                                          .format(emb_type)
@@ -139,22 +139,22 @@ class PosTagger(BaseTagger):
         word_emb_path = tune_word_emb(
             word_emb_type, word_emb_path,
             emb_model_device=word_emb_model_device,
-            emb_model_tune_params=word_emb_model_tune_params
+            emb_tune_params=word_emb_tune_params
         )
         if isinstance(word_next_emb_params, dict):
             word_next_emb_params = [word_next_emb_params]
         for emb_params in word_next_emb_params:
-            tune_params = emb_params.get('emb_model_tune_params',
-                          emb_params.get('word_emb_model_tune_params'))
+            tune_params = emb_params.get('emb_tune_params',
+                          emb_params.get('word_emb_tune_params'))
             emb_params['emb_path'] = tune_word_emb(
                 emb_params.get('emb_type', emb_params['word_emb_type']),
                 emb_params.get('emb_path', emb_params['word_emb_path']),
                 emb_model_device=emb_params.get('emb_model_device',
                                  emb_params.get('word_emb_model_device'),
                                  word_emb_model_device),
-                emb_model_tune_params=\
-                    emb_params.get('emb_model_tune_params',
-                    emb_params.get('word_emb_model_tune_params'))
+                emb_tune_params=\
+                    emb_params.get('emb_tune_params',
+                    emb_params.get('word_emb_tune_params'))
             )['bert_model_name']
 
         # 3. Create datasets
