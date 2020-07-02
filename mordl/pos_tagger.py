@@ -37,7 +37,8 @@ class PosTagger(BaseTagger):
 
     @staticmethod
     def create_dataset(sentences, word_emb_type=None, word_emb_path=None,
-                       word_transform_kwargs=None, word_next_emb_params=None,
+                       word_emb_model_device=None, word_transform_kwargs=None,
+                       word_next_emb_params=None,
                        with_chars=False, with_tags=False):
 
         ds = FrameDataset()
@@ -45,6 +46,7 @@ class PosTagger(BaseTagger):
         if word_emb_type is not None:
             x = WordEmbeddings.create_dataset(
                 sentences, emb_type=word_emb_type, emb_path=word_emb_path,
+                emb_model_device=word_emb_model_device,
                 transform_kwargs=word_transform_kwargs,
                 next_emb_params=word_next_emb_params
             )
@@ -160,6 +162,7 @@ class PosTagger(BaseTagger):
         # 3. Create datasets
         ds_train = self.create_dataset(
             train, word_emb_type=word_emb_type, word_emb_path=word_emb_path,
+            word_emb_model_device=word_emb_model_device,
             word_transform_kwargs=word_transform_kwargs,
             word_next_emb_params=word_next_emb_params,
             with_chars=rnn_emb_dim or cnn_emb_dim, with_tags=True)
