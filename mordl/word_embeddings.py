@@ -414,14 +414,14 @@ class WordEmbeddings:
                           file=log_file)
                     print('Dev: f1_score = {:.8f}'.format(f1),
                           file=log_file)
-                    print('NB: Scores are high because of tags stretching',
+                    print('NB: Scores may be high because of tags stretching',
                           file=log_file)
 
                 if accuracy > best_accuracy:
                     best_accuracy = accuracy
                     best_test_golds, best_test_preds = gold_labels[:], pred_labels[:]
 
-                    save_finetuned_bert(model, output_dir=OUTPUT_DIR)
+                    save_finetuned_bert(model, output_dir=save_to)
                     bad_epochs = 0
 
                 else:
