@@ -20,16 +20,14 @@ SEED=42
 #corpus_name = 'UD_Russian-Taiga'
 corpus_name = 'UD_Russian-SynTagRus'
 
-'''
 download_ud(corpus_name, overwrite=False)
 train_corpus = dev_corpus = test_corpus = UniversalDependencies(corpus_name)
-'''
 #train_corpus = dev_corpus = test_corpus = \
 #                         AdjustedForSpeech(UniversalDependencies(corpus_name))
 
 pt = PosTagger()
-#pt.load_train_corpus(train_corpus)
-#pt.load_test_corpus(test_corpus)
+pt.load_train_corpus(train_corpus)
+pt.load_test_corpus(test_corpus)
 
 pt.train(MODEL_FN, model_config_file=True, device='cuda:11',
          word_emb_type='bert', word_emb_path=None,
