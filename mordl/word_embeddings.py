@@ -31,6 +31,7 @@ _DEFAULT_BERT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
     to=junky.CPU, loglevel=2
 )
 _DATASET_CONFIG_ATTR = '_mordl_config'
+_MAX_BAD_EPOCHS = 1
 
 
 class WordEmbeddings:
@@ -75,11 +76,11 @@ class WordEmbeddings:
             [t2y[x] for x in [cls_label, sep_label, pad_label]]
 
         if log_file:
-            print('Loading BERT tokenizer...', log_file=log_file)
+            print('Loading BERT tokenizer...', file=log_file)
         tokenizer = BertTokenizer.from_pretrained(model_name)
         if log_file:
             print('Tokenizer is loaded. Vocab size:', tokenizer.vocab_size,
-                  log_file=log_file)
+                  file=log_file)
 
         def prepare_corpus(sentences, labels, max_len=None):
                 
@@ -138,14 +139,14 @@ class WordEmbeddings:
             ]), max_len)
 
         if log_file:
-            print('Prepare corpora...', end=' ', log_file=log_file)
+            print('Prepare corpora...', end=' ', file=log_file)
             log_file.flush()
         train_sentences_, train_labels_ = \
             prepare_corpus(train_sentences, train_labels, max_len)
         test_sentences_, test_labels_ = \
             prepare_corpus(test_sentences, test_labels, max_len)
         if log_file:
-            print('done.', log_file=log_file)
+            print('done.', file=log_file)
 
         def collate(batch):
             sents, tags = zip(*batch)
@@ -198,7 +199,7 @@ class WordEmbeddings:
 
         if log_file:
             print("Loading BERT model '{}'...".format(model_name), end=' ',
-                  log_file=log_file)
+                  file=log_file)
             log_file.flush()
         model = BertForTokenClassification.from_pretrained(
             model_name, num_labels=len(t2y),
@@ -207,7 +208,7 @@ class WordEmbeddings:
         if device:
             model.to(device)
         if log_file:
-            print('done.', log_file=log_file)
+            print('done.', file=log_file)
 
         FULL_FINETUNING = True
         if FULL_FINETUNING:
@@ -230,7 +231,7 @@ class WordEmbeddings:
         max_grad_norm = 1.0
 
         # Total number of training steps is number of batches * number of epochs
-        total_steps = len(train_loader) * EPOCHS
+        total_steps = len(train_loader) * epochs
 
         # Create the learning rate scheduler
         scheduler = get_linear_schedule_with_warmup(
@@ -272,7 +273,6 @@ class WordEmbeddings:
         best_accuracy = float('-inf')
         best_test_golds, best_test_preds = [], []
 
-        MAX_BAD_EPOCHS = 1
         bad_epochs = 0
 
         junky.clear_tqdm()
@@ -418,15 +418,15 @@ class WordEmbeddings:
                 if accuracy > best_accuracy:
                     best_accuracy = accuracy
                     best_test_golds, best_test_preds = gold_labels[:], pred_labels[:]
-                    
+
                     save_finetuned_bert(model, output_dir=OUTPUT_DIR)
                     bad_epochs = 0
-                    
+
                 else:
                     bad_epochs += 1
                     if log_file:
                         print('BAD EPOCHS:', bad_epochs, file=log_file)
-                    if bad_epochs >= MAX_BAD_EPOCHS:
+                    if bad_epochs >= _MAX_BAD_EPOCHS:
                         if log_file:
                             print('Maximum bad epochs exceeded. '
                                   'Process was stopped', file=log_file)
