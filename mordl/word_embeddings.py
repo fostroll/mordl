@@ -550,7 +550,8 @@ class WordEmbeddings:
 
             config.append(junky.kwargs_nonempty(
                 emb_type=emb_type, emb_path=emb_path,
-                device=device, transform_kwargs=transform_kwargs
+                emb_model_device=emb_model_device,
+                transform_kwargs=transform_kwargs
             ))
 
             if transform_kwargs is None:
@@ -645,10 +646,6 @@ class WordEmbeddings:
 
         embs, xtrn = {}, []
         for cfg in config:
-            config.append(junky.kwargs_nonempty(
-                emb_type=emb_type, emb_path=emb_path,
-                device=device, transform_kwargs=transform_kwargs
-            ))
             emb_type, emb_path = cfg['emb_type'], cfg['emb_path']
             emb_model_device = cfg.get('emb_model_device')
             transform_kwargs = cfg.get('transform_kwargs', {})
@@ -667,4 +664,3 @@ class WordEmbeddings:
         ds._push_xtrn(xtrn)
 
         return ds
-
