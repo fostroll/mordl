@@ -82,6 +82,8 @@ class PosTagger(BaseTagger):
               bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
               log_file=LOG_FILE):
 
+        assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
+
         def best_model_backup_method(model, model_score):
             if log_file:
                 print('{}: new maximum score {:.8f}'
