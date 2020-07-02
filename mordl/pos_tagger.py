@@ -41,7 +41,6 @@ class PosTagger(BaseTagger):
                        with_chars=False, with_tags=False):
 
         ds = FrameDataset()
-
         
         if word_emb_type is not None:
             x = WordEmbeddings.create_dataset(
@@ -140,7 +139,7 @@ class PosTagger(BaseTagger):
             word_emb_type, word_emb_path,
             emb_model_device=word_emb_model_device,
             emb_tune_params=word_emb_tune_params
-        )
+        )['model_name']
         if word_next_emb_params:
             if isinstance(word_next_emb_params, dict):
                 word_next_emb_params = [word_next_emb_params]
@@ -156,7 +155,7 @@ class PosTagger(BaseTagger):
                     emb_tune_params=\
                         emb_params.get('emb_tune_params',
                         emb_params.get('word_emb_tune_params'))
-                )['bert_model_name']
+                )['model_name']
 
         # 3. Create datasets
         ds_train = self.create_dataset(
