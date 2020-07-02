@@ -141,21 +141,22 @@ class PosTagger(BaseTagger):
             emb_model_device=word_emb_model_device,
             emb_tune_params=word_emb_tune_params
         )
-        if isinstance(word_next_emb_params, dict):
-            word_next_emb_params = [word_next_emb_params]
-        for emb_params in word_next_emb_params:
-            tune_params = emb_params.get('emb_tune_params',
-                          emb_params.get('word_emb_tune_params'))
-            emb_params['emb_path'] = tune_word_emb(
-                emb_params.get('emb_type', emb_params['word_emb_type']),
-                emb_params.get('emb_path', emb_params['word_emb_path']),
-                emb_model_device=emb_params.get('emb_model_device',
-                                 emb_params.get('word_emb_model_device'),
-                                 word_emb_model_device),
-                emb_tune_params=\
-                    emb_params.get('emb_tune_params',
-                    emb_params.get('word_emb_tune_params'))
-            )['bert_model_name']
+        if word_next_emb_params:
+            if isinstance(word_next_emb_params, dict):
+                word_next_emb_params = [word_next_emb_params]
+            for emb_params in word_next_emb_params:
+                tune_params = emb_params.get('emb_tune_params',
+                              emb_params.get('word_emb_tune_params'))
+                emb_params['emb_path'] = tune_word_emb(
+                    emb_params.get('emb_type', emb_params['word_emb_type']),
+                    emb_params.get('emb_path', emb_params['word_emb_path']),
+                    emb_model_device=emb_params.get('emb_model_device',
+                                     emb_params.get('word_emb_model_device'),
+                                     word_emb_model_device),
+                    emb_tune_params=\
+                        emb_params.get('emb_tune_params',
+                        emb_params.get('word_emb_tune_params'))
+                )['bert_model_name']
 
         # 3. Create datasets
         ds_train = self.create_dataset(
