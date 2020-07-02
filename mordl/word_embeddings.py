@@ -497,9 +497,19 @@ class WordEmbeddings:
             for emb_params_ in next_emb_params:
                 if isinstance(emb_params_, dict):
                     emb_params.append(
-                        (emb_params_['emb_type'], emb_params_['emb_path'],
-                         emb_params_.get('emb_model_device'),
-                         emb_params_.get('transform_kwargs'))
+                        (emb_params_.get('emb_type',
+                         emb_params_.get('word_emb_type',
+                         emb_params_['emb_type'])),  # for correct value name
+                                                     # in error message
+                         emb_params_.get('emb_path',
+                         emb_params_.get('word_emb_path',
+                         emb_params_['emb_path'])),  # for correct value name
+                                                     # in error message
+                         emb_params_.get('emb_model_device',
+                         emb_params_.get('word_emb_model_device')),
+
+                         emb_params_.get('transform_kwargs',
+                         emb_params_.get('word_transform_kwargs')))
                      )
                 else:
                     emb_params.append(emb_params_)

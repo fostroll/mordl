@@ -41,6 +41,7 @@ class PosTagger(BaseTagger):
 
         ds = FrameDataset()
 
+        
         if word_emb_type is not None:
             x = WordEmbeddings.create_dataset(
                 sentences, emb_type=word_emb_type, emb_path=word_emb_path,
@@ -69,7 +70,7 @@ class PosTagger(BaseTagger):
             )
             ds.add('y', y, with_lens=False)
 
-    def train(model_file, model_config_file=None, device=None,
+    def train(model_file, model_config_file=True, device=None,
               epochs=sys.maxsize, min_epochs=0, bad_epochs=5,
               batch_size=32, control_metric='accuracy', max_grad_norm=None,
               tags_to_remove=None, word_emb_type=None, word_emb_path=None,
@@ -125,22 +126,26 @@ class PosTagger(BaseTagger):
                         emb_tune_params['seed'] = seed
                     if 'log_file' not in emb_tune_params:
                         emb_tune_params['log_file'] = log_file
-                    WordEmbeddings.bert_tune(train, train_labels,
-                                             **emb_tune_params)
+                    emb_path = WordEmbeddings.bert_tune(
+                        train, train_labels, **emb_tune_params
+                    )['bert_model_name']
                 else:
                     raise ValueError("ERROR: tune method for '{}' embeddings "
                                          .format(emb_type)
                                    + 'is not implemented')
+            return emb_path
 
-        tune_word_emb(word_emb_type, word_emb_path,
-                      emb_model_device=word_emb_model_device,
-                      emb_model_tune_params=word_emb_model_tune_params)
+        word_emb_path = tune_word_emb(
+            word_emb_type, word_emb_path,
+            emb_model_device=word_emb_model_device,
+            emb_model_tune_params=word_emb_model_tune_params
+        )
         if isinstance(word_next_emb_params, dict):
             word_next_emb_params = [word_next_emb_params]
         for emb_params in word_next_emb_params:
             tune_params = emb_params.get('emb_model_tune_params',
                           emb_params.get('word_emb_model_tune_params'))
-            tune_word_emb(
+            emb_params['emb_path'] = tune_word_emb(
                 emb_params.get('emb_type', emb_params['word_emb_type']),
                 emb_params.get('emb_path', emb_params['word_emb_path']),
                 emb_model_device=emb_params.get('emb_model_device',
@@ -149,7 +154,7 @@ class PosTagger(BaseTagger):
                 emb_model_tune_params=\
                     emb_params.get('emb_model_tune_params',
                     emb_params.get('word_emb_model_tune_params'))
-            )
+            )['bert_model_name']
 
         # 3. Create datasets
         ds_train = self.create_dataset(
