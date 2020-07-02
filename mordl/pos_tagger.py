@@ -70,7 +70,7 @@ class PosTagger(BaseTagger):
             )
             ds.add('y', y, with_lens=False)
 
-    def train(model_file, model_config_file=True, device=None,
+    def train(self, model_file, model_config_file=True, device=None,
               epochs=sys.maxsize, min_epochs=0, bad_epochs=5,
               batch_size=32, control_metric='accuracy', max_grad_norm=None,
               tags_to_remove=None, word_emb_type=None, word_emb_path=None,
