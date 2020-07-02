@@ -177,7 +177,7 @@ class PosTagger(BaseTagger):
         model, criterion, optimizer, scheduler = \
             LstmTaggerModel.create_model_for_train(
                 len(ds_train.get_dataset('y').transform_dict),
-                tags_pad_idx=ds_train.get_dataset('x').pad,
+                tags_pad_idx=ds_train.get_dataset('y').pad,
                 vec_emb_dim=ds_train.get_dataset('x').vec_size
                                 if word_emb_type is not None else
                             None,
