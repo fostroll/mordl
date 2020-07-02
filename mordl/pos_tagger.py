@@ -167,7 +167,7 @@ class PosTagger(BaseTagger):
             with_chars=rnn_emb_dim or cnn_emb_dim, labels=train_labels)
         ds_test = ds_train.clone(with_data=False)
         ds_test.transform(test,
-                          names=[x for x in ds_text.list() if x != 'y'])
+                          names=[x for x in ds_test.list() if x != 'y'])
         ds_test.transform(test_labels, names='y')
 
         if seed:
