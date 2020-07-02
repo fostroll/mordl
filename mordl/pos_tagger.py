@@ -162,7 +162,7 @@ class PosTagger(BaseTagger):
         ds_train = self.create_dataset(
             train, word_emb_type=word_emb_type, word_emb_path=word_emb_path,
             word_transform_kwargs=word_transform_kwargs,
-            next_word_emb_params=next_word_emb_params,
+            word_next_emb_params=word_next_emb_params,
             with_chars=rnn_emb_dim or cnn_emb_dim, with_tags=True)
         ds_test = ds_train.clone(with_data=False)
         ds_test.transform(test,
