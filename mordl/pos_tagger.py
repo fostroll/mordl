@@ -38,8 +38,8 @@ class PosTagger(BaseTagger):
     @staticmethod
     def create_dataset(sentences, word_emb_type=None, word_emb_path=None,
                        word_emb_model_device=None, word_transform_kwargs=None,
-                       word_next_emb_params=None,
-                       with_chars=False, with_tags=False):
+                       word_next_emb_params=None, with_chars=False,
+                       labels=None):
 
         ds = FrameDataset()
         
@@ -56,20 +56,17 @@ class PosTagger(BaseTagger):
             ds.add('x_lens', LenDataset(data=sentences))
 
         if with_chars:
-            x_ch = CharDataset(
-                sentences, unk_token='<UNK>', pad_token='<PAD>',
-                transform=True
-            )
+            x_ch = CharDataset(sentences,
+                               unk_token='<UNK>', pad_token='<PAD>',
+                               transform=True)
             ds.add('x_ch', x_ch, with_lens=False)
         else:
             ds.add('x_ch', DummyDataset(data=sentences))
             ds.add('x_ch_lens', DummyDataset(data=sentences))
 
-        if with_tags:
-            y = TokenDataset(
-                train_labels, pad_token='<PAD>', transform=True,
-                keep_empty=False
-            )
+        if labels:
+            y = TokenDataset(labels, pad_token='<PAD>', transform=True,
+                             keep_empty=False)
             ds.add('y', y, with_lens=False)
 
     def train(self, model_file, model_config_file=True, device=None,
@@ -165,7 +162,7 @@ class PosTagger(BaseTagger):
             word_emb_model_device=word_emb_model_device,
             word_transform_kwargs=word_transform_kwargs,
             word_next_emb_params=word_next_emb_params,
-            with_chars=rnn_emb_dim or cnn_emb_dim, with_tags=True)
+            with_chars=rnn_emb_dim or cnn_emb_dim, labels=train_labels)
         ds_test = ds_train.clone(with_data=False)
         ds_test.transform(test,
                           names=[x for x in ds_text.list() if x != 'y'])
