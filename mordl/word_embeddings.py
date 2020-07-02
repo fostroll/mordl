@@ -509,7 +509,8 @@ class WordEmbeddings:
                        emb_model_device=None, transform_kwargs=None,
                        next_emb_params=None):
 
-        emb_params = [(emb_type, emb_path, device, transform_kwargs)]
+        emb_params = \
+            [(emb_type, emb_path, emb_model_device, transform_kwargs)]
         if next_emb_params:
             if isinstance(next_emb_params, dict) \
             or isinstance(next_emb_params[0], str):
