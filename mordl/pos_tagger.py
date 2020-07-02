@@ -167,7 +167,8 @@ class PosTagger(BaseTagger):
             with_chars=rnn_emb_dim or cnn_emb_dim, labels=train_labels)
         ds_test = ds_train.clone(with_data=False)
         ds_test.transform(test,
-                          names=[x for x in ds_test.list() if x != 'y'])
+                          names=[x for x in ds_test.list() if x != 'y'],
+                          part_kwargs={})
         ds_test.transform(test_labels, names='y')
 
         if seed:
@@ -196,7 +197,7 @@ class PosTagger(BaseTagger):
         if device:
             model.to(device)
         if model_config_file:
-            model.save_config(model_config_file, log_level=log_level)
+            model.save_config(model_config_file, log_file=log_file)
 
         # 5. Train model
         res_ = junky.train(
