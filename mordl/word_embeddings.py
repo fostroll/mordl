@@ -54,7 +54,7 @@ class WordEmbeddings:
         if seed:
             junky.enforce_reproducibility(seed)
 
-        def seq2ix(seq, extra_labels=None):    
+        def seq2ix(seq, extra_labels=None):
 
             seq2ix = {x: i for i, x in enumerate(sorted(set(x for x in seq
                                                               for x in x)))}
@@ -82,7 +82,7 @@ class WordEmbeddings:
                   file=log_file)
 
         def prepare_corpus(sentences, labels, max_len=None):
-                
+
             def tokenize_and_preserve_labels(sentence, text_labels):
                 tokenized_sentence = []
                 labels = []
@@ -125,7 +125,7 @@ class WordEmbeddings:
                                 if end != sent_len:
                                     for i in reversed(range(end)):
                                         if sent[i][:2] != '##':
-                                            end = i 
+                                            end = i
                                             break
                                 sents_.append(sent[start:end])
                                 labs_.append(lab[start:end])
@@ -193,7 +193,7 @@ class WordEmbeddings:
                                   num_workers=0, shuffle=True,
                                   collate_fn=collate)
         test_loader = DataLoader(test_dataset, batch_size=batch_size,
-                                 num_workers=0, shuffle=False, 
+                                 num_workers=0, shuffle=False,
                                  collate_fn=collate)
 
         if log_file:
@@ -326,7 +326,7 @@ class WordEmbeddings:
                 optimizer.step()
                 # Update the learning rate.
                 scheduler.step()
-                
+
                 progress_bar.set_postfix(train_loss = loss.item())
                 progress_bar.update(b_input_ids.shape[0])
 
@@ -537,10 +537,10 @@ class WordEmbeddings:
         ds, config = [], []
         for emb_params_ in emb_params:
             emb_type, emb_path = emb_params_[:2]
-            emb_model_device = emb_params_[2] \
-                                   if len(emb_params_) > 2 else None
-            transform_kwargs = emb_params_[3] \
-                                   if len(emb_params_) > 3 else None
+            emb_model_device = emb_params_[2] if len(emb_params_) > 2 else \
+                               None
+            transform_kwargs = emb_params_[3] if len(emb_params_) > 3 else \
+                               None
             if isinstance(emb_model_device, dict) or (
                 transform_kwargs and not isinstance(transform_kwargs, dict)
             ):

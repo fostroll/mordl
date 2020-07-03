@@ -43,7 +43,7 @@ class PosTagger(BaseTagger):
                        labels=None):
 
         ds = FrameDataset()
-        
+
         if word_emb_type is not None:
             x = WordEmbeddings.create_dataset(
                 sentences, emb_type=word_emb_type, emb_path=word_emb_path,
