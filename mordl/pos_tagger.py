@@ -202,7 +202,10 @@ class PosTagger(BaseTagger):
         # 5. Train model
         res_ = junky.train(
             device, None, model, criterion, optimizer, scheduler,
-            None, '', datasets=(ds_train, ds_test),
+                        lambda x, y: x.save_state_dict(model_file)
+                             if model_config_file else
+                         x.save(model_file),
+            '', datasets=(ds_train, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
             batch_size=batch_size, control_metric='accuracy',
             max_grad_norm=max_grad_norm,
