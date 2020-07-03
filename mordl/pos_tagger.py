@@ -149,7 +149,7 @@ class PosTagger(BaseTagger):
             self._train_corpus, tags_to_remove=tags_to_remove
         )
         test, test_labels = self.prepare_corpus(
-            self._train_corpus, tags_to_remove=tags_to_remove
+            self._test_corpus, tags_to_remove=tags_to_remove
         )
 
         # 2. Tune embeddings
