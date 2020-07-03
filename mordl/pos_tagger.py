@@ -222,9 +222,9 @@ class PosTagger(BaseTagger):
         criterion, optimizer, scheduler = model.adjust_model_for_tune()
         res_= junky.train(
             device, model, criterion, optimizer, scheduler,
-            lambda: model.save_state_dict(model_file)
-                        if model_config_file else
-                    model.save(model_file),
+            lambda x, y: x.save_state_dict(model_file)
+                             if model_config_file else
+                         x.save(model_file),
             '', datasets=(ds_train, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
             batch_size=batch_size, control_metric='accuracy',
