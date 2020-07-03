@@ -595,7 +595,7 @@ class WordEmbeddings:
         return ds
 
     @classmethod
-    def transform_dataset(ds, sentences, transform_kwargs=None):
+    def transform_dataset(cls, ds, sentences, transform_kwargs=None):
         res = True
         if not transform_kwargs:
             config = getattr(ds, CONFIG_ATTR, None)
