@@ -71,7 +71,70 @@ class PosTagger(BaseTagger):
 
         return ds
 
-    def train(self, model_file, model_config_file=True, device=None,
+    @staticmethod
+    def save_dataset(ds, f, config_f=True, with_data=True):
+        if config_f is True and isinstance(f, str):
+            pref, suff = os.path.splitext(f)
+            config_f = pref + '.config.json'
+        if config_f:
+            config = {}
+            for name in ds.list():
+                ds_ = ds.get_dataset(name)
+                cfg = getattr(ds_, CONFIG_ATTR, None)
+                if cfg:
+                    config[name] = cfg
+            need_close = False
+            if isinstance(config_f, str):
+                config_f = open(config_f, 'wt', encoding='utf-8')
+                need_close = True
+            try:
+                print(json.dumps(config, sort_keys=True, indent=4),
+                      file=config_f)
+            finally:
+                if need_close:
+                    config_f.close()
+        ds.save(f, with_data=with_data)
+
+    @classmethod
+    def load_dataset(cls, f, config_f=True):
+        ds = FrameDataset.load(f)
+
+        if config_f is True:
+            assert isinstance(f, str), \
+                   'ERROR: config_f can be True only with f of str type'
+            pref, suff = os.path.splitext(f)
+            config_f_ = pref + '.config.json'
+            if os.path.isfile(config_f_):
+                config_f = config_f_
+        if config_f:
+            need_close = False
+            if isinstance(config_f, str):
+                config_f = open(config_f, 'wt', encoding='utf-8')
+                need_close = True
+            try:
+                json.loads(config_f.read())
+            finally:
+                if need_close:
+                    config_f.close()
+        else:
+            config = getattr(ds, CONFIG_ATTR, ())
+
+        for name, cfg in config.items():
+            WordEmbeddings.apply_config(ds.get_dataset(name), cfg)
+
+        return ds
+
+    @staticmethod
+    def transform_dataset(ds, sentences, labels=None):
+        for name in ds.list():
+            ds_ = ds.get_dataset(name)
+            if name != 'y':
+                if not WordEmbeddings.transform_dataset(ds_, sentences):
+                    ds_.transform(sentences)
+            elif labels:
+                ds_.transform(labels)
+
+    def train(self, model_name, device=None,
               epochs=sys.maxsize, min_epochs=0, bad_epochs=5,
               batch_size=32, control_metric='accuracy', max_grad_norm=None,
               tags_to_remove=None, word_emb_type=None, word_emb_path=None,
@@ -86,9 +149,9 @@ class PosTagger(BaseTagger):
 
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
-        if model_config_file is True and isinstance(model_file, str):
-            pref, suff = os.path.splitext(model_file)
-            model_config_file = pref + '.config' + suff
+        model_file = model_name + '.pt'
+        model_config_file = model_name + '.config.json'
+        model_dataset_file = model_name + '.ds.pt'
 
         def best_model_backup_method(model, model_score):
             if log_file:
@@ -165,11 +228,9 @@ class PosTagger(BaseTagger):
             word_transform_kwargs=word_transform_kwargs,
             word_next_emb_params=word_next_emb_params,
             with_chars=rnn_emb_dim or cnn_emb_dim, labels=train_labels)
+        ds_train.save(model_dataset_file)
         ds_test = ds_train.clone(with_data=False)
-        ds_test.transform(test,
-                          names=[x for x in ds_test.list() if x != 'y'],
-                          part_kwargs={})
-        ds_test.transform(test_labels, names='y')
+        self.transform_dataset(ds_test, test, test_labels)
 
         if seed:
             junky.enforce_reproducibility(seed=seed)
@@ -196,26 +257,19 @@ class PosTagger(BaseTagger):
             )
         if device:
             model.to(device)
-        if model_config_file:
-            model.save_config(model_config_file, log_file=log_file)
+        model.save_config(model_config_file, log_file=log_file)
 
         # 5. Train model
         res_ = junky.train(
             device, None, model, criterion, optimizer, scheduler,
-                        lambda x, y: x.save_state_dict(model_file)
-                             if model_config_file else
-                         x.save(model_file),
+            lambda x, y: x.save_state_dict(model_file),
             '', datasets=(ds_train, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
             batch_size=batch_size, control_metric='accuracy',
             max_grad_norm=max_grad_norm,
             with_progress=log_file is not None, log_file=log_file
         )
-        if model_config_file:
-            model.load_state_dict(model_file, log_file=log_file)
-        else:
-            del model
-            model = LstmTaggerModel.load(model_file, log_file=log_file)
+        model.load_state_dict(model_file, log_file=log_file)
         best_epoch, best_score = res_['best_epoch'], res_['best_score']
         res = {x: y[:best_epoch + 1]
                    for x, y in res_.items()

@@ -6,7 +6,7 @@
 """
 """
 import json
-from mordl.utils import LOG_FILE
+from mordl.utils import CONFIG_ATTR, LOG_FILE
 import torch
 import torch.nn as nn
 
@@ -15,7 +15,7 @@ class BaseModel(nn.Module):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
-        self._config = args, kwargs
+        setattr(self, CONFIG_ATTR, (args, kwargs))
 
     def save_config(self, f, log_file=LOG_FILE):
         need_close = False
@@ -23,7 +23,8 @@ class BaseModel(nn.Module):
             f = open(f, 'wt', encoding='utf-8')
             need_close = True
         try:
-            print(json.dumps(self._config, sort_keys=True, indent=4), file=f)
+            print(json.dumps(getattr(self, CONFIG_ATTR, None),
+                             sort_keys=True, indent=4), file=f)
         finally:
             if need_close:
                 f.close()

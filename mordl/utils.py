@@ -8,4 +8,5 @@ Provides a bunch of utilities to use with PyTorch.
 """
 import sys
 
+CONFIG_ATTR = '_mordl_config'
 LOG_FILE = sys.stdout

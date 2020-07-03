@@ -14,7 +14,7 @@ import numpy as np
 import json
 import junky
 from junky.dataset import BertDataset, WordCatDataset, WordDataset
-from mordl.utils import LOG_FILE
+from mordl.utils import CONFIG_ATTR, LOG_FILE
 import os
 from tqdm import tqdm
 import torch
@@ -30,7 +30,6 @@ _DEFAULT_BERT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
     aggregate_hiddens_op='cat', aggregate_subtokens_op='max',
     to=junky.CPU, loglevel=2
 )
-_DATASET_CONFIG_ATTR = '_mordl_config'
 _MAX_BAD_EPOCHS = 1
 
 
@@ -575,7 +574,7 @@ class WordEmbeddings:
                              emb_model.vector_size,
                     unk_token='<UNK>', pad_token='<PAD>'
                 )
-                x.trainsform(sentences, **transform_kwargs)
+                x.transform(sentences, **transform_kwargs)
             ds.append(x)
 
         if len(ds) == 1:
@@ -586,27 +585,55 @@ class WordEmbeddings:
                 ds_.add('x_{}'.format(i), x)
             ds = ds_
 
-        if hasattr(ds, _DATASET_CONFIG_ATTR):
+        if hasattr(ds, CONFIG_ATTR):
             raise AttributeError(
                 'ERROR: {} class has unexpected attribute {}'
-                    .format(ds.__class__, _DATASET_CONFIG_ATTR)
+                    .format(ds.__class__, CONFIG_ATTR)
             )
-        setattr(ds, _DATASET_CONFIG_ATTR, config)
+        setattr(ds, CONFIG_ATTR, config)
 
         return ds
+
+    @classmethod
+    def transform_dataset(ds, sentences, transform_kwargs=None):
+        res = True
+        if not transform_kwargs:
+            config = getattr(ds, CONFIG_ATTR, None)
+            if config:
+                if isinstance(ds, WordCatDataset):
+                    for name, cfg in zip(ds.list(), config):
+                        res = res \
+                          and cls.transform_dataset(ds.get_dataset(name),
+                                                    sentences)
+                        if not res:
+                            break
+                else:
+                    transform_kwargs = config.get('transform_kwargs', None)
+        if transform_kwargs:
+            if isinstance(ds, BertDataset):
+                kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
+                kwargs.update(transform_kwargs)
+                ds.transform(sentences, **kwargs)
+            elif isinstance(ds, WordDataset):
+                x.transform(sentences, **transform_kwargs)
+            else:
+                res = False
+        else:
+            res = False
+        return res
 
     @staticmethod
     def save_dataset(ds, f, config_f=True, with_data=True):
         if config_f is True and isinstance(f, str):
             pref, suff = os.path.splitext(f)
-            config_f = pref + '.config' + suff
+            config_f = pref + '.config.json'
         if config_f:
             need_close = False
             if isinstance(config_f, str):
                 config_f = open(config_f, 'wt', encoding='utf-8')
                 need_close = True
             try:
-                print(json.dumps(getattr(_DATASET_CONFIG_ATTR),
+                print(json.dumps(getattr(ds, CONFIG_ATTR, ()),
                                  sort_keys=True, indent=4),
                       file=config_f)
             finally:
@@ -616,13 +643,13 @@ class WordEmbeddings:
 
     @classmethod
     def load_dataset(cls, f, config_f=True):
-        ds = WordDataset.load(f)
+        ds = WordDataset.load(f)  # sic!
 
         if config_f is True:
             assert isinstance(f, str), \
                    'ERROR: config_f can be True only with f of str type'
             pref, suff = os.path.splitext(f)
-            config_f_ = pref + '.config' + suff
+            config_f_ = pref + '.config.json'
             if os.path.isfile(config_f_):
                 config_f = config_f_
         if config_f:
@@ -636,8 +663,13 @@ class WordEmbeddings:
                 if need_close:
                     config_f.close()
         else:
-            config = getattr(ds, _DATASET_CONFIG_ATTR)
+            config = getattr(ds, CONFIG_ATTR, ())
 
+        cls.apply_config(ds, config)
+        return ds
+
+    @classmethod
+    def apply_config(cls, ds, config):
         if isinstance(config, dict):
             config = [config]
 
@@ -662,5 +694,3 @@ class WordEmbeddings:
         else:
             xtrn = {x: y for x, y in zip(ds.list(), xtrn)}
         ds._push_xtrn(xtrn)
-
-        return ds
