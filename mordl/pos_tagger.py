@@ -72,56 +72,35 @@ class PosTagger(BaseTagger):
         return ds
 
     @staticmethod
-    def save_dataset(ds, f, config_f=True, with_data=True):
-        if config_f is True and isinstance(f, str):
-            pref, suff = os.path.splitext(f)
-            config_f = pref + '.config.json'
-        if config_f:
-            config = {}
-            for name in ds.list():
-                ds_ = ds.get_dataset(name)
-                cfg = getattr(ds_, CONFIG_ATTR, None)
-                if cfg:
-                    config[name] = cfg
-            need_close = False
-            if isinstance(config_f, str):
-                config_f = open(config_f, 'wt', encoding='utf-8')
-                need_close = True
-            try:
-                print(json.dumps(config, sort_keys=True, indent=4),
-                      file=config_f)
-            finally:
-                if need_close:
-                    config_f.close()
-        ds.save(f, with_data=with_data)
+    def save_dataset(ds, ds_name, with_data=True):
+        ds_file = ds_name + '.pt'
+        ds_config_file = ds_name + '.config.json'
+        config = {}
+        for name in ds.list():
+            ds_ = ds.get_dataset(name)
+            cfg = getattr(ds_, CONFIG_ATTR, None)
+            if cfg:
+                config[name] = cfg
+        ds_config_file = open(ds_config_file, 'wt', encoding='utf-8')
+        try:
+            print(json.dumps(config, sort_keys=True, indent=4),
+                  file=ds_config_file)
+        finally:
+            ds_config_file.close()
+        ds.save(ds_file, with_data=with_data)
 
     @classmethod
-    def load_dataset(cls, f, config_f=True):
-        ds = FrameDataset.load(f)
-
-        if config_f is True:
-            assert isinstance(f, str), \
-                   'ERROR: config_f can be True only with f of str type'
-            pref, suff = os.path.splitext(f)
-            config_f_ = pref + '.config.json'
-            if os.path.isfile(config_f_):
-                config_f = config_f_
-        if config_f:
-            need_close = False
-            if isinstance(config_f, str):
-                config_f = open(config_f, 'wt', encoding='utf-8')
-                need_close = True
-            try:
-                json.loads(config_f.read())
-            finally:
-                if need_close:
-                    config_f.close()
-        else:
-            config = getattr(ds, CONFIG_ATTR, ())
-
+    def load_dataset(cls, ds_name):
+        ds_file = ds_name + '.pt'
+        ds_config_file = ds_name + '.config.json'
+        ds = FrameDataset.load(ds_file)
+        ds_config_file = open(ds_config_file, 'wt', encoding='utf-8')
+        try:
+            json.loads(ds_config_file.read())
+        finally:
+            ds_config_file.close()
         for name, cfg in config.items():
             WordEmbeddings.apply_config(ds.get_dataset(name), cfg)
-
         return ds
 
     @staticmethod
@@ -151,7 +130,7 @@ class PosTagger(BaseTagger):
 
         model_file = model_name + '.pt'
         model_config_file = model_name + '.config.json'
-        model_dataset_file = model_name + '.ds.pt'
+        dataset_name = model_name + '_ds'
 
         def best_model_backup_method(model, model_score):
             if log_file:
@@ -228,7 +207,7 @@ class PosTagger(BaseTagger):
             word_transform_kwargs=word_transform_kwargs,
             word_next_emb_params=word_next_emb_params,
             with_chars=rnn_emb_dim or cnn_emb_dim, labels=train_labels)
-        ds_train.save(model_dataset_file)
+        self.save_dataset(ds_train, dataset_name, with_data=False)
         ds_test = ds_train.clone(with_data=False)
         self.transform_dataset(ds_test, test, test_labels)
 
