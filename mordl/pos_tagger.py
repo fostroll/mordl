@@ -221,7 +221,7 @@ class PosTagger(BaseTagger):
         # 6. Tune model
         criterion, optimizer, scheduler = model.adjust_model_for_tune()
         res_= junky.train(
-            device, model, criterion, optimizer, scheduler,
+            device, None, model, criterion, optimizer, scheduler,
             lambda x, y: x.save_state_dict(model_file)
                              if model_config_file else
                          x.save(model_file),
