@@ -609,7 +609,7 @@ class WordEmbeddings:
                             break
                 else:
                     transform_kwargs = config.get('transform_kwargs', {})
-        if transform_kwargs:
+        if transform_kwargs is not None:
             if isinstance(ds, BertDataset):
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
                 kwargs.update(transform_kwargs)
