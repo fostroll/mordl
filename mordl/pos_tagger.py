@@ -11,7 +11,7 @@ from junky.dataset import BertDataset, CharDataset, DummyDataset, \
 from mordl import WordEmbeddings
 from mordl.base_tagger import BaseTagger
 from mordl.lstm_tagger_model import LstmTaggerModel
-from mordl.utils import LOG_FILE
+from mordl.utils import CONFIG_ATTR, LOG_FILE
 import os
 import sys
 
