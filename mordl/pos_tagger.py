@@ -242,7 +242,7 @@ class PosTagger(BaseTagger):
         # 5. Train model
         def best_model_backup_method(model, model_score):
             if log_file:
-                print('new maximum score {:.8f}'.format(model_score), end='',
+                print('new maximum score {:.8f}'.format(model_score),
                       file=log_file)
             model.save_state_dict(model_file)
         res_ = junky.train(
