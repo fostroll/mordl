@@ -240,10 +240,14 @@ class PosTagger(BaseTagger):
         model.save_config(model_config_file, log_file=log_file)
 
         # 5. Train model
+        def best_model_backup_method(model, model_score):
+            if log_file:
+                print('new maximum score {:.8f}'.format(model_score), end='',
+                      file=log_file)
+            model.save_state_dict(model_file)
         res_ = junky.train(
             device, None, model, criterion, optimizer, scheduler,
-            lambda x, y: x.save_state_dict(model_file),
-            '', datasets=(ds_train, ds_test),
+            best_model_backup_method, '', datasets=(ds_train, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
             batch_size=batch_size, control_metric='accuracy',
             max_grad_norm=max_grad_norm,
