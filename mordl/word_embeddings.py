@@ -42,7 +42,10 @@ class WordEmbeddings:
                   log_file=LOG_FILE):
 
         if not save_to:
-            save_to = '{}_{}_{}'.format(model_name, max_len, epochs)
+            save_to = '{}_len{}_ep{}_bat{}' \
+                          .format(model_name, max_len, epochs, batch_size)
+            if seed is not None:
+                save_to += '_seed{}'.format(seed)
 
         if log_file:
             print("Tune BERT model '{}'. The result's model name will be '{}'"
@@ -149,11 +152,11 @@ class WordEmbeddings:
 
         def collate(batch):
             sents, tags = zip(*batch)
-            max_len = max(len(x) for x in sents)
+            max_len_ = max(len(x) for x in sents)
             encoded_sents = [
                 tokenizer.encode_plus(text=sent,
                                       add_special_tokens=True,
-                                      max_length=max_len + 2,
+                                      max_length=max_len_ + 2,
                                       pad_to_max_length=True,
                                       return_tensors='pt',
                                       return_attention_mask=True,
@@ -168,7 +171,7 @@ class WordEmbeddings:
             attention_masks = torch.cat(attention_masks, dim=0)
             lens = attention_masks.sum(dim=1) - 2
             output_ids = torch.tensor([
-                    [cls_y] + x + [sep_y] + [pad_y] * (max_len - len(x))
+                    [cls_y] + x + [sep_y] + [pad_y] * (max_len_ - len(x))
                  for x in tags
             ])
             return input_ids, attention_masks, output_ids, lens
@@ -216,10 +219,10 @@ class WordEmbeddings:
             optimizer_grouped_parameters = [
                 {'params': [p for n, p in param_optimizer
                                   if not any(nd in n for nd in no_decay)],
-                 'weight_decay_rate': 0.01},
+                 'weight_decay_rate': .01},
                 {'params': [p for n, p in param_optimizer
                                   if any(nd in n for nd in no_decay)],
-                 'weight_decay_rate': 0.0}
+                 'weight_decay_rate': .0}
             ]
         else:
             param_optimizer = list(model.classifier.named_parameters())
@@ -227,7 +230,7 @@ class WordEmbeddings:
 
         optimizer = AdamW(optimizer_grouped_parameters, lr=3e-5, eps=1e-8)
 
-        max_grad_norm = 1.0
+        max_grad_norm = 1.
 
         # Total number of training steps is number of batches * number of epochs
         total_steps = len(train_loader) * epochs
