@@ -56,7 +56,8 @@ class PosTagger(BaseTagger):
             ds.add('x', DummyDataset(data=sentences))
             ds.add('x_lens', LenDataset(data=sentences))
 
-        if with_chars:
+#         if with_chars:
+        if True:  # TODO
             x_ch = CharDataset(sentences,
                                unk_token='<UNK>', pad_token='<PAD>',
                                transform=True)
