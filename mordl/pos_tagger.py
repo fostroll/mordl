@@ -215,6 +215,21 @@ class PosTagger(BaseTagger):
         if seed:
             junky.enforce_reproducibility(seed=seed)
 
+        ### TODO: remove
+        ds = ds_test.get_dataset('x')
+        ldr = ds.create_loader(shuffle=False)
+        x, lens = next(iter(ldr))
+        print(x.shape, x.dtype, lens, lens.dtype)
+        ds = ds_test.get_dataset('x_ch')
+        ldr = ds.create_loader(shuffle=False)
+        x, lens, token_lens = next(iter(ldr))
+        print(x.shape, x.dtype, lens, lens.dtype, token_lens[0], token_lens[0].dtype)
+        ds = ds_test.get_dataset('y')
+        ldr = ds.create_loader(shuffle=False)
+        y, lens = next(iter(ldr))
+        print(y[0], y.shape, y[0].dtype, lens, lens.dtype)
+        ldr = ds_train.create_loader(shuffle=True)
+        ###
         # 4. Create model
         model, criterion, optimizer, scheduler = \
             LstmTaggerModel.create_model_for_train(

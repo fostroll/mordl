@@ -198,7 +198,6 @@ class WordEmbeddings:
         test_loader = DataLoader(test_dataset, batch_size=batch_size,
                                  num_workers=0, shuffle=False,
                                  collate_fn=collate)
-        x, att, y, lens = next(iter(test_loader))  # TODO: del
 
         if log_file:
             print("Loading model '{}'...".format(model_name), end=' ',
