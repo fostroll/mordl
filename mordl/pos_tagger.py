@@ -202,6 +202,9 @@ class PosTagger(BaseTagger):
                         emb_params.get('word_emb_tune_params'))
                 )
 
+        if seed:
+            junky.enforce_reproducibility(seed=seed)
+
         # 3. Create datasets
         ds_train = self.create_dataset(
             train, word_emb_type=word_emb_type, word_emb_path=word_emb_path,
@@ -212,9 +215,6 @@ class PosTagger(BaseTagger):
         self.save_dataset(ds_train, dataset_name, with_data=False)
         ds_test = ds_train.clone(with_data=False)
         self.transform_dataset(ds_test, test, test_labels)
-
-        if seed:
-            junky.enforce_reproducibility(seed=seed)
 
         ### TODO: remove
         ds = ds_test.get_dataset('x')
