@@ -198,8 +198,7 @@ class WordEmbeddings:
         test_loader = DataLoader(test_dataset, batch_size=batch_size,
                                  num_workers=0, shuffle=False,
                                  collate_fn=collate)
-        x, att, y, lens = next(iter(test_loader))
-        print(x.shape, att.shape, y.shape, lens.shape, lens)
+        x, att, y, lens = next(iter(test_loader))  # TODO: del
 
         if log_file:
             print("Loading model '{}'...".format(model_name), end=' ',
@@ -279,8 +278,6 @@ class WordEmbeddings:
 
         bad_epochs = 0
 
-        x, att, y, lens = next(iter(test_loader))
-        print(x.shape, att.shape, y.shape, lens.shape, lens)
         junky.clear_tqdm()
 
         ## Store the average loss after each epoch so we can plot them.
@@ -305,9 +302,6 @@ class WordEmbeddings:
 
             # Training loop
             for step, batch in enumerate(train_loader):
-                if not step:
-                    print('\n', batch)
-#                     throw(RuntimeException())
                 if device:
                     # move batch to the specified device
                     batch = tuple(t.to(device) for t in batch)
