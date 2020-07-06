@@ -253,13 +253,12 @@ class PosTagger(BaseTagger):
             max_grad_norm=max_grad_norm,
             with_progress=log_file is not None, log_file=log_file
         )
-        model.load_state_dict(model_file, log_file=log_file)
         best_epoch, best_score = res_['best_epoch'], res_['best_score']
-        res = {x: y[:best_epoch + 1]
-                   for x, y in res_.items()
-                       if x not in ['best_epoch', 'best_score']}
+        res = {x: y for x, y in res_.items()
+                        if x not in ['best_epoch', 'best_score']}
 
         # 6. Tune model
+        model.load_state_dict(model_file, log_file=log_file)
         criterion, optimizer, scheduler = model.adjust_model_for_tune()
         res_= junky.train(
             device, None, model, criterion, optimizer, scheduler,
@@ -272,9 +271,9 @@ class PosTagger(BaseTagger):
             max_grad_norm=max_grad_norm, best_score=best_score,
             with_progress=log_file is not None, log_file=log_file
         )
-        best_epoch = res_['best_epoch']
-        res.update({x: y[:best_epoch + 1]
-                        for x, y in res_.items()
-                            if x not in ['best_epoch', 'best_score']})
+        if res_['best_epoch'] is not None:
+            res.update({x + best_epoch: y
+                            for x, y in res_.items()
+                                if x not in ['best_epoch', 'best_score']})
 
         return res

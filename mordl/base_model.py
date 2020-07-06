@@ -64,8 +64,8 @@ class BaseModel(nn.Module):
         if log_file:
             print('Loading state_dict...', end=' ', file=log_file)
             log_file.flush()
-        self.load_state_dict(torch.load(f))
-        model.eval()
+        super().load_state_dict(torch.load(f))
+        self.eval()
         if log_file:
             print('done.', file=log_file)
 
