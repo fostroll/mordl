@@ -23,6 +23,10 @@ class PosTagger(BaseTagger):
     def __init__(self):
         super().__init__()
 
+    def load(self, model_name, device=None, dataset_device=None,
+             log_file=LOG_FILE):
+         super().load(LstmTaggerModel, model_name, device, dataset_device)
+
     def predict(self):
         pass
 
