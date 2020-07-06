@@ -45,7 +45,7 @@ class PosTagger(BaseTagger):
 
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
-        model_fn, model_config_fn = self._get_filenames(model_name)[0]
+        model_fn, model_config_fn = self._get_filenames(model_name)[:2]
 
         # 1. Prepare corpora
         train, train_labels = self._prepare_corpus(
