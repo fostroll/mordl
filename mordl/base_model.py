@@ -19,7 +19,7 @@ class BaseModel(nn.Module):
 
     def save_config(self, f, log_file=LOG_FILE):
         config = []
-        device = next(self._model.parameters()).device
+        device = next(self.parameters()).device
         if device:
             config.append(str(device))
         cfg = getattr(self, CONFIG_ATTR, [])
