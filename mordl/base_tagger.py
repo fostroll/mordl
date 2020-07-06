@@ -98,7 +98,7 @@ class BaseTagger(BaseParser):
         return ds
 
     def _transform_dataset(self, sentences, labels=None, ds=None):
-        if not ds:
+        if ds is None:
             ds = self._ds
         for name in ds.list():
             ds_ = ds.get_dataset(name)
