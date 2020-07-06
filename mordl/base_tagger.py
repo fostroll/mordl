@@ -9,7 +9,7 @@ import junky
 from junky.dataset import CharDataset, DummyDataset, FrameDataset, \
                           LenDataset, TokenDataset
 from mordl import WordEmbeddings
-from mordl.utils import LOG_FILE
+from mordl.utils import CONFIG_ATTR, LOG_FILE
 from morra.base_parser import BaseParser
 
 
