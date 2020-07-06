@@ -98,6 +98,6 @@ class BaseModel(nn.Module):
 
     def adjust_model_for_tune(lr=.001, momentum=.9):
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=momentum)
+        optimizer = torch.optim.SGD(self.parameters(), lr=lr, momentum=momentum)
         scheduler = None
         return criterion, optimizer, scheduler
