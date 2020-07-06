@@ -449,8 +449,11 @@ class WordEmbeddings:
 
         except RuntimeError as e:
             if e.args and e.args[0].startswith('CUDA out of memory'):
-                e.args[0] += '. To avoid this, consider to decrease ' \
-                             'batch_size or max_len value'
+                e = RuntimeException(
+                    e.args[0] + '. To avoid this, consider to decrease '
+                                'batch_size or max_len value',
+                    *e.args[1:]
+                )
             raise e
 
         del model
