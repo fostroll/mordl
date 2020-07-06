@@ -144,9 +144,11 @@ class PosTagger(BaseTagger):
             word_next_emb_params=word_next_emb_params,
             with_chars=rnn_emb_dim or cnn_emb_dim, labels=train_labels)
         self._save_dataset(model_name)
-        ds_test = self._ds.clone(with_data=False) if test else None
-        if ds_test:
+        if test:
+            ds_test = self._ds.clone(with_data=False)
             self._transform_dataset(test, labels=test_labels, ds=ds_test)
+        else:
+            ds_test = None
 
         # 4. Create model
         self._model, criterion, optimizer, scheduler = \
