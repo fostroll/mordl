@@ -23,7 +23,7 @@ class BaseModel(nn.Module):
         if device:
             config.append(str(device))
         cfg = getattr(self, CONFIG_ATTR, [])
-        while cfg_ in cfg:
+        for cfg_ in cfg:
             if cfg_:
                 config.append(cfg)
         need_close = False
