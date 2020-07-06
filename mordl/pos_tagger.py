@@ -21,8 +21,8 @@ class PosTagger(BaseTagger):
     def __init__(self):
         super().__init__()
 
-    @staticmethod
-    def _prepare_corpus(corpus, fields='UPOS', tags_to_remove=None):
+    @classmethod
+    def _prepare_corpus(cls, corpus, fields='UPOS', tags_to_remove=None):
         return super()._prepare_corpus(corpus, fields,
                                        tags_to_remove=tags_to_remove)
 
