@@ -43,7 +43,7 @@ class BaseTagger(BaseParser):
             if model_name.endswith('.pt'):
                 model_name = model.name[:-3]
             model_fn, model_config_fn, dataset_fn, dataset_config_fn = \
-                model_name + '.pt'   , model_name + '.config.json' \
+                model_name + '.pt', model_name + '.config.json', \
                 model_name + '_ds.pt', model_name + '_ds.config.json'
         return model_fn, model_config_fn, dataset_fn, dataset_config_fn
 
