@@ -82,7 +82,7 @@ class PosTagger(BaseTagger):
         )
         test, test_labels = self._prepare_corpus(
             self._test_corpus, tags_to_remove=tags_to_remove
-        )
+        ) if self._test_corpus is not None else (None, None)
 
         # 2. Tune embeddings
         def tune_word_emb(emb_type, emb_path, emb_model_device=None,
@@ -93,8 +93,8 @@ class PosTagger(BaseTagger):
                 emb_tune_params = {'model_name': emb_tune_params}
             if isinstance(emb_tune_params, dict):
                 if emb_type == 'bert':
-                    if 'test_data' not in emb_tune_params:
-                        emb_tune_params['test_data'] = test, test_labels
+                    if 'test_data' not in emb_tune_params and test:
+                        emb_tune_params['test_data'] = (test, test_labels)
                     emb_tune_params['save_to'] = emb_path
                     if emb_model_device and 'device' not in emb_tune_params:
                         emb_tune_params['device'] = emb_model_device
@@ -144,8 +144,9 @@ class PosTagger(BaseTagger):
             word_next_emb_params=word_next_emb_params,
             with_chars=rnn_emb_dim or cnn_emb_dim, labels=train_labels)
         self._save_dataset(model_name)
-        ds_test = self._ds.clone(with_data=False)
-        self._transform_dataset(test, labels=test_labels, ds=ds_test)
+        ds_test = self._ds.clone(with_data=False) if test else None
+        if ds_test:
+            self._transform_dataset(test, labels=test_labels, ds=ds_test)
 
         # 4. Create model
         self._model, criterion, optimizer, scheduler = \
@@ -190,7 +191,7 @@ class PosTagger(BaseTagger):
                         if x not in ['best_epoch', 'best_score']}
 
         # 6. Tune model
-        model.load_state_dict(model_fn, log_file=log_file)
+        self._model.load_state_dict(model_fn, log_file=log_file)
         criterion, optimizer, scheduler = model.adjust_model_for_tune()
         res_= junky.train(
             None, self._model, criterion, optimizer, scheduler,
