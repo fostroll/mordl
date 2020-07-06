@@ -6,6 +6,9 @@
 """
 """
 import junky
+from junky.dataset import CharDataset, DummyDataset, FrameDataset, \
+                          LenDataset, TokenDataset
+from mordl import WordEmbeddings
 from mordl.utils import LOG_FILE
 from morra.base_parser import BaseParser
 
@@ -91,31 +94,6 @@ class BaseTagger(BaseParser):
 
         return ds
 
-    @classmethod
-    def _save_dataset(cls, ds, model_name):
-        ds_fn, ds_config_fn = cls._get_filenames(model_name)[2:4]
-        config = {}
-        for name in ds.list():
-            ds_ = ds.get_dataset(name)
-            cfg = getattr(ds_, CONFIG_ATTR, None)
-            if cfg:
-                config[name] = cfg
-        with open(ds_config_fn, 'wt', encoding='utf-8') as f:
-            print(json.dumps(config, sort_keys=True, indent=4), file=f)
-        ds.save(ds_fn, with_data=with_data)
-
-    @classmethod
-    def _load_dataset(cls, model_name, device=None):
-        ds_fn, ds_config_fn = cls._get_filenames(model_name)[2:4]
-        ds = FrameDataset.load(ds_fn)
-        with open(ds_config_file, 'rt', encoding='utf-8') as f:
-            json.loads(f.read())
-        for name, cfg in config.items():
-            WordEmbeddings.apply_config(ds.get_dataset(name), cfg)
-        if device:
-            ds.to(device)
-        return ds
-
     @staticmethod
     def _transform_dataset(ds, sentences, labels=None):
         for name in ds.list():
@@ -126,15 +104,37 @@ class BaseTagger(BaseParser):
             elif labels:
                 ds_.transform(labels)
 
+    def _save_dataset(self, model_name):
+        ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
+        config = {}
+        for name in self._dataset.list():
+            ds_ = ds.get_dataset(name)
+            cfg = getattr(ds_, CONFIG_ATTR, None)
+            if cfg:
+                config[name] = cfg
+        with open(ds_config_fn, 'wt', encoding='utf-8') as f:
+            print(json.dumps(config, sort_keys=True, indent=4), file=f)
+        self._dataset.save(ds_fn, with_data=with_data)
+
+    def _load_dataset(self, model_name, device=None):
+        ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
+        self._dataset = FrameDataset.load(ds_fn)
+        with open(ds_config_file, 'rt', encoding='utf-8') as f:
+            json.loads(f.read())
+        for name, cfg in config.items():
+            WordEmbeddings.apply_config(self._dataset.get_dataset(name), cfg)
+        if device:
+            self._dataset.to(device)
+
     def save(self, model_name, log_file=LOG_FILE):
-        self._save_dataset(self._dataset, model_name)
+        self._save_dataset(model_name)
         model_fn, model_config_fn = cls._get_filenames(model_name)[:2]
         self._model.save_config(model_config_fn, log_file=log_file)
         self._model.save_state_dict(model_fn, log_file=log_file)
 
     def load(self, model_class, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
-        self._dataset = self._load_dataset(model_name, device=dataset_device)
+        self._load_dataset(model_name, device=dataset_device)
         model_fn, model_config_fn = cls._get_filenames(model_name)[:2]
         self._model = model_class.create_from_config(
             model_config_fn, state_dict_f=model_fn, device=device,

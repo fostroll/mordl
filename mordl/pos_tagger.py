@@ -7,9 +7,6 @@
 """
 import json
 import junky
-from junky.dataset import BertDataset, CharDataset, DummyDataset, \
-                          FrameDataset, LenDataset, TokenDataset, WordDataset
-from mordl import WordEmbeddings
 from mordl.base_tagger import BaseTagger
 from mordl.lstm_tagger_model import LstmTaggerModel
 from mordl.utils import CONFIG_ATTR, LOG_FILE
@@ -48,7 +45,7 @@ class PosTagger(BaseTagger):
 
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
-        model_fn, model_config_fn = self._get_filenames(model_name)[:2]
+        model_fn, model_config_fn = self._get_filenames(model_name)[0]
 
         # 1. Prepare corpora
         train, train_labels = self._prepare_corpus(
@@ -117,6 +114,7 @@ class PosTagger(BaseTagger):
             word_transform_kwargs=word_transform_kwargs,
             word_next_emb_params=word_next_emb_params,
             with_chars=rnn_emb_dim or cnn_emb_dim, labels=train_labels)
+        self._save_dataset(model_name)
         ds_test = ds_train.clone(with_data=False)
         self._transform_dataset(ds_test, test, test_labels)
 
@@ -142,13 +140,14 @@ class PosTagger(BaseTagger):
             )
         if device:
             self._model = self._model.to(device)
+        self._model.save_config(model_config_fn, log_file=log_file)
 
         # 5. Train model
         def best_model_backup_method(model, model_score):
             if log_file:
                 print('new maximum score {:.8f}'.format(model_score),
                       file=log_file)
-            self.save(model_name, log_file=log_file)
+            self._model.save_state_dict(model_fn, log_file=log_file)
         res_ = junky.train(
             None, self._model, criterion, optimizer, scheduler,
             best_model_backup_method, datasets=(ds_train, ds_test),
@@ -162,7 +161,7 @@ class PosTagger(BaseTagger):
                         if x not in ['best_epoch', 'best_score']}
 
         # 6. Tune model
-        model.load_state_dict(model_file, log_file=log_file)
+        model.load_state_dict(model_fn, log_file=log_file)
         criterion, optimizer, scheduler = model.adjust_model_for_tune()
         res_= junky.train(
             None, self._model, criterion, optimizer, scheduler,

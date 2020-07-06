@@ -23,7 +23,8 @@ class BaseModel(nn.Module):
             f = open(f, 'wt', encoding='utf-8')
             need_close = True
         try:
-            print(json.dumps(getattr(self, CONFIG_ATTR, None),
+            device = next(model.parameters()).device
+            print(json.dumps(getattr(self, [device] + CONFIG_ATTR, None),
                              sort_keys=True, indent=4), file=f)
         finally:
             if need_close:
@@ -39,8 +40,10 @@ class BaseModel(nn.Module):
             f = open(f, 'rt', encoding='utf-8')
             need_close = True
         try:
-            args, kwargs = json.loads(f.read())
+            device_, args, kwargs = json.loads(f.read())
             model = cls(*args, **kwargs)
+            if not device:
+                device = device_
             if device:
                 model.to(device)
         finally:
