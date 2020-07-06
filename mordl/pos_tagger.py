@@ -56,8 +56,7 @@ class PosTagger(BaseTagger):
             ds.add('x', DummyDataset(data=sentences))
             ds.add('x_lens', LenDataset(data=sentences))
 
-#         if with_chars:
-        if True:  # TODO
+        if with_chars:
             x_ch = CharDataset(sentences,
                                unk_token='<UNK>', pad_token='<PAD>',
                                transform=True)
@@ -216,21 +215,6 @@ class PosTagger(BaseTagger):
         ds_test = ds_train.clone(with_data=False)
         self.transform_dataset(ds_test, test, test_labels)
 
-        ### TODO: remove
-        ds = ds_test.get_dataset('x')
-        ldr = ds.create_loader(shuffle=False)
-        x, lens = next(iter(ldr))
-        print(x.shape, x.dtype, lens, lens.dtype)
-        ds = ds_test.get_dataset('x_ch')
-        ldr = ds.create_loader(shuffle=False)
-        x, lens, token_lens = next(iter(ldr))
-        print(x.shape, x.dtype, lens, lens.dtype, token_lens[0], token_lens[0].dtype)
-        ds = ds_test.get_dataset('y')
-        ldr = ds.create_loader(shuffle=False)
-        y, lens = next(iter(ldr))
-        print(y[0], y.shape, y[0].dtype, lens, lens.dtype)
-        ldr = ds_train.create_loader(shuffle=True)
-        ###
         # 4. Create model
         model, criterion, optimizer, scheduler = \
             LstmTaggerModel.create_model_for_train(
