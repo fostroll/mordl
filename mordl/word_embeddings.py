@@ -643,7 +643,7 @@ class WordEmbeddings:
         return res
 
     @staticmethod
-    def save_dataset(ds, f, config_f=True, with_data=True):
+    def save_dataset(ds, f, config_f=True):
         if config_f is True and isinstance(f, str):
             pref, suff = os.path.splitext(f)
             config_f = pref + '.config.json'
@@ -659,7 +659,7 @@ class WordEmbeddings:
             finally:
                 if need_close:
                     config_f.close()
-        ds.save(f, with_data=with_data)
+        ds.save(f, with_data=False)
 
     @classmethod
     def load_dataset(cls, f, config_f=True):

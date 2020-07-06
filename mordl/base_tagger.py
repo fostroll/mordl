@@ -118,7 +118,7 @@ class BaseTagger(BaseParser):
                 config[name] = cfg
         with open(ds_config_fn, 'wt', encoding='utf-8') as f:
             print(json.dumps(config, sort_keys=True, indent=4), file=f)
-        self._ds.save(ds_fn, with_data=with_data)
+        self._ds.save(ds_fn, with_data=False)
 
     def _load_dataset(self, model_name, device=None):
         ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
