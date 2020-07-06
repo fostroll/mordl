@@ -5,6 +5,7 @@
 # License: BSD, see LICENSE for details
 """
 """
+import json
 import junky
 from junky.dataset import CharDataset, DummyDataset, FrameDataset, \
                           LenDataset, TokenDataset

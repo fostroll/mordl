@@ -5,7 +5,6 @@
 # License: BSD, see LICENSE for details
 """
 """
-import json
 import junky
 from mordl import WordEmbeddings
 from mordl.base_tagger import BaseTagger
