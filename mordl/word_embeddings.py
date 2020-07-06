@@ -451,7 +451,7 @@ class WordEmbeddings:
             if e.args and e.args[0].startswith('CUDA out of memory'):
                 e.args[0] += '. To avoid this, consider to decrease ' \
                              'batch_size or max_len value'
-            throw e
+            raise e
 
         del model
 
