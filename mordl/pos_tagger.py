@@ -29,91 +29,6 @@ class PosTagger(BaseTagger):
     def evaluate(self):
         pass
 
-    @staticmethod
-    def prepare_corpus(corpus, tags_to_remove=None):
-        return junky.extract_conllu_fields(
-            junky.conllu_remove(corpus, remove=tags_to_remove),
-            fields=['UPOS']
-        )
-
-    @staticmethod
-    def create_dataset(sentences, word_emb_type=None, word_emb_path=None,
-                       word_emb_model_device=None, word_transform_kwargs=None,
-                       word_next_emb_params=None, with_chars=False,
-                       labels=None):
-
-        ds = FrameDataset()
-
-        if word_emb_type is not None:
-            x = WordEmbeddings.create_dataset(
-                sentences, emb_type=word_emb_type, emb_path=word_emb_path,
-                emb_model_device=word_emb_model_device,
-                transform_kwargs=word_transform_kwargs,
-                next_emb_params=word_next_emb_params
-            )
-            ds.add('x', x)
-        else:
-            ds.add('x', DummyDataset(data=sentences))
-            ds.add('x_lens', LenDataset(data=sentences))
-
-        if with_chars:
-            x_ch = CharDataset(sentences,
-                               unk_token='<UNK>', pad_token='<PAD>',
-                               transform=True)
-            ds.add('x_ch', x_ch, with_lens=False)
-        else:
-            ds.add('x_ch', DummyDataset(data=sentences))
-            ds.add('x_ch_lens', DummyDataset(data=sentences))
-
-        if labels:
-            y = TokenDataset(labels, pad_token='<PAD>', transform=True,
-                             keep_empty=False)
-            ds.add('y', y, with_lens=False)
-
-        return ds
-
-    @staticmethod
-    def save_dataset(ds, ds_name, with_data=True):
-        ds_file = ds_name + '.pt'
-        ds_config_file = ds_name + '.config.json'
-        config = {}
-        for name in ds.list():
-            ds_ = ds.get_dataset(name)
-            cfg = getattr(ds_, CONFIG_ATTR, None)
-            if cfg:
-                config[name] = cfg
-        ds_config_file = open(ds_config_file, 'wt', encoding='utf-8')
-        try:
-            print(json.dumps(config, sort_keys=True, indent=4),
-                  file=ds_config_file)
-        finally:
-            ds_config_file.close()
-        ds.save(ds_file, with_data=with_data)
-
-    @classmethod
-    def load_dataset(cls, ds_name):
-        ds_file = ds_name + '.pt'
-        ds_config_file = ds_name + '.config.json'
-        ds = FrameDataset.load(ds_file)
-        ds_config_file = open(ds_config_file, 'wt', encoding='utf-8')
-        try:
-            json.loads(ds_config_file.read())
-        finally:
-            ds_config_file.close()
-        for name, cfg in config.items():
-            WordEmbeddings.apply_config(ds.get_dataset(name), cfg)
-        return ds
-
-    @staticmethod
-    def transform_dataset(ds, sentences, labels=None):
-        for name in ds.list():
-            ds_ = ds.get_dataset(name)
-            if name != 'y':
-                if not WordEmbeddings.transform_dataset(ds_, sentences):
-                    ds_.transform(sentences)
-            elif labels:
-                ds_.transform(labels)
-
     def train(self, model_name, device=None,
               epochs=sys.maxsize, min_epochs=0, bad_epochs=5,
               batch_size=32, control_metric='accuracy', max_grad_norm=None,
@@ -129,26 +44,13 @@ class PosTagger(BaseTagger):
 
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
-        model_file = model_name + '.pt'
-        model_config_file = model_name + '.config.json'
-        dataset_name = model_name + '_ds'
-
-        def best_model_backup_method(model, model_score):
-            if log_file:
-                print('{}: new maximum score {:.8f}'
-                          .format(iter_name, model_score),
-                      end='')
-            model.save_config(model_config_file, log_file=log_file)
-            if model_config_file:
-                model.save_state_dict(model_file, log_file=log_file)
-            else:
-                model.save(model_file, log_file=log_file)
+        model_fn, model_config_fn = self._get_filenames(model_name)[:2]
 
         # 1. Prepare corpora
-        train, train_labels = self.prepare_corpus(
+        train, train_labels = self._prepare_corpus(
             self._train_corpus, tags_to_remove=tags_to_remove
         )
-        test, test_labels = self.prepare_corpus(
+        test, test_labels = self._prepare_corpus(
             self._test_corpus, tags_to_remove=tags_to_remove
         )
 
@@ -205,28 +107,27 @@ class PosTagger(BaseTagger):
             junky.enforce_reproducibility(seed=seed)
 
         # 3. Create datasets
-        ds_train = self.create_dataset(
+        self._dataset = self._create_dataset(
             train, word_emb_type=word_emb_type, word_emb_path=word_emb_path,
             word_emb_model_device=word_emb_model_device,
             word_transform_kwargs=word_transform_kwargs,
             word_next_emb_params=word_next_emb_params,
             with_chars=rnn_emb_dim or cnn_emb_dim, labels=train_labels)
-        self.save_dataset(ds_train, dataset_name, with_data=False)
         ds_test = ds_train.clone(with_data=False)
-        self.transform_dataset(ds_test, test, test_labels)
+        self._transform_dataset(ds_test, test, test_labels)
 
         # 4. Create model
-        model, criterion, optimizer, scheduler = \
+        self._model, criterion, optimizer, scheduler = \
             LstmTaggerModel.create_model_for_train(
-                len(ds_train.get_dataset('y').transform_dict),
-                tags_pad_idx=ds_train.get_dataset('y').pad,
-                vec_emb_dim=ds_train.get_dataset('x').vec_size
+                len(self._dataset.get_dataset('y').transform_dict),
+                tags_pad_idx=self._dataset.get_dataset('y').pad,
+                vec_emb_dim=self._dataset.get_dataset('x').vec_size
                                 if word_emb_type is not None else
                             None,
-                alphabet_size=len(ds_train.get_dataset('x_ch').transform_dict)
+                alphabet_size=len(self._dataset.get_dataset('x_ch').transform_dict)
                                   if rnn_emb_dim or cnn_emb_dim else
                               0,
-                char_pad_idx=ds_train.get_dataset('x_ch').pad
+                char_pad_idx=self._dataset.get_dataset('x_ch').pad
                                  if rnn_emb_dim or cnn_emb_dim else
                              0,
                 rnn_emb_dim=rnn_emb_dim,
@@ -236,18 +137,17 @@ class PosTagger(BaseTagger):
                 bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4
             )
         if device:
-            model.to(device)
-        model.save_config(model_config_file, log_file=log_file)
+            self._model = self._model.to(device)
 
         # 5. Train model
         def best_model_backup_method(model, model_score):
             if log_file:
                 print('new maximum score {:.8f}'.format(model_score),
                       file=log_file)
-            model.save_state_dict(model_file)
+            self.save(model_name, log_file=log_file)
         res_ = junky.train(
-            device, None, model, criterion, optimizer, scheduler,
-            best_model_backup_method, '', datasets=(ds_train, ds_test),
+            None, self._model, criterion, optimizer, scheduler,
+            best_model_backup_method, datasets=(ds_train, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
             batch_size=batch_size, control_metric='accuracy',
             max_grad_norm=max_grad_norm,
@@ -261,11 +161,8 @@ class PosTagger(BaseTagger):
         model.load_state_dict(model_file, log_file=log_file)
         criterion, optimizer, scheduler = model.adjust_model_for_tune()
         res_= junky.train(
-            device, None, model, criterion, optimizer, scheduler,
-            lambda x, y: x.save_state_dict(model_file)
-                             if model_config_file else
-                         x.save(model_file),
-            '', datasets=(ds_train, ds_test),
+            None, self._model, criterion, optimizer, scheduler,
+            best_model_backup_method, datasets=(ds_train, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
             batch_size=batch_size, control_metric='accuracy',
             max_grad_norm=max_grad_norm, best_score=best_score,
