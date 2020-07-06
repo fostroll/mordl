@@ -279,165 +279,179 @@ class WordEmbeddings:
 
         junky.clear_tqdm()
 
-        ## Store the average loss after each epoch so we can plot them.
+        # Store the average loss after each epoch so we can plot them
         loss_values, validation_loss_values = [], []
 
-        for epoch in range(1, epochs + 1):
-            # ========================================
-            #               Training
-            # ========================================
-            # Perform one full pass over the training set.
+        try:
+            for epoch in range(1, epochs + 1):
+                # ========================================
+                #               Training
+                # ========================================
+                # Perform one full pass over the training set.
 
-            # Put the model into training mode.
-            model.train()
-            # Reset the total loss for this epoch.
-            total_loss = 0
+                # Put the model into training mode.
+                model.train()
+                # Reset the total loss for this epoch.
+                total_loss = 0
 
-            progress_bar = tqdm(total=len(train_loader.dataset),
-                                desc='Epoch {}'.format(epoch),
-                                file=log_file) \
-                               if log_file else \
-                           None
+                progress_bar = tqdm(total=len(train_loader.dataset),
+                                    desc='Epoch {}'.format(epoch),
+                                    file=log_file) \
+                                   if log_file else \
+                               None
 
-            # Training loop
-            for step, batch in enumerate(train_loader):
-                if device:
-                    # move batch to the specified device
-                    batch = tuple(t.to(device) for t in batch)
-                b_input_ids, b_input_mask, b_labels, lens = batch
-                # Always clear any previously calculated gradients
-                #before performing a backward pass.
-                model.zero_grad()
-                # forward pass
-                # This will return the loss (rather than the model output)
-                # because we have provided the `labels`.
-                outputs = model(
-                    b_input_ids, token_type_ids=None,
-                    attention_mask=b_input_mask, labels=b_labels
-                )
-                # get the loss
-                loss = outputs[0]
-                # Perform a backward pass to calculate the gradients.
-                loss.backward()
-                # track train loss
-                total_loss += loss.item()
-                # Clip the norm of the gradient
-                # This is to help prevent the "exploding gradients" problem.
-                torch.nn.utils.clip_grad_norm_(parameters=model.parameters(),
-                                               max_norm=max_grad_norm)
-                # update parameters
-                optimizer.step()
-                # Update the learning rate.
-                scheduler.step()
-
-                progress_bar.set_postfix(train_loss = loss.item())
-                progress_bar.update(b_input_ids.shape[0])
-
-            progress_bar.close()
-
-            # Calculate the average loss over the training data.
-            avg_train_loss = total_loss / len(train_loader)
-            if log_file:
-                print('Average train loss: {}'.format(avg_train_loss),
-                      file=log_file)
-
-            # Store the loss value for plotting the learning curve.
-            loss_values.append(avg_train_loss)
-
-            # ========================================
-            #               Validation
-            # ========================================
-            # After the completion of each training epoch, measure
-            # our performance on our validation set.
-
-            # Put the model into evaluation mode
-            if test_data:
-                model.eval()
-                # Reset the validation loss for this epoch.
-                eval_loss, eval_accuracy = 0, 0
-                nb_eval_steps, nb_eval_examples = 0, 0
-                gold_labels, pred_labels = [], []
-                for batch in test_loader:
+                # Training loop
+                for step, batch in enumerate(train_loader):
                     if device:
+                        # move batch to the specified device
                         batch = tuple(t.to(device) for t in batch)
                     b_input_ids, b_input_mask, b_labels, lens = batch
+                    # Always clear any previously calculated gradients
+                    #before performing a backward pass.
+                    model.zero_grad()
+                    # forward pass
+                    # This will return the loss (rather than the model output)
+                    # because we have provided the `labels`.
+                    outputs = model(
+                        b_input_ids, token_type_ids=None,
+                        attention_mask=b_input_mask, labels=b_labels
+                    )
+                    # get the loss
+                    loss = outputs[0]
+                    # Perform a backward pass to calculate the gradients
+                    loss.backward()
+                    # track train loss
+                    total_loss += loss.item()
+                    # Clip the norm of the gradient. It prevents the
+                    # "exploding gradients" problem
+                    torch.nn.utils.clip_grad_norm_(
+                        parameters=model.parameters(),
+                        max_norm=max_grad_norm
+                    )
+                    # update parameters
+                    optimizer.step()
+                    # Update the learning rate
+                    scheduler.step()
 
-                    # Telling the model not to compute or store gradients,
-                    # saving memory and speeding up validation
-                    with torch.no_grad():
-                        # Forward pass, calculate logit predictions. This
-                        # will return the logits rather than the loss because
-                        # we have not provided labels.
-                        outputs = model(
-                            b_input_ids, token_type_ids=None,
-                            attention_mask=b_input_mask, labels=b_labels
+                    progress_bar.set_postfix(train_loss = loss.item())
+                    progress_bar.update(b_input_ids.shape[0])
+
+                progress_bar.close()
+
+                # Calculate the average loss over the training data
+                avg_train_loss = total_loss / len(train_loader)
+                if log_file:
+                    print('Average train loss: {}'.format(avg_train_loss),
+                          file=log_file)
+
+                # Store the loss value for plotting the learning curve
+                loss_values.append(avg_train_loss)
+
+                # ========================================
+                #               Validation
+                # ========================================
+                # After the completion of each training epoch, measure
+                # our performance on our validation set
+
+                # Put the model into evaluation mode
+                if test_data:
+                    model.eval()
+                    # Reset the validation loss for this epoch
+                    eval_loss, eval_accuracy = 0, 0
+                    nb_eval_steps, nb_eval_examples = 0, 0
+                    gold_labels, pred_labels = [], []
+                    for batch in test_loader:
+                        if device:
+                            batch = tuple(t.to(device) for t in batch)
+                        b_input_ids, b_input_mask, b_labels, lens = batch
+
+                        # Telling the model not to compute or store gradients,
+                        # saving memory and speeding up validation
+                        with torch.no_grad():
+                            # Forward pass, calculate logit predictions.
+                            # This # will return the logits rather than the
+                            # loss because we have not provided labels
+                            outputs = model(
+                                b_input_ids, token_type_ids=None,
+                                attention_mask=b_input_mask, labels=b_labels
+                            )
+                        # Move logits and labels to CPU
+                        logits = outputs[1].detach().cpu().numpy()
+                        label_ids = b_labels.to(junky.CPU).numpy()
+
+                        # Calculate the accuracy for this batch of test
+                        # sentences
+                        eval_loss += outputs[0].mean().item()
+                        pred_labels.extend(
+                            [list(x)[1:y + 1]
+                                 for x, y in zip(np.argmax(logits, axis=2),
+                                                           lens)]
                         )
-                    # Move logits and labels to CPU
-                    logits = outputs[1].detach().cpu().numpy()
-                    label_ids = b_labels.to(junky.CPU).numpy()
+                        gold_labels.extend(
+                            [x[1:y + 1].tolist() for x, y in zip(label_ids,
+                                                                 lens)]
+                        )
 
-                    # Calculate the accuracy for this batch of test sentences.
-                    eval_loss += outputs[0].mean().item()
-                    pred_labels.extend(
-                        [list(x)[1:y + 1]
-                             for x, y in zip(np.argmax(logits, axis=2), lens)]
-                    )
-                    gold_labels.extend(
-                        [x[1:y + 1].tolist() for x, y in zip(label_ids, lens)]
-                    )
+                        nb_eval_examples += b_input_ids.size(0)
+                        nb_eval_steps += 1
 
-                    nb_eval_examples += b_input_ids.size(0)
-                    nb_eval_steps += 1
+                    eval_loss = eval_loss / nb_eval_steps
+                    validation_loss_values.append(eval_loss)
 
-                eval_loss = eval_loss / nb_eval_steps
-                validation_loss_values.append(eval_loss)
+                    gold_labels = [x for x in gold_labels for x in x]
+                    pred_labels = [x for x in pred_labels for x in x]
 
-                gold_labels = [x for x in gold_labels for x in x]
-                pred_labels = [x for x in pred_labels for x in x]
+                    accuracy = accuracy_score(gold_labels, pred_labels)
+                    precision = precision_score(gold_labels, pred_labels,
+                                                average='macro')
+                    recall = recall_score(gold_labels, pred_labels,
+                                          average='macro')
+                    f1 = f1_score(gold_labels, pred_labels, average='macro')
 
-                accuracy = accuracy_score(gold_labels, pred_labels)
-                precision = precision_score(gold_labels, pred_labels,
-                                            average='macro')
-                recall = recall_score(gold_labels, pred_labels,
-                                      average='macro')
-                f1 = f1_score(gold_labels, pred_labels, average='macro')
+                    accuracies.append(accuracy)
+                    precisions.append(precision)
+                    recalls.append(recall)
+                    f1s.append(f1)
 
-                accuracies.append(accuracy)
-                precisions.append(precision)
-                recalls.append(recall)
-                f1s.append(f1)
+                    if log_file:
+                        print('Dev: accuracy = {:.8f}'.format(accuracy),
+                              file=log_file)
+                        print('Dev: precision = {:.8f}'.format(precision),
+                              file=log_file)
+                        print('Dev: recall = {:.8f}'.format(recall),
+                              file=log_file)
+                        print('Dev: f1_score = {:.8f}'.format(f1),
+                              file=log_file)
+                        print('NB: Scores may be high because of tags'
+                              'stretching',
+                              file=log_file)
+
+                    if accuracy > best_accuracy:
+                        best_accuracy = accuracy
+                        best_test_golds, best_test_preds = \
+                            gold_labels[:], pred_labels[:]
+
+                        save_finetuned_bert(model, output_dir=save_to)
+                        bad_epochs = 0
+
+                    else:
+                        bad_epochs += 1
+                        if log_file:
+                            print('BAD EPOCHS:', bad_epochs, file=log_file)
+                        if bad_epochs >= _MAX_BAD_EPOCHS:
+                            if log_file:
+                                print('Maximum bad epochs exceeded. '
+                                      'Process was stopped', file=log_file)
+                            break
 
                 if log_file:
-                    print('Dev: accuracy = {:.8f}'.format(accuracy),
-                          file=log_file)
-                    print('Dev: precision = {:.8f}'.format(precision),
-                          file=log_file)
-                    print('Dev: recall = {:.8f}'.format(recall),
-                          file=log_file)
-                    print('Dev: f1_score = {:.8f}'.format(f1),
-                          file=log_file)
-                    print('NB: Scores may be high because of tags stretching',
-                          file=log_file)
+                    log_file.flush()
 
-                if accuracy > best_accuracy:
-                    best_accuracy = accuracy
-                    best_test_golds, best_test_preds = gold_labels[:], pred_labels[:]
-
-                    save_finetuned_bert(model, output_dir=save_to)
-                    bad_epochs = 0
-
-                else:
-                    bad_epochs += 1
-                    if log_file:
-                        print('BAD EPOCHS:', bad_epochs, file=log_file)
-                    if bad_epochs >= _MAX_BAD_EPOCHS:
-                        if log_file:
-                            print('Maximum bad epochs exceeded. '
-                                  'Process was stopped', file=log_file)
-                        break
-
-            if log_file:
-                log_file.flush()
+        except RuntimeError e:
+            if e.args and e.args[0].startswith('CUDA out of memory'):
+                e.args[0] += '. To avoid this, consider to decrease ' \
+                             'batch_size or max_len value'
+            throw e
 
         del model
 
