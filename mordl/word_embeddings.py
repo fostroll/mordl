@@ -569,7 +569,7 @@ class WordEmbeddings:
 
             config.append(junky.kwargs_nonempty(
                 emb_type=emb_type, emb_path=emb_path,
-                emb_model_device=emb_model_device,
+                emb_model_device=str(emb_model_device),
                 transform_kwargs=transform_kwargs
             ))
 

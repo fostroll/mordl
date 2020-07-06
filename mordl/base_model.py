@@ -18,14 +18,20 @@ class BaseModel(nn.Module):
         setattr(self, CONFIG_ATTR, (args, kwargs))
 
     def save_config(self, f, log_file=LOG_FILE):
+        config = []
+        device = next(model.parameters()).device
+        if device:
+            config.append(str(device))
+        cfg = getattr(self, CONFIG_ATTR, [])
+        while cfg_ in cfg:
+            if cfg_:
+                config.append(cfg)
         need_close = False
         if isinstance(f, str):
             f = open(f, 'wt', encoding='utf-8')
             need_close = True
         try:
-            device = next(model.parameters()).device
-            print(json.dumps(getattr(self, [device] + CONFIG_ATTR, None),
-                             sort_keys=True, indent=4), file=f)
+            print(json.dumps(config, sort_keys=True, indent=4), file=f)
         finally:
             if need_close:
                 f.close()
@@ -40,15 +46,21 @@ class BaseModel(nn.Module):
             f = open(f, 'rt', encoding='utf-8')
             need_close = True
         try:
-            device_, args, kwargs = json.loads(f.read())
-            model = cls(*args, **kwargs)
-            if not device:
-                device = device_
-            if device:
-                model.to(device)
+            config = json.loads(f.read())
         finally:
             if need_close:
                 f.close()
+        args, kwargs = [], {}
+        while cfg in config:
+            if isinstance(cfg, str) and not device:
+                device = cfg
+            elif isinstance(cfg, list) and not args:
+                args = cfg
+            elif isinstance(cfg, dict) and not kwargs:
+                kwargs = cfg
+        model = cls(*args, **kwargs)
+        if device:
+            model.to(device)
         if log_file:
             print('Model created', file=log_file)
         if state_dict_f:

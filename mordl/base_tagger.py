@@ -35,26 +35,29 @@ class BaseTagger(BaseParser):
         super().__init__()
         delattr(self, '_cdict')
         self._model = None
-        self._dataset = None
+        self._ds = None
+
+    def load_train_corpus(self, corpus, append=False, test=None, seed=None):
+        super().load_train_corpus(corpus, append=append, parse=False,
+                                  test=test, seed=seed)
 
     @staticmethod
     def _get_filenames(model_name):
         if isinstance(model_name, tuple):
-            model_fn, model_config_fn, dataset_fn, dataset_config_fn = \
-                model_name
+            model_fn, model_config_fn, ds_fn, ds_config_fn = model_name
         else:
             if model_name.endswith('.pt'):
                 model_name = model.name[:-3]
-            model_fn, model_config_fn, dataset_fn, dataset_config_fn = \
+            model_fn, model_config_fn, ds_fn, ds_config_fn = \
                 model_name + '.pt', model_name + '.config.json', \
                 model_name + '_ds.pt', model_name + '_ds.config.json'
-        return model_fn, model_config_fn, dataset_fn, dataset_config_fn
+        return model_fn, model_config_fn, ds_fn, ds_config_fn
 
     @staticmethod
-    def _prepare_corpus(corpus, tags_to_remove=None):
+    def _prepare_corpus(corpus, fields, tags_to_remove=None):
         return junky.extract_conllu_fields(
             junky.conllu_remove(corpus, remove=tags_to_remove),
-            fields=['UPOS']
+            fields=fields
         )
 
     @staticmethod
@@ -63,7 +66,6 @@ class BaseTagger(BaseParser):
         word_emb_model_device=None, word_transform_kwargs=None,
         word_next_emb_params=None, with_chars=False, labels=None
     ):
-
         ds = FrameDataset()
 
         if word_emb_type is not None:
@@ -94,8 +96,9 @@ class BaseTagger(BaseParser):
 
         return ds
 
-    @staticmethod
-    def _transform_dataset(ds, sentences, labels=None):
+    def _transform_dataset(self, sentences, labels=None, ds=None):
+        if not ds:
+            ds = self._ds
         for name in ds.list():
             ds_ = ds.get_dataset(name)
             if name != 'y':
@@ -107,26 +110,28 @@ class BaseTagger(BaseParser):
     def _save_dataset(self, model_name):
         ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
         config = {}
-        for name in self._dataset.list():
-            ds_ = ds.get_dataset(name)
+        for name in self._ds.list():
+            ds_ = self._ds.get_dataset(name)
             cfg = getattr(ds_, CONFIG_ATTR, None)
             if cfg:
                 config[name] = cfg
         with open(ds_config_fn, 'wt', encoding='utf-8') as f:
             print(json.dumps(config, sort_keys=True, indent=4), file=f)
-        self._dataset.save(ds_fn, with_data=with_data)
+        self._ds.save(ds_fn, with_data=with_data)
 
     def _load_dataset(self, model_name, device=None):
         ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
-        self._dataset = FrameDataset.load(ds_fn)
+        self._ds = FrameDataset.load(ds_fn)
         with open(ds_config_file, 'rt', encoding='utf-8') as f:
             json.loads(f.read())
         for name, cfg in config.items():
-            WordEmbeddings.apply_config(self._dataset.get_dataset(name), cfg)
+            WordEmbeddings.apply_config(self._ds.get_dataset(name), cfg)
         if device:
-            self._dataset.to(device)
+            self._ds.to(device)
 
     def save(self, model_name, log_file=LOG_FILE):
+        assert self._ds, "ERROR: the tagger doesn't have a dataset to save"
+        assert self._model, "ERROR: the tagger doesn't have a model to save"
         self._save_dataset(model_name)
         model_fn, model_config_fn = cls._get_filenames(model_name)[:2]
         self._model.save_config(model_config_fn, log_file=log_file)
@@ -140,7 +145,3 @@ class BaseTagger(BaseParser):
             model_config_fn, state_dict_f=model_fn, device=device,
             log_file=log_file
         )
-
-    def load_train_corpus(self, corpus, append=False, test=None, seed=None):
-        super().load_train_corpus(corpus, append=append, parse=False,
-                                  test=test, seed=seed)

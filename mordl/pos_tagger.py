@@ -21,12 +21,41 @@ class PosTagger(BaseTagger):
     def __init__(self):
         super().__init__()
 
+    @staticmethod
+    def _prepare_corpus(corpus, fields='UPOS', tags_to_remove=None):
+        return super()._prepare_corpus(corpus, fields,
+                                       tags_to_remove=tags_to_remove)
+
     def load(self, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
-         super().load(LstmTaggerModel, model_name, device, dataset_device)
+         super().load(LstmTaggerModel, model_name, device=device,
+                      dataset_device=dataset_device)
 
-    def predict(self):
-        pass
+    def predict(self, corpus=None, batch_size=32, split=None):
+        assert self._ds, "ERROR: the tagger doesn't have a dataset. " \
+                         'Call the train() method first'
+        assert self._model, "ERROR: the tagger doesn't have a model. " \
+                            'Call the train() method first'
+        if corpus is None:
+            corpus = self._test_corpus
+        if not split:
+            split = len(corpus)
+        ds_y = self._ds.get_dataset('y')
+        for pos in range(0, len_corpus, split):
+            sents = corpus[pos:pos + split]
+            sentences = self._prepare_corpus(sents, fields=None)
+            self._transform_dataset(sentences)
+            loader = self._ds.create_loader(batch_size=batch_size,
+                                            shuffle=False)
+            preds = []
+            for batch in loader:
+                batch = to_device(batch)
+                with torch.no_grad():
+                    pred = self._model(*batch)
+                _, pred_indices = pred.max(2)
+                preds.extend(pred_indices.cpu().numpy().tolist())
+            for pred in ds_y.reconstruct(preds):
+                yield pred
 
     def evaluate(self):
         pass
@@ -109,7 +138,7 @@ class PosTagger(BaseTagger):
             junky.enforce_reproducibility(seed=seed)
 
         # 3. Create datasets
-        self._dataset = self._create_dataset(
+        self._ds = self._create_dataset(
             train, word_emb_type=word_emb_type, word_emb_path=word_emb_path,
             word_emb_model_device=word_emb_model_device,
             word_transform_kwargs=word_transform_kwargs,
@@ -117,20 +146,20 @@ class PosTagger(BaseTagger):
             with_chars=rnn_emb_dim or cnn_emb_dim, labels=train_labels)
         self._save_dataset(model_name)
         ds_test = ds_train.clone(with_data=False)
-        self._transform_dataset(ds_test, test, test_labels)
+        self._transform_dataset(test, labels=test_labels, ds=ds_test)
 
         # 4. Create model
         self._model, criterion, optimizer, scheduler = \
             LstmTaggerModel.create_model_for_train(
-                len(self._dataset.get_dataset('y').transform_dict),
-                tags_pad_idx=self._dataset.get_dataset('y').pad,
-                vec_emb_dim=self._dataset.get_dataset('x').vec_size
+                len(self._ds.get_dataset('y').transform_dict),
+                tags_pad_idx=self._ds.get_dataset('y').pad,
+                vec_emb_dim=self._ds.get_dataset('x').vec_size
                                 if word_emb_type is not None else
                             None,
-                alphabet_size=len(self._dataset.get_dataset('x_ch').transform_dict)
+                alphabet_size=len(self._ds.get_dataset('x_ch').transform_dict)
                                   if rnn_emb_dim or cnn_emb_dim else
                               0,
-                char_pad_idx=self._dataset.get_dataset('x_ch').pad
+                char_pad_idx=self._ds.get_dataset('x_ch').pad
                                  if rnn_emb_dim or cnn_emb_dim else
                              0,
                 rnn_emb_dim=rnn_emb_dim,
@@ -151,7 +180,7 @@ class PosTagger(BaseTagger):
             self._model.save_state_dict(model_fn, log_file=log_file)
         res_ = junky.train(
             None, self._model, criterion, optimizer, scheduler,
-            best_model_backup_method, datasets=(ds_train, ds_test),
+            best_model_backup_method, datasets=(self._ds, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
             batch_size=batch_size, control_metric='accuracy',
             max_grad_norm=max_grad_norm,
@@ -166,7 +195,7 @@ class PosTagger(BaseTagger):
         criterion, optimizer, scheduler = model.adjust_model_for_tune()
         res_= junky.train(
             None, self._model, criterion, optimizer, scheduler,
-            best_model_backup_method, datasets=(ds_train, ds_test),
+            best_model_backup_method, datasets=(self._ds, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
             batch_size=batch_size, control_metric='accuracy',
             max_grad_norm=max_grad_norm, best_score=best_score,
