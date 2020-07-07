@@ -9,7 +9,7 @@ import itertools
 import junky
 from mordl import WordEmbeddings
 from mordl.base_tagger import BaseTagger
-from mordl.lstm_tagger_model import LstmTaggerModel
+from mordl.upos_tagger_model import UposTaggerModel
 from mordl.utils import LOG_FILE
 import os
 import sys
@@ -28,7 +28,7 @@ class UposTagger(BaseTagger):
 
     def load(self, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
-         super().load(LstmTaggerModel, model_name, device=device,
+         super().load(UposTaggerModel, model_name, device=device,
                       dataset_device=dataset_device)
 
     def predict(self, corpus=None, batch_size=32, split=None):
@@ -143,6 +143,9 @@ class UposTagger(BaseTagger):
 
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
+        if log_file:
+            print('=== UPOS TAGGER TRAINING PIPELINE ===')
+
         model_fn, model_config_fn = self._get_filenames(model_name)[:2]
 
         # 1. Prepare corpora
@@ -164,13 +167,16 @@ class UposTagger(BaseTagger):
                 if emb_type == 'bert':
                     if 'test_data' not in emb_tune_params and test:
                         emb_tune_params['test_data'] = (test, test_labels)
-                    emb_tune_params['save_to'] = emb_path
+                    emb_tune_params['save_to'] = emb_path if emb_path else \
+                                                 'upos_'
                     if emb_model_device and 'device' not in emb_tune_params:
                         emb_tune_params['device'] = emb_model_device
                     if 'seed' not in emb_tune_params:
                         emb_tune_params['seed'] = seed
                     if 'log_file' not in emb_tune_params:
                         emb_tune_params['log_file'] = log_file
+                    if log_file:
+                        print(file=log_file)
                     emb_path = WordEmbeddings.bert_tune(
                         train, train_labels, **emb_tune_params
                     )['model_name']
@@ -207,7 +213,7 @@ class UposTagger(BaseTagger):
 
         # 3. Create datasets
         if log_file:
-            print('CREATE DATASETS', file=log_file)
+            print('\nCREATE DATASETS', file=log_file)
         self._ds = self._create_dataset(
             train, word_emb_type=word_emb_type, word_emb_path=word_emb_path,
             word_emb_model_device=word_emb_model_device,
@@ -223,9 +229,9 @@ class UposTagger(BaseTagger):
 
         # 4. Create model
         if log_file:
-            print('CREATE A MODEL', file=log_file)
+            print('\nCREATE A MODEL', file=log_file)
         self._model, criterion, optimizer, scheduler = \
-            LstmTaggerModel.create_model_for_train(
+            UposTaggerModel.create_model_for_train(
                 len(self._ds.get_dataset('y').transform_dict),
                 tags_pad_idx=self._ds.get_dataset('y').pad,
                 vec_emb_dim=self._ds.get_dataset('x').vec_size
@@ -249,7 +255,7 @@ class UposTagger(BaseTagger):
 
         # 5. Train model
         if log_file:
-            print('TRAIN THE MODEL', file=log_file)
+            print('\nTRAIN THE MODEL', file=log_file)
         def best_model_backup_method(model, model_score):
             if log_file:
                 print('new maximum score {:.8f}'.format(model_score),
@@ -269,7 +275,7 @@ class UposTagger(BaseTagger):
 
         # 6. Tune model
         if log_file:
-            print('TUNE THE MODEL', file=log_file)
+            print('\nTUNE THE MODEL', file=log_file)
         self._model.load_state_dict(model_fn, log_file=log_file)
         criterion, optimizer, scheduler = self._model.adjust_model_for_tune()
         res_= junky.train(
@@ -281,8 +287,12 @@ class UposTagger(BaseTagger):
             with_progress=log_file is not None, log_file=log_file
         )
         if res_['best_epoch'] is not None:
-            res.update({x + best_epoch: y
-                            for x, y in res_.items()
-                                if x not in ['best_epoch', 'best_score']})
+            for key, value in res_items():
+                if key == 'best_epoch':
+                    res[key] += value
+                elif key == 'best_score':
+                    res[key] = value
+                else:
+                    res[key][:best_epoch] = value
 
         return res

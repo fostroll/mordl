@@ -41,9 +41,13 @@ class WordEmbeddings:
                   device=None, max_len=512, epochs=4, batch_size=8, seed=None,
                   log_file=LOG_FILE):
 
+        prefix = ''
+        if save_to and save_to.endswith('_'):
+            prefix, save_to = save_to, prefix
         if not save_to:
-            save_to = '{}_len{}_ep{}_bat{}' \
-                          .format(model_name, max_len, epochs, batch_size)
+            save_to = '{}{}_len{}_ep{}_bat{}'
+                          .format(prefix, model_name,
+                                  max_len, epochs, batch_size)
             if seed is not None:
                 save_to += '_seed{}'.format(seed)
 
