@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# MorDL project: LSTM tagger model
+# MorDL project: UPOS tagger model
 #
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
@@ -24,15 +24,9 @@ class UposTaggerModel(BaseModel):
                  bn3=True, do3=.4):
         if isinstance(cnn_kernels, Iterable):
             cnn_kernels = list(cnn_kernels)
-        super().__init__(
-            tags_count, tags_pad_idx=tags_pad_idx, vec_emb_dim=vec_emb_dim,
-            alphabet_size=alphabet_size, char_pad_idx=char_pad_idx,
-            rnn_emb_dim=rnn_emb_dim, cnn_emb_dim=cnn_emb_dim,
-            cnn_kernels=cnn_kernels, emb_out_dim=emb_out_dim,
-            lstm_hidden_dim=lstm_hidden_dim, lstm_layers=lstm_layers,
-            lstm_do=lstm_do, bn1=bn1, do1=do1, bn2=bn2, do2=do2,
-            bn3=bn3, do3=do3
-        )
+        args, kwargs = get_func_params(self.__init__, locals())
+        super().__init__(*args, **kwargs)
+
         self.vec_emb_dim = vec_emb_dim
 
         if rnn_emb_dim:

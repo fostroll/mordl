@@ -65,7 +65,8 @@ class BaseTagger(BaseParser):
     def _create_dataset(
         sentences, word_emb_type=None, word_emb_path=None,
         word_emb_model_device=None, word_transform_kwargs=None,
-        word_next_emb_params=None, with_chars=False, labels=None
+        word_next_emb_params=None, with_chars=False, tags=None,
+        labels=None
     ):
         ds = FrameDataset()
 
@@ -90,6 +91,12 @@ class BaseTagger(BaseParser):
             ds.add('x_ch', DummyDataset(data=sentences))
             ds.add('x_ch_lens', DummyDataset(data=sentences))
 
+        if tags:
+            for i, t_ in enumerate(tags):
+                t = TokenDataset(t_, pad_token='<PAD>', transform=True,
+                                 keep_empty=False)
+                ds.add('t_{}'.format(i), t)
+
         if labels:
             y = TokenDataset(labels, pad_token='<PAD>', transform=True,
                              keep_empty=False)
@@ -97,15 +104,18 @@ class BaseTagger(BaseParser):
 
         return ds
 
-    def _transform_dataset(self, sentences, labels=None, ds=None):
+    def _transform_dataset(self, sentences, tags=None, labels=None, ds=None):
         if ds is None:
             ds = self._ds
         for name in ds.list():
             ds_ = ds.get_dataset(name)
-            if name != 'y':
+            typ, idx = name.split('_')
+            if typ == 'x':
                 if not WordEmbeddings.transform_dataset(ds_, sentences):
                     ds_.transform(sentences)
-            elif labels:
+            elif typ == 't':
+                ds_.transform(tags[int(idx)])
+            elif labels and name == 'y':
                 ds_.transform(labels)
 
     def _save_dataset(self, model_name):
