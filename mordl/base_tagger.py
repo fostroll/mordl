@@ -133,7 +133,7 @@ class BaseTagger(BaseParser):
     def _load_dataset(self, model_name, device=None):
         ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
         self._ds = FrameDataset.load(ds_fn)
-        with open(ds_config_file, 'rt', encoding='utf-8') as f:
+        with open(ds_config_fn, 'rt', encoding='utf-8') as f:
             json.loads(f.read())
         for name, cfg in config.items():
             WordEmbeddings.apply_config(self._ds.get_dataset(name), cfg)
