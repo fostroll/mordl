@@ -5,6 +5,7 @@
 # License: BSD, see LICENSE for details
 """
 """
+import itertools
 import junky
 from mordl import WordEmbeddings
 from mordl.base_tagger import BaseTagger
@@ -14,7 +15,7 @@ import os
 import sys
 
 
-class PosTagger(BaseTagger):
+class UposTagger(BaseTagger):
     """"""
 
     def __init__(self):
@@ -37,12 +38,30 @@ class PosTagger(BaseTagger):
                             'Call the train() method first'
         if corpus is None:
             corpus = self._test_corpus
+        elif isinstance(corpus, str):
+            corpus = Conllu.load(corpus, **({'log_file': None} if silent else{}))
+        elif callable(corpus):
+            corpus = corpus()
+
         if not split:
-            split = len(corpus)
+            try:
+                split = len(corpus)
+            except TypeError:
+                corpus = list(corpus)
+                split = len(corpus)
         ds_y = self._ds.get_dataset('y')
-        for pos in range(0, len_corpus, split):
-            sents = corpus[pos:pos + split]
-            sentences = self._prepare_corpus(sents, fields=None)
+        for start in itertools.count(step=split):
+            try:
+                corpus_ = corpus[start:start + split]
+            except TypeError:
+                corpus_ = []
+                for i, sentence in enumerate(corpus, start=1):
+                    corpus_.append(sentence)
+                    if i == split:
+                        break
+            sentences, empties, nones = \
+                junky.extract_conllu_fields(corpus_, fields=None,
+                                            return_nones=True)
             self._transform_dataset(sentences)
             loader = self._ds.create_loader(batch_size=batch_size,
                                             shuffle=False)
@@ -53,11 +72,61 @@ class PosTagger(BaseTagger):
                     pred = self._model(*batch)
                 _, pred_indices = pred.max(2)
                 preds.extend(pred_indices.cpu().numpy().tolist())
-            for pred in ds_y.reconstruct(preds):
-                yield pred
+            values = ds_y.reconstruct(preds)
+            for sentence in embed_conllu_fields(corpus, 'UPOS', values,
+                                                empties=empties, nones=nones):
+                yield sentence
 
-    def evaluate(self):
-        pass
+    def evaluate(self, gold=None, test=None, batch_size=32, split=None,
+                 silent=False):
+        """Score the accuracy of the POS tagger against the *gold* standard.
+        Remove POS tags from the *gold* standard text, retag it using the
+        tagger, then compute the accuracy score. If *test* is not None, compute
+        the accuracy of the *test* corpus with respect to the *gold*.
+
+        :param gold: a corpus of tagged sentences to score the tagger on.
+                     If *gold* is None then loaded test corpus is used
+        :param test: a corpus of tagged sentences to compare with *gold*
+        :param silent: suppress log
+        :return: accuracy score of the tagger against the gold
+        :rtype: float
+        """
+        n = c = 0
+        if gold is None:
+            gold = self._test_corpus
+        elif isinstance(gold, str):
+            gold = Conllu.load(gold, **({'log_file': None} if silent else{}))
+        elif callable(gold):
+            gold = gold()
+        if test is None:
+            test = self.predict(test, batch_size=batch_size, split=split)
+        elif isinstance(test, str):
+            test = Conllu.load(test, **({'log_file': None} if silent else{}))
+        elif callable(test):
+            test = test()
+        header = 'UPOS'
+        if not silent:
+            print('Evaluate ' + header, file=LOG_FILE)
+        i = -1
+        for i, (gold_sent, test_sent) in enumerate(zip(gold, test)):
+            for j, (gold_token, test_token) in enumerate(zip(gold_sent, test_sent)):
+                wform = gold_token['FORM']
+                if wform and '-' not in gold_token['ID']:
+                    gold_pos = gold_token['UPOS']
+                    test_pos = test_token['UPOS']
+                    n += 1
+                    c += gold_pos == test_pos
+        if not silent:
+            if i < 0:
+                print('Nothing to do!', file=LOG_FILE)
+            else:
+                sp = ' ' * (len(header) - 2)
+                print(header + ' total: {}'.format(n), file=LOG_FILE)
+                print(sp     + ' correct: {}'.format(c), file=LOG_FILE)
+                print(sp     + '   wrong: {}'.format(n - c), file=LOG_FILE)
+                print('Accuracy: {}'.format(c / n if n > 0 else 1.),
+                      file=LOG_FILE)
+        return c / n if n > 0 else 1.
 
     def train(self, model_name, device=None,
               epochs=sys.maxsize, min_epochs=0, bad_epochs=5,
@@ -137,6 +206,8 @@ class PosTagger(BaseTagger):
             junky.enforce_reproducibility(seed=seed)
 
         # 3. Create datasets
+        if log_file:
+            print('CREATE DATASETS', file=log_file)
         self._ds = self._create_dataset(
             train, word_emb_type=word_emb_type, word_emb_path=word_emb_path,
             word_emb_model_device=word_emb_model_device,
@@ -151,6 +222,8 @@ class PosTagger(BaseTagger):
             ds_test = None
 
         # 4. Create model
+        if log_file:
+            print('CREATE A MODEL', file=log_file)
         self._model, criterion, optimizer, scheduler = \
             LstmTaggerModel.create_model_for_train(
                 len(self._ds.get_dataset('y').transform_dict),
@@ -175,6 +248,8 @@ class PosTagger(BaseTagger):
         self._model.save_config(model_config_fn, log_file=log_file)
 
         # 5. Train model
+        if log_file:
+            print('TRAIN THE MODEL', file=log_file)
         def best_model_backup_method(model, model_score):
             if log_file:
                 print('new maximum score {:.8f}'.format(model_score),
@@ -193,6 +268,8 @@ class PosTagger(BaseTagger):
                         if x not in ['best_epoch', 'best_score']}
 
         # 6. Tune model
+        if log_file:
+            print('TUNE THE MODEL', file=log_file)
         self._model.load_state_dict(model_fn, log_file=log_file)
         criterion, optimizer, scheduler = self._model.adjust_model_for_tune()
         res_= junky.train(

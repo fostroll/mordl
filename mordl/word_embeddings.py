@@ -10,11 +10,11 @@ from corpuscula.corpus_utils import get_root_dir
 from gensim.models.fasttext import load_facebook_model
 from gensim.scripts.glove2word2vec import glove2word2vec
 from gensim.models import KeyedVectors
-import numpy as np
 import json
 import junky
 from junky.dataset import BertDataset, WordCatDataset, WordDataset
 from mordl.utils import CONFIG_ATTR, LOG_FILE
+import numpy as np
 import os
 from tqdm import tqdm
 import torch
@@ -48,7 +48,7 @@ class WordEmbeddings:
                 save_to += '_seed{}'.format(seed)
 
         if log_file:
-            print("Tune BERT model '{}'. The result's model name will be '{}'"
+            print("TUNE BERT MODEL '{}'. The result's model name will be '{}'"
                       .format(model_name, save_to),
                   file=log_file)
 
