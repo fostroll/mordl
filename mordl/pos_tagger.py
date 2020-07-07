@@ -194,7 +194,7 @@ class PosTagger(BaseTagger):
 
         # 6. Tune model
         self._model.load_state_dict(model_fn, log_file=log_file)
-        criterion, optimizer, scheduler = model.adjust_model_for_tune()
+        criterion, optimizer, scheduler = self._model.adjust_model_for_tune()
         res_= junky.train(
             None, self._model, criterion, optimizer, scheduler,
             best_model_backup_method, datasets=(self._ds, ds_test),
