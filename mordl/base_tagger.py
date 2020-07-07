@@ -151,7 +151,7 @@ class BaseTagger(BaseParser):
     def load(self, model_class, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
         self._load_dataset(model_name, device=dataset_device)
-        model_fn, model_config_fn = cls._get_filenames(model_name)[:2]
+        model_fn, model_config_fn = self._get_filenames(model_name)[:2]
         self._model = model_class.create_from_config(
             model_config_fn, state_dict_f=model_fn, device=device,
             log_file=log_file
