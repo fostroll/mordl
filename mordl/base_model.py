@@ -51,7 +51,7 @@ class BaseModel(nn.Module):
             if need_close:
                 f.close()
         args, kwargs = [], {}
-        while cfg in config:
+        for cfg in config:
             if isinstance(cfg, str) and not device:
                 device = cfg
             elif isinstance(cfg, list) and not args:
