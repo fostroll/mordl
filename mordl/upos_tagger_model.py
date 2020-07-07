@@ -6,7 +6,7 @@
 """
 """
 from collections.abc import Iterable
-from junky import CharEmbeddingRNN, CharEmbeddingCNN, Masking
+from junky import CharEmbeddingRNN, CharEmbeddingCNN, Masking, get_func_params
 from mordl.base_model import BaseModel
 import torch
 import torch.nn as nn
@@ -95,18 +95,16 @@ class UposTaggerModel(BaseModel):
         """
         device = next(self.parameters()).device
 
-        x_, x_e_rnn, x_e_cnn = [], None, None
+        x_ = []
         if self.vec_emb_dim:
             assert x.shape[2] == self.vec_emb_dim, \
                    'ERROR: invalid vector size: {} whereas vec_emb_dim = {}' \
                        .format(x.shape[2], self.vec_emb_dim)
             x_.append(x)
         if self._rnn_emb_l:
-            x_e_rnn = self._rnn_emb_l(x_ch, x_ch_lens)
-            x_.append(x_e_rnn)
+            x_.append(self._rnn_emb_l(x_ch, x_ch_lens))
         if self._cnn_emb_l:
-            x_e_cnn = self._cnn_emb_l(x_ch, x_ch_lens)
-            x_.append(x_e_cnn)
+            x_.append(self._cnn_emb_l(x_ch, x_ch_lens))
 
         x = x_[0] if len(x_) == 1 else torch.cat(x_, dim=-1)
 

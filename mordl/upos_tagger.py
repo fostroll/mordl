@@ -287,7 +287,7 @@ class UposTagger(BaseTagger):
             with_progress=log_file is not None, log_file=log_file
         )
         if res_['best_epoch'] is not None:
-            for key, value in res_items():
+            for key, value in res.items():
                 if key == 'best_epoch':
                     res[key] += value
                 elif key == 'best_score':

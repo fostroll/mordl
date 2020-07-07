@@ -56,14 +56,23 @@ class NeTaggerModel(BaseModel):
             self._cnn_emb_l = None
             cnn_emb_dim = 0
 
+        if upos_emb_dim:
+            self._upos_emb_l = \
+                nn.Embedding(num_upos, upos_emb_dim, padding_idx=upos_pad_idx)
+        else:
+            self._upos_emb_l = None
+            upos_emb_dim = 0
+
         self._bn1 = \
             nn.BatchNorm1d(num_features=vec_emb_dim
                                       + rnn_emb_dim
-                                      + cnn_emb_dim) if bn1 else None
+                                      + cnn_emb_dim
+                                      + upos_emb_dim) if bn1 else None
         self._do1 = nn.Dropout(p=do1) if do1 else None
 
         self._emb_fc_l = nn.Linear(
-            in_features=vec_emb_dim + rnn_emb_dim + cnn_emb_dim,
+            in_features=vec_emb_dim + rnn_emb_dim + cnn_emb_dim
+                                    + upos_emb_dim,
             out_features=emb_out_dim
         )
         self._bn2 = \
@@ -88,27 +97,28 @@ class NeTaggerModel(BaseModel):
                     indices_to_highlight=tags_pad_idx,
                     batch_first=True) if tags_pad_idx is not None else None
 
-    def forward(self, x, x_lens, x_ch, x_ch_lens):
+    def forward(self, x, x_lens, x_ch, x_ch_lens, x_t):
         """
         x:    [batch[seq[w_idx + pad]]]
         lens: [seq_word_cnt]
         x_ch: [batch[seq[word[ch_idx + pad] + word[pad]]]]
         x_ch_lens: [seq[word_char_count]]
+        x_t:  [batch[seq[upos_idx]]]
         """
         device = next(self.parameters()).device
 
-        x_, x_e_rnn, x_e_cnn = [], None, None
+        x_ = []
         if self.vec_emb_dim:
             assert x.shape[2] == self.vec_emb_dim, \
                    'ERROR: invalid vector size: {} whereas vec_emb_dim = {}' \
                        .format(x.shape[2], self.vec_emb_dim)
             x_.append(x)
         if self._rnn_emb_l:
-            x_e_rnn = self._rnn_emb_l(x_ch, x_ch_lens)
-            x_.append(x_e_rnn)
+            x_.append(self._rnn_emb_l(x_ch, x_ch_lens))
         if self._cnn_emb_l:
-            x_e_cnn = self._cnn_emb_l(x_ch, x_ch_lens)
-            x_.append(x_e_cnn)
+            x_.append(self._cnn_emb_l(x_ch, x_ch_lens))
+        if self._pos_emb_l:
+            x_.append(self._upos_emb_l(x_t))
 
         x = x_[0] if len(x_) == 1 else torch.cat(x_, dim=-1)
 
