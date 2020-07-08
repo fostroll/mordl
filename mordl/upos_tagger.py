@@ -121,7 +121,7 @@ class UposTagger(BaseTagger):
         n = c = 0
         i = -1
         for i, sentences in enumerate(corpora):
-            for gold_token, test_token in zip(sentences):
+            for gold_token, test_token in zip(*sentences):
                 wform = gold_token['FORM']
                 if wform and '-' not in gold_token['ID']:
                     gold_pos = gold_token['UPOS']
