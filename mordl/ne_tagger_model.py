@@ -110,7 +110,7 @@ class NeTaggerModel(BaseModel):
             x_.append(self._rnn_emb_l(x_ch, x_ch_lens))
         if self._cnn_emb_l:
             x_.append(self._cnn_emb_l(x_ch, x_ch_lens))
-        if self._pos_emb_l:
+        if self._upos_emb_l:
             x_.append(self._upos_emb_l(x_t))
 
         x = x_[0] if len(x_) == 1 else torch.cat(x_, dim=-1)
