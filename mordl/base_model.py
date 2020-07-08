@@ -18,7 +18,7 @@ class BaseModel(nn.Module):
         setattr(self, CONFIG_ATTR, (args, kwargs))
 
     def save_config(self, f, log_file=LOG_FILE):
-        config = getattr(self, CONFIG_ATTR, [])
+        config = list(getattr(self, CONFIG_ATTR, []))
         device = next(self.parameters()).device
         if device:
             config.insert(0, str(device))
