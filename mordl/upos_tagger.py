@@ -33,7 +33,7 @@ class UposTagger(BaseTagger):
          super().load(UposTaggerModel, model_name, device=device,
                       dataset_device=dataset_device)
 
-    def predict(self, corpus=None, batch_size=32, split=None, with_orig=True,
+    def predict(self, corpus=None, batch_size=32, split=None, with_orig=False,
                 log_file=LOG_FILE):
         assert self._ds is not None, \
                "ERROR: the tagger doesn't have a dataset. Call the train() " \
@@ -110,7 +110,10 @@ class UposTagger(BaseTagger):
         :rtype: float
         """
         gold = self._get_corpus(gold, log_file=log_file)
-        test = self._get_corpus(test, none_corpus=gold, log_file=log_file)
+        test = zip(gold, self._get_corpus(test, log_file=log_file)) \
+                   if test else \
+               self.predict(corpus=gold, batch_size=batch_size, split=split,
+                            with_orig=True, log_file=log_file)
         header = 'UPOS'
         if log_file:
             print('Evaluate ' + header, file=LOG_FILE)
