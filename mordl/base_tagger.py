@@ -109,7 +109,7 @@ class BaseTagger(BaseParser):
             for i, t_ in enumerate(tags):
                 t = TokenDataset(t_, pad_token='<PAD>', transform=True,
                                  keep_empty=False)
-                ds.add('t_{}'.format(i), t)
+                ds.add('t_{}'.format(i), t, with_lens=False)
 
         if labels:
             y = TokenDataset(labels, pad_token='<PAD>', transform=True,
