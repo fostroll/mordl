@@ -32,10 +32,12 @@ class UposTagger(BaseTagger):
                       dataset_device=dataset_device)
 
     def predict(self, corpus=None, batch_size=32, split=None):
-        assert self._ds, "ERROR: the tagger doesn't have a dataset. " \
-                         'Call the train() method first'
-        assert self._model, "ERROR: the tagger doesn't have a model. " \
-                            'Call the train() method first'
+        assert self._ds is not None, \
+               "ERROR: the tagger doesn't have a dataset. Call the train() " \
+               'method first'
+        assert self._model, \
+               "ERROR: the tagger doesn't have a model. Call the train() "
+               'method first'
         if corpus is None:
             corpus = self._test_corpus
         elif isinstance(corpus, str):
