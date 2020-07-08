@@ -106,7 +106,10 @@ class UposTagger(BaseTagger):
         n = c = 0
         i = -1
         for i, (gold_sent, test_sent) in enumerate(zip(gold, test)):
-            for j, (gold_token, test_token) in enumerate(zip(gold_sent, test_sent)):
+            for gold_token, test_token in zip(
+                gold_sent[0] if isinstance(gold_sent, tuple) else gold_sent,
+                test_sent[0] if isinstance(test_sent, tuple) else test_sent
+            ):
                 wform = gold_token['FORM']
                 if wform and '-' not in gold_token['ID']:
                     gold_pos = gold_token['UPOS']
