@@ -18,14 +18,10 @@ class BaseModel(nn.Module):
         setattr(self, CONFIG_ATTR, (args, kwargs))
 
     def save_config(self, f, log_file=LOG_FILE):
-        config = []
+        config = getattr(self, CONFIG_ATTR, [])
         device = next(self.parameters()).device
         if device:
-            config.append(str(device))
-        cfg = getattr(self, CONFIG_ATTR, [])
-        for cfg_ in cfg:
-            if cfg_:
-                config.append(cfg)
+            config.insert(0, str(device))
         need_close = False
         if isinstance(f, str):
             f = open(f, 'wt', encoding='utf-8')
