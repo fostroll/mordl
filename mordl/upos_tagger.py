@@ -5,7 +5,6 @@
 # License: BSD, see LICENSE for details
 """
 """
-from corpuscula.corpus_utils import _AbstractCorpus
 import itertools
 import junky
 from mordl import WordEmbeddings
@@ -34,22 +33,14 @@ class UposTagger(BaseTagger):
          super().load(UposTaggerModel, model_name, device=device,
                       dataset_device=dataset_device)
 
-    def predict(self, corpus=None, batch_size=32, split=None):
+    def predict(self, corpus=None, batch_size=32, split=None, log_file=LOG_FILE):
         assert self._ds is not None, \
                "ERROR: the tagger doesn't have a dataset. Call the train() " \
                'method first'
         assert self._model, \
                "ERROR: the tagger doesn't have a model. Call the train() " \
                'method first'
-        if corpus is None:
-            corpus = self._test_corpus
-        elif isinstance(corpus, str):
-            corpus = Conllu.load(corpus, **({'log_file': None} if silent else{}))
-        elif (isinstance(corpus, type) and issubclass(corpus, _AbstractCorpus)) \
-          or isinstance(corpus, _AbstractCorpus):
-            corpus = corpus.test()
-        elif callable(corpus):
-            corpus = corpus()
+        corpus = self._get_corpus(corpus, log_file=log_file)
 
         device = next(self._model.parameters()).device or junky.CPU
 
@@ -94,7 +85,7 @@ class UposTagger(BaseTagger):
                 yield sentence
 
     def evaluate(self, gold=None, test=None, batch_size=32, split=None,
-                 silent=False):
+                 log_file=LOG_FILE):
         """Score the accuracy of the POS tagger against the *gold* standard.
         Remove POS tags from the *gold* standard text, retag it using the
         tagger, then compute the accuracy score. If *test* is not None, compute
@@ -107,28 +98,17 @@ class UposTagger(BaseTagger):
         :return: accuracy score of the tagger against the gold
         :rtype: float
         """
-        n = c = 0
-        if gold is None:
-            gold = self._test_corpus
-        elif isinstance(gold, str):
-            gold = Conllu.load(gold, **({'log_file': None} if silent else{}))
-        elif (isinstance(gold, type) and issubclass(gold, _AbstractCorpus)) \
-          or isinstance(gold, _AbstractCorpus):
-            gold = gold.test()
-        elif callable(gold):
-            gold = gold()
-        if test is None:
-            test = self.predict(test, batch_size=batch_size, split=split)
-        elif isinstance(test, str):
-            test = Conllu.load(test, **({'log_file': None} if silent else{}))
-        elif (isinstance(test, type) and issubclass(test, _AbstractCorpus)) \
-          or isinstance(test, _AbstractCorpus):
-            test = test.test()
-        elif callable(test):
-            test = test()
+        gold = self._get_corpus(gold, log_file=log_file)
+        test = self._get_corpus(
+            gold,
+            none_func=lambda x: self.predict(x, batch_size=batch_size,
+                                             split=split),
+            log_file=log_file
+        )
         header = 'UPOS'
         if not silent:
             print('Evaluate ' + header, file=LOG_FILE)
+        n = c = 0
         i = -1
         for i, (gold_sent, test_sent) in enumerate(zip(gold, test)):
             for j, (gold_token, test_token) in enumerate(zip(gold_sent, test_sent)):

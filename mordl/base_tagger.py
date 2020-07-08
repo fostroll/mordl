@@ -5,6 +5,7 @@
 # License: BSD, see LICENSE for details
 """
 """
+from corpuscula.corpus_utils import _AbstractCorpus
 import json
 import junky
 from junky.dataset import CharDataset, DummyDataset, FrameDataset, \
@@ -41,6 +42,18 @@ class BaseTagger(BaseParser):
     def load_train_corpus(self, corpus, append=False, test=None, seed=None):
         super().load_train_corpus(corpus, append=append, parse=False,
                                   test=test, seed=seed)
+
+    def _get_corpus(self, corpus, none_func=None, log_file=LOG_FILE):
+        if corpus is None:
+            corpus = none_func(self._test_corpus) if none_func else \
+                     self._test_corpus
+        elif isinstance(corpus, str):
+            corpus = Conllu.load(corpus, log_file=log_file)
+        elif (isinstance(corpus, type) and issubclass(corpus, _AbstractCorpus)) \
+          or isinstance(corpus, _AbstractCorpus):
+            corpus = corpus.test()
+        elif callable(corpus):
+            corpus = corpus()
 
     @staticmethod
     def _get_filenames(model_name):
