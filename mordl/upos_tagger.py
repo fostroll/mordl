@@ -136,10 +136,10 @@ class UposTagger(BaseTagger):
             for gold_token, test_token in zip(*sentences):
                 wform = gold_token['FORM']
                 if wform and '-' not in gold_token['ID']:
-                    gold_pos = gold_token['UPOS']
-                    test_pos = test_token['UPOS']
+                    gold_upos = gold_token['UPOS']
+                    test_upos = test_token['UPOS']
                     n += 1
-                    c += gold_pos == test_pos
+                    c += gold_upos == test_upos
         if log_file:
             if i < 0:
                 print('Nothing to do!', file=LOG_FILE)

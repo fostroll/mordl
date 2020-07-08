@@ -5,12 +5,16 @@
 # License: BSD, see LICENSE for details
 """
 """
+from copy import deepcopy
+import itertools
 import junky
 from mordl import WordEmbeddings
 from mordl.base_tagger import BaseTagger
-from mordl.ne_tagger_model import NeTaggerModel
+from mordl.upos_tagger_model import UposTaggerModel
 from mordl.utils import LOG_FILE
 import os
+import torch
+from typing import Iterator
 import sys
 
 
@@ -21,106 +25,126 @@ class NeTagger(BaseTagger):
         super().__init__()
 
     @classmethod
-    def _prepare_corpus(cls, corpus, fields=['UPOS', 'MISC:NE'],
+    def _prepare_corpus(cls, corpus, fields=['UPOS', 'MISC:NE:_'],
                         tags_to_remove=None):
         return super()._prepare_corpus(corpus, fields,
                                        tags_to_remove=tags_to_remove)
 
     def load(self, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
-         super().load(UposTaggerModel, model_name, device=device,
+         super().load(NeTaggerModel, model_name, device=device,
                       dataset_device=dataset_device)
 
-    def predict(self, corpus=None, batch_size=32, split=None):
-        assert self._ds, "ERROR: the tagger doesn't have a dataset. " \
-                         'Call the train() method first'
-        assert self._model, "ERROR: the tagger doesn't have a model. " \
-                            'Call the train() method first'
-        if corpus is None:
-            corpus = self._test_corpus
-        elif isinstance(corpus, str):
-            corpus = Conllu.load(corpus, **({'log_file': None} if silent else{}))
-        elif callable(corpus):
-            corpus = corpus()
+    def predict(self, corpus=None, batch_size=32, split=None, with_orig=False,
+                save_to=None, log_file=LOG_FILE):
+        assert self._ds is not None, \
+               "ERROR: the tagger doesn't have a dataset. Call the train() " \
+               'method first'
+        assert self._model, \
+               "ERROR: the tagger doesn't have a model. Call the train() " \
+               'method first'
+        assert not with_orig or save_to is None, \
+               'ERROR: `with_orig` can be True only if save_to is None'
 
-        if not split:
-            try:
-                split = len(corpus)
-            except TypeError:
-                corpus = list(corpus)
-                split = len(corpus)
+        def process():
+            corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
+            device = next(self._model.parameters()).device or junky.CPU
 
-        ds = self._ds.clone()
-        ds_y = self._ds.get_dataset('y')
-        ds.remove('y')
+            ds = self._ds.clone()
+            ds_y = self._ds.get_dataset('y')
+            ds.remove('y')
 
-        for start in itertools.count(step=split):
-            try:
-                corpus_ = corpus[start:start + split]
-            except TypeError:
-                corpus_ = []
-                for i, sentence in enumerate(corpus, start=1):
-                    corpus_.append(sentence)
-                    if i == split:
-                        break
-            sentences, tags, empties, nones = \
-                junky.extract_conllu_fields(corpus_, fields='UPOS',
-                                            return_nones=True)
-            self._transform_dataset(sentences)
-            loader = self._ds.create_loader(batch_size=batch_size,
-                                            shuffle=False)
-            preds = []
-            for batch in loader:
-                batch = to_device(batch)
-                with torch.no_grad():
-                    pred = self._model(*batch)
-                _, pred_indices = pred.max(2)
-                preds.extend(pred_indices.cpu().numpy().tolist())
-            values = ds_y.reconstruct(preds)
-            for sentence in embed_conllu_fields(corpus, 'UPOS', values,
-                                                empties=empties, nones=nones):
-                yield sentence
+            for start in itertools.count(step=split if split else 1):
+                if isinstance(corpus, Iterator):
+                    if split:
+                        corpus_ = []
+                        for i, sentence in enumerate(corpus, start=1):
+                            corpus_.append(sentence)
+                            if i == split:
+                                break
+                    else:
+                        corpus_ = list(corpus)
+                else:
+                    if split:
+                        corpus_ = corpus[start:start + split]
+                    else:
+                        corpus_ = corpus
+                if not corpus_:
+                    break
+                res = \
+                    junky.extract_conllu_fields(
+                        corpus_, fields='UPOS', with_empty=True, return_nones=True
+                    )
+                sentences, tags, empties, nones = \
+                    res[0], res[1:-2], res[-2], res[-1]
+                self._transform_dataset(sentences, tags=tags, ds=ds)
+                loader = ds.create_loader(batch_size=batch_size, shuffle=False)
+                preds = []
+                for batch in loader:
+                    batch = junky.to_device(batch, device)
+                    with torch.no_grad():
+                        pred = self._model(*batch)
+                    _, pred_indices = pred.max(2)
+                    preds.extend(pred_indices.cpu().numpy().tolist())
+                values = ds_y.reconstruct(preds)
+                if with_orig:
+                    res_corpus_ = deepcopy(corpus_)
+                    for orig_sentence, sentence in zip(
+                        corpus_, junky.embed_conllu_fields(
+                            res_corpus_, 'MISC:NE:_', values,
+                            empties=empties, nones=nones
+                        )
+                    ):
+                        yield sentence, orig_sentence
+                else:
+                    for sentence in junky.embed_conllu_fields(
+                        corpus_, 'MISC:NE', values,
+                        empties=empties, nones=nones
+                    ):
+                        yield sentence
 
-    def evaluate(self, gold=None, test=None, batch_size=32, split=None,
-                 silent=False):
-        """Score the accuracy of the POS tagger against the *gold* standard.
-        Remove POS tags from the *gold* standard text, retag it using the
-        tagger, then compute the accuracy score. If *test* is not None, compute
-        the accuracy of the *test* corpus with respect to the *gold*.
+        corpus = process(corpus=corpus, batch_size=batch_size, split=split,
+                         with_orig=with_orig, log_file=log_file)
+        if save_to:
+            self.save_conllu(corpus, save_to, log_file=None)
+            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
+        return corpus
 
-        :param gold: a corpus of tagged sentences to score the tagger on.
-                     If *gold* is None then loaded test corpus is used
-        :param test: a corpus of tagged sentences to compare with *gold*
-        :param silent: suppress log
-        :return: accuracy score of the tagger against the gold
-        :rtype: float
-        """
-        n = c = 0
-        if gold is None:
-            gold = self._test_corpus
-        elif isinstance(gold, str):
-            gold = Conllu.load(gold, **({'log_file': None} if silent else{}))
-        elif callable(gold):
-            gold = gold()
-        if test is None:
-            test = self.predict(test, batch_size=batch_size, split=split)
-        elif isinstance(test, str):
-            test = Conllu.load(test, **({'log_file': None} if silent else{}))
-        elif callable(test):
-            test = test()
-        header = 'UPOS'
-        if not silent:
+    def evaluate(self, gold=None, test=None, ne=None, batch_size=32,
+                 split=None, log_file=LOG_FILE):
+
+        gold = self._get_corpus(gold, log_file=log_file)
+        corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \
+                      if test else \
+                  self.predict(corpus=gold, batch_size=batch_size,
+                               split=split, with_orig=True, log_file=log_file)
+        header = 'NE'
+        if log_file:
             print('Evaluate ' + header, file=LOG_FILE)
+        n = c = nt = ct = ca = ce = cr = 0
         i = -1
-        for i, (gold_sent, test_sent) in enumerate(zip(gold, test)):
-            for j, (gold_token, test_token) in enumerate(zip(gold_sent, test_sent)):
+        for i, sentences in enumerate(corpora):
+            for gold_token, test_token in zip(*sentences):
                 wform = gold_token['FORM']
                 if wform and '-' not in gold_token['ID']:
-                    gold_pos = gold_token['UPOS']
-                    test_pos = test_token['UPOS']
+                    gold_ne = gold_token['MISC'].get('NE')
+                    test_ne = test_token['MISC'].get('NE')
                     n += 1
-                    c += gold_pos == test_pos
-        if not silent:
+                    if (ne and (gold_ne == ne or test_ne == ne)) \
+                    or (not ne and (gold_ne or test_ne)):
+                        nt += 1
+                        if gold_ne == test_ne:
+                            c += 1
+                            ct += 1
+                        elif not gold_ne or (ne and gold_ne != ne):
+                            ce += 1
+                        elif not test_ne or (ne and test_ne != ne):
+                            ca += 1
+                        else:
+                            cr += 1
+                    else:
+                        c += 1
+        if log_file:
             if i < 0:
                 print('Nothing to do!', file=LOG_FILE)
             else:
@@ -130,7 +154,17 @@ class NeTagger(BaseTagger):
                 print(sp     + '   wrong: {}'.format(n - c), file=LOG_FILE)
                 print('Accuracy: {}'.format(c / n if n > 0 else 1.),
                       file=LOG_FILE)
-        return c / n if n > 0 else 1.
+
+                print(header + ' total: {}'.format(nt), file=LOG_FILE)
+                print(sp   + ' correct: {}'.format(ct), file=LOG_FILE)
+                print(sp   + '   wrong: {} [{} excess / {} absent{}]'
+                                 .format(nt - ct, ce, ca, '' if ne else
+                                                          ' / {} wrong type'
+                                                              .format(cr)),
+                      file=LOG_FILE)
+                print(sp   + 'Accuracy: {}'.format(ct / nt if nt > 0 else 1.))
+                print('[Total accuracy: {}]'.format(c / n if n > 0 else 1.))
+        return ct / nt if nt > 0 else 1.
 
     def train(self, model_name, device=None,
               epochs=sys.maxsize, min_epochs=0, bad_epochs=5,
