@@ -99,12 +99,7 @@ class UposTagger(BaseTagger):
         :rtype: float
         """
         gold = self._get_corpus(gold, log_file=log_file)
-        test = self._get_corpus(
-            gold,
-            none_func=lambda x: self.predict(x, batch_size=batch_size,
-                                             split=split),
-            log_file=log_file
-        )
+        test = self._get_corpus(test, none_corpus=gold, log_file=log_file)
         header = 'UPOS'
         if not silent:
             print('Evaluate ' + header, file=LOG_FILE)
