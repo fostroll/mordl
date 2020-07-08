@@ -13,6 +13,7 @@ from mordl.base_tagger import BaseTagger
 from mordl.upos_tagger_model import UposTaggerModel
 from mordl.utils import LOG_FILE
 import os
+import torch
 import sys
 
 
