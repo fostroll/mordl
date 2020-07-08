@@ -47,7 +47,7 @@ class BaseTagger(BaseParser):
         if corpus is None:
             corpus = none_corpus if none_corpus else self._test_corpus
         elif isinstance(corpus, str):
-            corpus = Conllu.load(corpus, log_file=log_file)
+            corpus = Conllu.load(corpus, log_file=None)
         elif (isinstance(corpus, type) and issubclass(corpus, _AbstractCorpus)) \
           or isinstance(corpus, _AbstractCorpus):
             corpus = corpus.test()
