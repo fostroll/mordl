@@ -45,9 +45,9 @@ class UposTagger(BaseTagger):
 
         if save_to:
             self.save_conllu(
-                self.predict(corpus=corpus, batch_size=batch_size,
-                             split=split, with_orig=False, save_to=None,
-                             log_file=log_file),
+                (s for s in self.predict(corpus=corpus, batch_size=batch_size,
+                                         split=split, with_orig=False,
+                                         save_to=None,log_file=log_file)),
                 save_to, log_file=None
             )
             return self._get_corpus(save_to, asis=True, log_file=log_file)
