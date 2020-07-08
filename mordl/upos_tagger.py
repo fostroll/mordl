@@ -5,6 +5,7 @@
 # License: BSD, see LICENSE for details
 """
 """
+from copy import deepcopy
 import itertools
 import junky
 from mordl import WordEmbeddings
