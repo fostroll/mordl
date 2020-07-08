@@ -14,6 +14,7 @@ from mordl.upos_tagger_model import UposTaggerModel
 from mordl.utils import LOG_FILE
 import os
 import torch
+from typing import Iterator
 import sys
 
 
@@ -52,26 +53,27 @@ class UposTagger(BaseTagger):
 
         device = next(self._model.parameters()).device or junky.CPU
 
-        if not split:
-            try:
-                split = len(corpus)
-            except TypeError:
-                corpus = list(corpus)
-                split = len(corpus)
-
         ds = self._ds.clone()
         ds_y = self._ds.get_dataset('y')
         ds.remove('y')
 
-        for start in itertools.count(step=split):
-            try:
-                corpus_ = corpus[start:start + split]
-            except TypeError:
-                corpus_ = []
-                for i, sentence in enumerate(corpus, start=1):
-                    corpus_.append(sentence)
-                    if i == split:
-                        break
+        for start in itertools.count(step=split if split else 1):
+            if isinstance(corpus, Iterator):
+                if split:
+                    corpus_ = []
+                    for i, sentence in enumerate(corpus, start=1):
+                        corpus_.append(sentence)
+                        if i == split:
+                            break
+                else:
+                    corpus_ = list(corpus)
+            else:
+                if split:
+                    corpus_ = corpus[start:start + split]
+                else:
+                    corpus_ = corpus
+            if not corpus_:
+                break
             sentences, empties, nones = \
                 junky.extract_conllu_fields(
                     corpus_, fields=None, with_empty=True, return_nones=True
