@@ -6,6 +6,7 @@
 """
 """
 from corpuscula.corpus_utils import _AbstractCorpus
+import itertools
 import junky
 from mordl import WordEmbeddings
 from mordl.base_tagger import BaseTagger
