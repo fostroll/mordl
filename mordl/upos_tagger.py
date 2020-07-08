@@ -36,7 +36,7 @@ class UposTagger(BaseTagger):
                "ERROR: the tagger doesn't have a dataset. Call the train() " \
                'method first'
         assert self._model, \
-               "ERROR: the tagger doesn't have a model. Call the train() "
+               "ERROR: the tagger doesn't have a model. Call the train() " \
                'method first'
         if corpus is None:
             corpus = self._test_corpus
