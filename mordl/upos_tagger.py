@@ -90,8 +90,9 @@ class UposTagger(BaseTagger):
                 _, pred_indices = pred.max(2)
                 preds.extend(pred_indices.cpu().numpy().tolist())
             values = ds_y.reconstruct(preds)
-            for sentence in embed_conllu_fields(corpus, 'UPOS', values,
-                                                empties=empties, nones=nones):
+            for sentence in junky.embed_conllu_fields(
+                corpus, 'UPOS', values, empties=empties, nones=nones
+            ):
                 yield sentence
 
     def evaluate(self, gold=None, test=None, batch_size=32, split=None,
