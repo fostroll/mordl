@@ -33,7 +33,8 @@ class UposTagger(BaseTagger):
          super().load(UposTaggerModel, model_name, device=device,
                       dataset_device=dataset_device)
 
-    def predict(self, corpus=None, batch_size=32, split=None, log_file=LOG_FILE):
+    def predict(self, corpus=None, batch_size=32, split=None, with_orig=True,
+                log_file=LOG_FILE):
         assert self._ds is not None, \
                "ERROR: the tagger doesn't have a dataset. Call the train() " \
                'method first'
@@ -79,10 +80,20 @@ class UposTagger(BaseTagger):
                 _, pred_indices = pred.max(2)
                 preds.extend(pred_indices.cpu().numpy().tolist())
             values = ds_y.reconstruct(preds)
-            for sentence in junky.embed_conllu_fields(
-                corpus_, 'UPOS', values, empties=empties, nones=nones
-            ):
-                yield sentence
+            if with_orig:
+                res_corpus_ = deepcopy(corpus_)
+                for orig_sentence, sentence in zip(
+                    corpus_, junky.embed_conllu_fields(
+                        res_corpus_, 'UPOS', values,
+                        empties=empties, nones=nones
+                    )
+                ):
+                    yield sentence, orig_sentence
+            else:
+                for sentence in junky.embed_conllu_fields(
+                    corpus_, 'UPOS', values, empties=empties, nones=nones
+                ):
+                    yield sentence
 
     def evaluate(self, gold=None, test=None, batch_size=32, split=None,
                  log_file=LOG_FILE):
