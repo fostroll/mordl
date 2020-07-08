@@ -48,8 +48,8 @@ class BaseTagger(BaseParser):
         if isinstance(corpus, str):
             corpus = cls.load_conllu(corpus, log_file=log_file)
         elif (isinstance(corpus, type)
-          and issubclass(corpus, _AbstractCorpus))
-          or isinstance(corpus, _AbstractCorpus:
+          and issubclass(corpus, _AbstractCorpus)) \
+          or isinstance(corpus, _AbstractCorpus):
             corpus = corpus.test()
         elif callable(corpus):
             corpus = corpus()
