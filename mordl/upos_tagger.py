@@ -35,7 +35,7 @@ class UposTagger(BaseTagger):
                       dataset_device=dataset_device)
 
     def predict(self, corpus=None, batch_size=32, split=None, with_orig=False,
-                log_file=LOG_FILE):
+                save_to=None, log_file=LOG_FILE):
         assert self._ds is not None, \
                "ERROR: the tagger doesn't have a dataset. Call the train() " \
                'method first'
@@ -111,20 +111,17 @@ class UposTagger(BaseTagger):
         :rtype: float
         """
         gold = self._get_corpus(gold, log_file=log_file)
-        test = zip(gold, self._get_corpus(test, log_file=log_file)) \
-                   if test else \
-               self.predict(corpus=gold, batch_size=batch_size, split=split,
-                            with_orig=True, log_file=log_file)
+        corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \
+                      if test else \
+                  self.predict(corpus=gold, batch_size=batch_size,
+                               split=split, with_orig=True, log_file=log_file)
         header = 'UPOS'
         if log_file:
             print('Evaluate ' + header, file=LOG_FILE)
         n = c = 0
         i = -1
-        for i, (gold_sent, test_sent) in enumerate(test):
-            for gold_token, test_token in zip(
-                gold_sent[0] if isinstance(gold_sent, tuple) else gold_sent,
-                test_sent[0] if isinstance(test_sent, tuple) else test_sent
-            ):
+        for i, sentences in enumerate(corpora):
+            for gold_token, test_token in zip(sentences):
                 wform = gold_token['FORM']
                 if wform and '-' not in gold_token['ID']:
                     gold_pos = gold_token['UPOS']

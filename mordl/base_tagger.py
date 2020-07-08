@@ -43,17 +43,18 @@ class BaseTagger(BaseParser):
         super().load_train_corpus(corpus, append=append, parse=False,
                                   test=test, seed=seed)
 
-    def _get_corpus(self, corpus, none_corpus=None, log_file=LOG_FILE):
-        if corpus is None:
-            corpus = none_corpus if none_corpus else self._test_corpus
-        elif isinstance(corpus, str):
-            corpus = Conllu.load(corpus, log_file=None)
-        elif (isinstance(corpus, type) and issubclass(corpus, _AbstractCorpus)) \
+    @classmethod
+    def _get_corpus(cls, corpus, asis=False, log_file=LOG_FILE):
+        if isinstance(corpus, str):
+            corpus = cls.load_conllu(corpus, log_file=log_file)
+        elif (isinstance(corpus, type)
+          and issubclass(corpus, _AbstractCorpus))
           or isinstance(corpus, _AbstractCorpus):
             corpus = corpus.test()
         elif callable(corpus):
             corpus = corpus()
-        return corpus
+        return (s[0] if not asis and isinstance(s, tuple) else s
+                    for s in corpus)
 
     @staticmethod
     def _get_filenames(model_name):
