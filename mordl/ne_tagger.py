@@ -103,8 +103,7 @@ class NeTagger(BaseTagger):
                     ):
                         yield sentence
 
-        corpus = process(corpus=corpus, batch_size=batch_size, split=split,
-                         with_orig=with_orig, log_file=log_file)
+        corpus = process()
         if save_to:
             self.save_conllu(corpus, save_to, log_file=None)
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
