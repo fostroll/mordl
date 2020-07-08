@@ -10,7 +10,7 @@ import itertools
 import junky
 from mordl import WordEmbeddings
 from mordl.base_tagger import BaseTagger
-from mordl.upos_tagger_model import UposTaggerModel
+from mordl.ne_tagger_model import NeTaggerModel
 from mordl.utils import LOG_FILE
 import os
 import torch
