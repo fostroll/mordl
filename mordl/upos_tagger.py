@@ -50,12 +50,6 @@ class UposTagger(BaseTagger):
             corpus = corpus()
 
         device = next(self._model.parameters()).device or junky.CPU
-        def to_device(data):
-            if isinstance(data, torch.Tensor):
-                data = data.to(device)
-            elif isinstance(data, Iterable):
-                data = type(data)(to_device(x) for x in data)
-            return data
 
         if not split:
             try:
@@ -85,7 +79,7 @@ class UposTagger(BaseTagger):
             loader = ds.create_loader(batch_size=batch_size, shuffle=False)
             preds = []
             for batch in loader:
-                batch = to_device(batch)
+                batch = junky.to_device(batch, device)
                 with torch.no_grad():
                     pred = self._model(*batch)
                 _, pred_indices = pred.max(2)
