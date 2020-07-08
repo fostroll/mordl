@@ -101,7 +101,7 @@ class UposTagger(BaseTagger):
         gold = self._get_corpus(gold, log_file=log_file)
         test = self._get_corpus(test, none_corpus=gold, log_file=log_file)
         header = 'UPOS'
-        if not silent:
+        if log_file:
             print('Evaluate ' + header, file=LOG_FILE)
         n = c = 0
         i = -1
@@ -113,7 +113,7 @@ class UposTagger(BaseTagger):
                     test_pos = test_token['UPOS']
                     n += 1
                     c += gold_pos == test_pos
-        if not silent:
+        if log_file:
             if i < 0:
                 print('Nothing to do!', file=LOG_FILE)
             else:
