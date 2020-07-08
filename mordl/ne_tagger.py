@@ -252,7 +252,7 @@ class NeTagger(BaseTagger):
         if log_file:
             print('\nCREATE DATASETS', file=log_file)
         self._ds = self._create_dataset(
-            train[:-1],
+            train[0],
             word_emb_type=word_emb_type, word_emb_path=word_emb_path,
             word_emb_model_device=word_emb_model_device,
             word_transform_kwargs=word_transform_kwargs,
