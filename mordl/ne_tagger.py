@@ -46,7 +46,7 @@ class NeTagger(BaseTagger):
         assert not with_orig or save_to is None, \
                'ERROR: `with_orig` can be True only if save_to is None'
 
-        def process():
+        def process(corpus):
             corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
             device = next(self._model.parameters()).device or junky.CPU
 
@@ -103,7 +103,7 @@ class NeTagger(BaseTagger):
                     ):
                         yield sentence
 
-        corpus = process()
+        corpus = process(corpus)
         if save_to:
             self.save_conllu(corpus, save_to, log_file=None)
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
