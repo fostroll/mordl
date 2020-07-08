@@ -53,6 +53,7 @@ class BaseTagger(BaseParser):
             corpus = corpus.test()
         elif callable(corpus):
             corpus = corpus()
+        return corpus
 
     @staticmethod
     def _get_filenames(model_name):
