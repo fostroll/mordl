@@ -109,13 +109,14 @@ class BaseTagger(BaseParser):
             ds = self._ds
         for name in ds.list():
             ds_ = ds.get_dataset(name)
-            typ, idx = name.split('_')
+            name_ = name.split('_', maxsplit=1)
+            typ, idx = name_[0], name_[1] if len(name_) > 1 else None
             if typ == 'x':
                 if not WordEmbeddings.transform_dataset(ds_, sentences):
                     ds_.transform(sentences)
             elif typ == 't':
                 ds_.transform(tags[int(idx)])
-            elif labels and name == 'y':
+            elif labels and typ == 'y':
                 ds_.transform(labels)
 
     def _save_dataset(self, model_name):
