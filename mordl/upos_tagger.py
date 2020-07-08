@@ -78,8 +78,9 @@ class UposTagger(BaseTagger):
                     if i == split:
                         break
             sentences, empties, nones = \
-                junky.extract_conllu_fields(corpus_, fields=None,
-                                            return_nones=True)
+                junky.extract_conllu_fields(
+                    corpus_, fields=None, with_empty=True, return_nones=True
+                )
             self._transform_dataset(sentences)
             loader = ds.create_loader(batch_size=batch_size, shuffle=False)
             preds = []
