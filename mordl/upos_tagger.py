@@ -81,8 +81,7 @@ class UposTagger(BaseTagger):
                 junky.extract_conllu_fields(corpus_, fields=None,
                                             return_nones=True)
             self._transform_dataset(sentences)
-            loader = self._ds.create_loader(batch_size=batch_size,
-                                            shuffle=False)
+            loader = ds.create_loader(batch_size=batch_size, shuffle=False)
             preds = []
             for batch in loader:
                 batch = to_device(batch)
