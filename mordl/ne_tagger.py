@@ -262,7 +262,7 @@ class NeTagger(BaseTagger):
         self._save_dataset(model_name)
         if test:
             ds_test = self._ds.clone(with_data=False)
-            self._transform_dataset(test[1], tags=test[1,:-1],
+            self._transform_dataset(test[1], tags=test[1:-1],
                                     labels=test[-1], ds=ds_test)
         else:
             ds_test = None
