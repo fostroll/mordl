@@ -63,7 +63,11 @@ class UposTagger(BaseTagger):
             except TypeError:
                 corpus = list(corpus)
                 split = len(corpus)
+
+        ds = self._ds.clone()
         ds_y = self._ds.get_dataset('y')
+        ds.remove('y')
+
         for start in itertools.count(step=split):
             try:
                 corpus_ = corpus[start:start + split]
