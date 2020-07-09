@@ -171,18 +171,18 @@ class FeatsTagger(BaseTagger):
         if log_file:
             print('=== FEATS TAGGER TRAINING PIPELINE ===')
 
-        feats = set(x for x in self._train_corpus
-                      for x in x
-                      for x in x['FEATS'].keys())
+        feats = sorted(set(x for x in self._train_corpus
+                             for x in x
+                             for x in x['FEATS'].keys()))
         if log_file:
-            print("We're gonna train separate models for all FEATS in train "
-                  'corpus. Feats are:')
+            print("\nWe're gonna train separate models for all FEATS in train "
+                  'corpus. Feats are:\n')
             print(', '.join(feats))
 
         total_res = {}
         for feat in feats:
             if log_file:
-                print('--------- FEAT:{} ---------'.format(feat))
+                print('\n--------- FEAT:{} ---------'.format(feat))
 
             model_fn, model_config_fn = \
                 self._get_filenames(model_name + '_' + feat)[:2]
@@ -351,5 +351,8 @@ class FeatsTagger(BaseTagger):
                     else:
                         res[key][:best_epoch] = value
             total_res[feat] = res
+
+            del self._model
+            del self._ds
 
         return total_res
