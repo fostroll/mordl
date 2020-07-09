@@ -426,9 +426,8 @@ class WordEmbeddings:
                               file=log_file)
                         print('Dev: f1_score = {:.8f}'.format(f1),
                               file=log_file)
-                        print('NB: Scores may be high because of tags'
-                              'stretching',
-                              file=log_file)
+                        print('NB: Scores may be high because of tags '
+                              'stretching', file=log_file)
 
                     if accuracy > best_accuracy:
                         best_accuracy = accuracy
