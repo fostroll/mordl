@@ -200,6 +200,9 @@ class FeatsTagger(BaseTagger):
             # 2. Tune embeddings
             def tune_word_emb(emb_type, emb_path, emb_model_device=None,
                               emb_tune_params=None):
+                emb_path_prefix = 'feat_' + feat + '_'
+                if emb_path:
+                    emb_path = emb_path_prefix + emb_path
                 if emb_tune_params is True:
                     emb_tune_params = {}
                 elif isinstance(emb_tune_params, str):
@@ -208,8 +211,8 @@ class FeatsTagger(BaseTagger):
                     if emb_type == 'bert':
                         if 'test_data' not in emb_tune_params and test:
                             emb_tune_params['test_data'] = (test[0], test[-1])
-                        emb_tune_params['save_to'] = \
-                            emb_path if emb_path else 'ne_'
+                        emb_tune_params['save_to'] = emb_path if emb_path else \
+                                                     emb_path_prefix
                         if emb_model_device \
                        and 'device' not in emb_tune_params:
                             emb_tune_params['device'] = emb_model_device
