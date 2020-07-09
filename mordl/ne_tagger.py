@@ -148,12 +148,6 @@ class NeTagger(BaseTagger):
                 print('Nothing to do!', file=LOG_FILE)
             else:
                 sp = ' ' * (len(header) - 2)
-                print(header + ' total: {}'.format(n), file=LOG_FILE)
-                print(sp     + ' correct: {}'.format(c), file=LOG_FILE)
-                print(sp     + '   wrong: {}'.format(n - c), file=LOG_FILE)
-                print('Accuracy: {}'.format(c / n if n > 0 else 1.),
-                      file=LOG_FILE)
-
                 print(header + ' total: {}'.format(nt), file=LOG_FILE)
                 print(sp   + ' correct: {}'.format(ct), file=LOG_FILE)
                 print(sp   + '   wrong: {} [{} excess / {} absent{}]'
