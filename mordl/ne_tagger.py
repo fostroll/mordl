@@ -98,7 +98,7 @@ class NeTagger(BaseTagger):
                         yield sentence, orig_sentence
                 else:
                     for sentence in junky.embed_conllu_fields(
-                        corpus_, 'MISC:NE', values,
+                        corpus_, 'MISC:NE:_', values,
                         empties=empties, nones=nones
                     ):
                         yield sentence
