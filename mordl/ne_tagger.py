@@ -35,7 +35,7 @@ class NeTagger(BaseTagger):
          super().load(NeTaggerModel, model_name, device=device,
                       dataset_device=dataset_device)
 
-    def predict(self, corpus=None, batch_size=32, split=None, with_orig=False,
+    def predict(self, corpus, batch_size=32, split=None, with_orig=False,
                 save_to=None, log_file=LOG_FILE):
         assert self._ds is not None, \
                "ERROR: the tagger doesn't have a dataset. Call the train() " \
@@ -109,8 +109,8 @@ class NeTagger(BaseTagger):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
-    def evaluate(self, gold=None, test=None, ne=None, batch_size=32,
-                 split=None, log_file=LOG_FILE):
+    def evaluate(self, gold, test=None, ne=None, batch_size=32, split=None,
+                 log_file=LOG_FILE):
 
         gold = self._get_corpus(gold, log_file=log_file)
         corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \

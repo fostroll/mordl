@@ -34,7 +34,7 @@ class UposTagger(BaseTagger):
          super().load(UposTaggerModel, model_name, device=device,
                       dataset_device=dataset_device)
 
-    def predict(self, corpus=None, batch_size=32, split=None, with_orig=False,
+    def predict(self, corpus, batch_size=32, split=None, with_orig=False,
                 save_to=None, log_file=LOG_FILE):
         assert self._ds is not None, \
                "ERROR: the tagger doesn't have a dataset. Call the train() " \
@@ -105,7 +105,7 @@ class UposTagger(BaseTagger):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
-    def evaluate(self, gold=None, test=None, batch_size=32, split=None,
+    def evaluate(self, gold, test=None, batch_size=32, split=None,
                  log_file=LOG_FILE):
         """Score the accuracy of the POS tagger against the *gold* standard.
         Remove POS tags from the *gold* standard text, retag it using the
