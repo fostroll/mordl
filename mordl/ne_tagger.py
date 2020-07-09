@@ -24,16 +24,10 @@ class NeTagger(BaseTagger):
     def __init__(self):
         super().__init__()
 
-    @classmethod
-    def _prepare_corpus(cls, corpus, fields=['UPOS', 'MISC:NE:_'],
-                        tags_to_remove=None):
-        return super()._prepare_corpus(corpus, fields,
-                                       tags_to_remove=tags_to_remove)
-
     def load(self, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
-         super().load(NeTaggerModel, model_name, device=device,
-                      dataset_device=dataset_device)
+         args, kwargs = junky.get_func_params(self.load, locals())
+         super().load(NeTaggerModel, *args, **kwargs)
 
     def predict(self, corpus, batch_size=32, split=None, with_orig=False,
                 save_to=None, log_file=LOG_FILE):
@@ -181,10 +175,12 @@ class NeTagger(BaseTagger):
 
         # 1. Prepare corpora
         train = self._prepare_corpus(
-            self._train_corpus, tags_to_remove=tags_to_remove
+            self._train_corpus, fields=['UPOS', 'MISC:NE:_'],
+            tags_to_remove=tags_to_remove
         )
         test = self._prepare_corpus(
-            self._test_corpus, tags_to_remove=tags_to_remove
+            self._test_corpus, fields=['UPOS', 'MISC:NE:_'],
+            tags_to_remove=tags_to_remove
         ) if self._test_corpus is not None else [None]
 
         # 2. Tune embeddings

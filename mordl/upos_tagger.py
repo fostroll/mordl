@@ -24,15 +24,10 @@ class UposTagger(BaseTagger):
     def __init__(self):
         super().__init__()
 
-    @classmethod
-    def _prepare_corpus(cls, corpus, fields='UPOS', tags_to_remove=None):
-        return super()._prepare_corpus(corpus, fields,
-                                       tags_to_remove=tags_to_remove)
-
     def load(self, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
-         super().load(UposTaggerModel, model_name, device=device,
-                      dataset_device=dataset_device)
+         args, kwargs = junky.get_func_params(self.load, locals())
+         super().load(UposTaggerModel, *args, **kwargs)
 
     def predict(self, corpus, batch_size=32, split=None, with_orig=False,
                 save_to=None, log_file=LOG_FILE):
@@ -171,10 +166,10 @@ class UposTagger(BaseTagger):
 
         # 1. Prepare corpora
         train, train_labels = self._prepare_corpus(
-            self._train_corpus, tags_to_remove=tags_to_remove
+            self._train_corpus, fields='UPOS', tags_to_remove=tags_to_remove
         )
         test, test_labels = self._prepare_corpus(
-            self._test_corpus, tags_to_remove=tags_to_remove
+            self._test_corpus, fields='UPOS', tags_to_remove=tags_to_remove
         ) if self._test_corpus is not None else (None, None)
 
         # 2. Tune embeddings
