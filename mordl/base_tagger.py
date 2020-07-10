@@ -147,14 +147,17 @@ class BaseTagger(BaseParser):
                 if not res_:
                     res_ = ds_.transform_collate(sentences,
                                                  batch_size=batch_size)
-                res += res_ if isinstance(res_, tuple) else [res_]
+                res.extend(res_) if isinstance(res_, tuple) else \
+                res.append(res_)
             elif typ == 't':
                 res_ = ds_.transform_collate(tags[int(idx)],
                                              batch_size=batch_size)
-                res += res_ if isinstance(res_, tuple) else [res_]
+                res.extend(res_) if isinstance(res_, tuple) else \
+                res.append(res_)
             elif labels and typ == 'y':
                 res_ = ds_.transform_collate(labels, batch_size=batch_size)
-                res += res_ if isinstance(res_, tuple) else [res_]
+                res.extend(res_) if isinstance(res_, tuple) else \
+                res.append(res_)
         return zip(*res)
 
     def _save_dataset(self, model_name):
