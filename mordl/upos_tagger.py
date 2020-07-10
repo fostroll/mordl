@@ -30,7 +30,7 @@ class UposTagger(BaseTagger):
          super().load(UposTaggerModel, *args, **kwargs)
 
     def predict(self, corpus, with_orig=False, batch_size=64, split=None,
-                new_ds=False, save_to=None, log_file=LOG_FILE):
+                clone_ds=False, save_to=None, log_file=LOG_FILE):
         assert self._ds is not None, \
                "ERROR: the tagger doesn't have a dataset. Call the train() " \
                'method first'
@@ -45,7 +45,7 @@ class UposTagger(BaseTagger):
             device = next(self._model.parameters()).device or junky.CPU
 
             ds_y = self._ds.get_dataset('y')
-            if new_ds:
+            if clone_ds:
                 ds = self._ds.clone()
                 ds.remove('y')
 
@@ -71,7 +71,7 @@ class UposTagger(BaseTagger):
                         corpus_, fields=None,
                         with_empty=True, return_nones=True
                     )
-                if new_ds:
+                if clone_ds:
                     self._transform(sentences, ds=ds, log_file=log_file)
                     loader = ds.create_loader(batch_size=batch_size,
                                               shuffle=False)
@@ -109,7 +109,7 @@ class UposTagger(BaseTagger):
         return corpus
 
     def evaluate(self, gold, test=None, batch_size=32, split=None,
-                 new_ds=False, log_file=LOG_FILE):
+                 clone_ds=False, log_file=LOG_FILE):
         """Score the accuracy of the POS tagger against the *gold* standard.
         Remove POS tags from the *gold* standard text, retag it using the
         tagger, then compute the accuracy score. If *test* is not None, compute
@@ -127,7 +127,7 @@ class UposTagger(BaseTagger):
                       if test else \
                   self.predict(corpus=gold, with_orig=True,
                                batch_size=batch_size, split=split,
-                               new_ds=new_ds, log_file=log_file)
+                               clone_ds=clone_ds, log_file=log_file)
         header = 'UPOS'
         if log_file:
             print('Evaluate ' + header, file=LOG_FILE)
