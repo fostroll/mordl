@@ -102,6 +102,77 @@ class UposTagger(BaseTagger):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
+    def predict0(self, corpus, batch_size=32, split=None, with_orig=False,
+                save_to=None, log_file=LOG_FILE):
+        assert self._ds is not None, \
+               "ERROR: the tagger doesn't have a dataset. Call the train() " \
+               'method first'
+        assert self._model, \
+               "ERROR: the tagger doesn't have a model. Call the train() " \
+               'method first'
+        assert not with_orig or save_to is None, \
+               'ERROR: `with_orig` can be True only if save_to is None'
+
+        def process(corpus):
+            corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
+            device = next(self._model.parameters()).device or junky.CPU
+
+            ds = self._ds.clone()
+            ds_y = self._ds.get_dataset('y')
+            ds.remove('y')
+
+            for start in itertools.count(step=split if split else 1):
+                if isinstance(corpus, Iterator):
+                    if split:
+                        corpus_ = []
+                        for i, sentence in enumerate(corpus, start=1):
+                            corpus_.append(sentence)
+                            if i == split:
+                                break
+                    else:
+                        corpus_ = list(corpus)
+                else:
+                    if split:
+                        corpus_ = corpus[start:start + split]
+                    else:
+                        corpus_ = corpus
+                if not corpus_:
+                    break
+                sentences, empties, nones = \
+                    junky.extract_conllu_fields(
+                        corpus_, fields=None, with_empty=True, return_nones=True
+                    )
+                self._transform_dataset(sentences, ds=ds)
+                loader = ds.create_loader(batch_size=batch_size, shuffle=False)
+                preds = []
+                for batch in loader:
+                    batch = junky.to_device(batch, device)
+                    with torch.no_grad():
+                        pred = self._model(*batch)
+                    _, pred_indices = pred.max(2)
+                    preds.extend(pred_indices.cpu().numpy().tolist())
+                values = ds_y.reconstruct(preds)
+                if with_orig:
+                    res_corpus_ = deepcopy(corpus_)
+                    for orig_sentence, sentence in zip(
+                        corpus_, junky.embed_conllu_fields(
+                            res_corpus_, 'UPOS', values,
+                            empties=empties, nones=nones
+                        )
+                    ):
+                        yield sentence, orig_sentence
+                else:
+                    for sentence in junky.embed_conllu_fields(
+                        corpus_, 'UPOS', values, empties=empties, nones=nones
+                    ):
+                        yield sentence
+
+        corpus = process(corpus)
+        if save_to:
+            self.save_conllu(corpus, save_to, log_file=None)
+            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
+        return corpus
+
     def evaluate(self, gold, test=None, batch_size=32, split=None,
                  log_file=LOG_FILE):
         """Score the accuracy of the POS tagger against the *gold* standard.
