@@ -663,17 +663,20 @@ class WordEmbeddings:
                 kwargs = config.get('transform_kwargs', {})
                 kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
+        loglevel = 0
         for _ in range(1):
             if isinstance(ds, BertDataset):
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
                 kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
+                loglevel = transform_kwargs.get('loglevel', 1)
             elif isinstance(ds, WordDataset):
                 pass
             else:
                 break
             res = ds.transform_collate(sentences, batch_size=batch_size,
-                                       transform_kwargs=transform_kwargs)
+                                       transform_kwargs=transform_kwargs,
+                                       loglevel=loglevel)
         return res
 
     @staticmethod
