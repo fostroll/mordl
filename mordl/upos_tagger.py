@@ -70,7 +70,7 @@ class UposTagger(BaseTagger):
                     )
                 preds = []
                 for batch in self._transform_collate_dataset(
-                    sentences, batch_size=batch_size)
+                    sentences, batch_size=batch_size
                 ):
                     batch = junky.to_device(batch, device)
                     with torch.no_grad():
