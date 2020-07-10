@@ -619,7 +619,7 @@ class WordEmbeddings:
 
     @classmethod
     def transform_dataset(cls, ds, sentences, transform_kwargs=None):
-        res = True
+        res = False
         if not transform_kwargs:
             config = getattr(ds, CONFIG_ATTR, None)
             if config:
@@ -637,12 +637,37 @@ class WordEmbeddings:
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
                 kwargs.update(transform_kwargs)
                 ds.transform(sentences, **kwargs)
+                res = True
             elif isinstance(ds, WordDataset):
-                x.transform(sentences, **transform_kwargs)
-            else:
-                res = False
-        else:
-            res = False
+                ds.transform(sentences, **transform_kwargs)
+                res = True
+        return res
+
+    @classmethod
+    def transform_collate_dataset(cls, ds, sentences, batch_size=64,
+                                  transform_kwargs=None):
+        res = False
+        if not transform_kwargs:
+            config = getattr(ds, CONFIG_ATTR, None)
+            if config:
+                if isinstance(ds, WordCatDataset):
+                    for name, cfg in zip(ds.list(), config):
+                        res = res \
+                          and cls.transform_dataset(ds.get_dataset(name),
+                                                    sentences)
+                        if not res:
+                            break
+                else:
+                    transform_kwargs = config.get('transform_kwargs', {})
+        if transform_kwargs is not None:
+            if isinstance(ds, BertDataset):
+                kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
+                kwargs.update(transform_kwargs)
+                res = ds.transform_collate(sentences, batch_size=batch_size,
+                                           transform_kwargs=kwargs)
+            elif isinstance(ds, WordDataset):
+                res = ds.transform_collate(sentences, batch_size=batch_size,
+                                           transform_kwargs=transform_kwargs)
         return res
 
     @staticmethod
