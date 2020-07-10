@@ -156,8 +156,6 @@ class BaseTagger(BaseParser):
             elif typ == 't':
                 res.append(ds_.transform_collate(tags[int(idx)],
                                                  batch_size=batch_size))
-                res.extend(res_) if isinstance(res_, tuple) else \
-                res.append(res_)
             elif labels and typ == 'y':
                 res.append(ds_.transform_collate(labels,
                                                  batch_size=batch_size))
