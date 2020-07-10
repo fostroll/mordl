@@ -137,24 +137,23 @@ class BaseTagger(BaseParser):
                                    batch_size=64):
         res = []
         for name in self._ds.list():
-            if names is None or name in names:
-                ds_ = self._ds.get_dataset(name)
-                name_ = name.split('_', maxsplit=1)
-                typ, idx = name_[0], name_[1] if len(name_) > 1 else None
-                if typ == 'x':
-                    res_ = WordEmbeddings.transform_dataset(
-                        ds_, sentences, batch_size=batch_size
-                    )
-                    if not res_:
-                        res_ = ds_.transform_collate(sentences,
-                                                     batch_size=batch_size)
-                    res.append(res_)
-                elif typ == 't':
-                    res.append(ds_.transform_collate(tags[int(idx)],
-                                                     batch_size=batch_size))
-                elif labels and typ == 'y':
-                    res.append(ds_.transform_collate(labels,
-                                                     batch_size=batch_size))
+            ds_ = self._ds.get_dataset(name)
+            name_ = name.split('_', maxsplit=1)
+            typ, idx = name_[0], name_[1] if len(name_) > 1 else None
+            if typ == 'x':
+                res_ = WordEmbeddings.transform_dataset(
+                    ds_, sentences, batch_size=batch_size
+                )
+                if not res_:
+                    res_ = ds_.transform_collate(sentences,
+                                                 batch_size=batch_size)
+                res.append(res_)
+            elif typ == 't':
+                res.append(ds_.transform_collate(tags[int(idx)],
+                                                 batch_size=batch_size))
+            elif labels and typ == 'y':
+                res.append(ds_.transform_collate(labels,
+                                                 batch_size=batch_size))
         return zip(*res)
 
     def _save_dataset(self, model_name):
