@@ -160,7 +160,7 @@ class BaseTagger(BaseParser):
             batch = []
             batch.extend(res_) if isinstance(res_, tuple) else \
             batch.append(res_)
-            yield res
+            yield batch
 
     def _save_dataset(self, model_name):
         ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
