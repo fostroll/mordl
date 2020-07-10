@@ -44,6 +44,7 @@ class UposTagger(BaseTagger):
             corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
             device = next(self._model.parameters()).device or junky.CPU
 
+            ds_y = self._ds.get_dataset('y')
             names = self._ds.list()[:-1]
 
             for start in itertools.count(step=split if split else 1):
@@ -71,8 +72,8 @@ class UposTagger(BaseTagger):
                 preds = []
                 for batch in self._ds.transform_collate(
                     sentences, batch_size=batch_size,
-                    transform_kwargs=junky.kwargs(names=names),
-                    collate_kwargs=junky.kwargs(names=names)
+                    transform_kwargs=junky.kwargs(names=names_x),
+                    collate_kwargs=junky.kwargs(names=names_x)
                 ):
                     batch = junky.to_device(batch, device)
                     with torch.no_grad():
