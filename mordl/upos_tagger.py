@@ -65,11 +65,13 @@ class UposTagger(BaseTagger):
                     break
                 sentences, empties, nones = \
                     junky.extract_conllu_fields(
-                        corpus_, fields=None, with_empty=True, return_nones=True
+                        corpus_, fields=None,
+                        with_empty=True, return_nones=True
                     )
                 preds = []
                 for batch in self._ds.transform_collate(
-                    sentences, batch_size=batch_size, names=names
+                    sentences, batch_size=batch_size,
+                    transform_kwargs=junky.kwargs(names=names)
                 ):
                     batch = junky.to_device(batch, device)
                     with torch.no_grad():
