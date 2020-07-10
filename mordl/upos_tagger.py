@@ -71,7 +71,8 @@ class UposTagger(BaseTagger):
                 preds = []
                 for batch in self._ds.transform_collate(
                     sentences, batch_size=batch_size,
-                    transform_kwargs=junky.kwargs(names=names)
+                    transform_kwargs=junky.kwargs(names=names),
+                    collate_kwargs=junky.kwargs(names=names)
                 ):
                     batch = junky.to_device(batch, device)
                     with torch.no_grad():
