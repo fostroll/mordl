@@ -45,7 +45,7 @@ class UposTagger(BaseTagger):
             device = next(self._model.parameters()).device or junky.CPU
 
             ds_y = self._ds.get_dataset('y')
-            names = self._ds.list()[:-1]
+            names_x = self._ds.list()[:-1]
 
             for start in itertools.count(step=split if split else 1):
                 if isinstance(corpus, Iterator):
