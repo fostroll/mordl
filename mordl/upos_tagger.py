@@ -30,7 +30,7 @@ class UposTagger(BaseTagger):
          super().load(UposTaggerModel, *args, **kwargs)
 
     def predict(self, corpus, batch_size=32, with_orig=False, split=None,
-                save_to=None, log_file=LOG_FILE):
+                new_ds=False, save_to=None, log_file=LOG_FILE):
         assert self._ds is not None, \
                "ERROR: the tagger doesn't have a dataset. Call the train() " \
                'method first'
@@ -45,6 +45,9 @@ class UposTagger(BaseTagger):
             device = next(self._model.parameters()).device or junky.CPU
 
             ds_y = self._ds.get_dataset('y')
+            if new_ds:
+                ds = self._ds.clone()
+                ds.remove('y')
 
             for start in itertools.count(step=split if split else 1):
                 if isinstance(corpus, Iterator):
@@ -68,10 +71,16 @@ class UposTagger(BaseTagger):
                         corpus_, fields=None,
                         with_empty=True, return_nones=True
                     )
+                if new_ds:
+                    self._transform(sentences, ds=ds, log_file=log_file)
+                    loader = ds.create_loader(batch_size=batch_size,
+                                              shuffle=False)
+                else:
+                    loader = self._transform_collate(
+                        sentences, batch_size=batch_size, log_file=log_file
+                    )
                 preds = []
-                for batch in self._transform_collate(
-                    sentences, batch_size=batch_size, log_file=log_file
-                ):
+                for batch in loader:
                     batch = junky.to_device(batch, device)
                     with torch.no_grad():
                         pred = self._model(*batch)
