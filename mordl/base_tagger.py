@@ -141,7 +141,7 @@ class BaseTagger(BaseParser):
             name_ = name.split('_', maxsplit=1)
             typ, idx = name_[0], name_[1] if len(name_) > 1 else None
             if typ == 'x':
-                res_ = WordEmbeddings.transform_dataset(
+                res_ = WordEmbeddings.transform_collate_dataset(
                     ds_, sentences, batch_size=batch_size
                 )
                 if not res_:
