@@ -118,7 +118,8 @@ class BaseTagger(BaseParser):
 
         return ds
 
-    def _transform_dataset(self, sentences, tags=None, labels=None, ds=None):
+    def _transform(self, sentences, tags=None, labels=None, ds=None,
+                   log_file=LOG_FILE):
         if ds is None:
             ds = self._ds
         for name in ds.list():
@@ -126,23 +127,27 @@ class BaseTagger(BaseParser):
             name_ = name.split('_', maxsplit=1)
             typ, idx = name_[0], name_[1] if len(name_) > 1 else None
             if typ == 'x':
-                if not WordEmbeddings.transform_dataset(ds_, sentences):
+                if not WordEmbeddings.transform(
+                    ds_, sentences,
+                    transform_kwargs={} if log_file else {'loglevel': 0}
+                ):
                     ds_.transform(sentences)
             elif typ == 't':
                 ds_.transform(tags[int(idx)])
             elif labels and typ == 'y':
                 ds_.transform(labels)
 
-    def _transform_collate_dataset(self, sentences, tags=None, labels=None,
-                                   batch_size=64):
+    def _transform_collate(self, sentences, tags=None, labels=None,
+                           batch_size=64, log_file=LOG_FILE):
         res = []
         for name in self._ds.list():
             ds_ = self._ds.get_dataset(name)
             name_ = name.split('_', maxsplit=1)
             typ, idx = name_[0], name_[1] if len(name_) > 1 else None
             if typ == 'x':
-                res_ = WordEmbeddings.transform_collate_dataset(
-                    ds_, sentences, batch_size=batch_size
+                res_ = WordEmbeddings.transform_collate(
+                    ds_, sentences, batch_size=batch_size,
+                    transform_kwargs={} if log_file else {'loglevel': 0}
                 )
                 if not res_:
                     res_ = ds_.transform_collate(sentences,

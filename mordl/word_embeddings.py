@@ -28,7 +28,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, \
 _DEFAULT_BERT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
     max_len=0, batch_size=64, hidden_ids=11,
     aggregate_hiddens_op='cat', aggregate_subtokens_op='max',
-    to=junky.CPU, loglevel=2
+    to=junky.CPU, loglevel=1
 )
 _MAX_BAD_EPOCHS = 1
 
@@ -618,56 +618,62 @@ class WordEmbeddings:
         return ds
 
     @classmethod
-    def transform_dataset(cls, ds, sentences, transform_kwargs=None):
+    def transform(cls, ds, sentences, transform_kwargs=None):
         res = False
-        if not transform_kwargs:
-            config = getattr(ds, CONFIG_ATTR, None)
-            if config:
-                if isinstance(ds, WordCatDataset):
-                    for name, cfg in zip(ds.list(), config):
-                        res = res \
-                          and cls.transform_dataset(ds.get_dataset(name),
-                                                    sentences)
-                        if not res:
-                            break
-                else:
-                    transform_kwargs = config.get('transform_kwargs', {})
-        if transform_kwargs is not None:
+        config = getattr(ds, CONFIG_ATTR, None)
+        if config:
+            if isinstance(ds, WordCatDataset):
+                for name, cfg in zip(ds.list(), config):
+                    res = res \
+                      and cls.transform_dataset(ds.get_dataset(name),
+                                                sentences)
+                    if not res:
+                        break
+            else:
+                kwargs = config.get('transform_kwargs', {})
+                kwargs.update(transform_kwargs)
+                transform_kwargs = kwargs
+        for _ in range(1):
             if isinstance(ds, BertDataset):
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
                 kwargs.update(transform_kwargs)
-                ds.transform(sentences, **kwargs)
-                res = True
+                transform_kwargs = kwargs
             elif isinstance(ds, WordDataset):
-                ds.transform(sentences, **transform_kwargs)
-                res = True
+                pass
+            else:
+                break
+            ds.transform(sentences, **transform_kwargs)
+            res = True
         return res
 
     @classmethod
-    def transform_collate_dataset(cls, ds, sentences, batch_size=64,
-                                  transform_kwargs=None):
+    def transform_collate(cls, ds, sentences, batch_size=64,
+                          transform_kwargs=None):
         res = False
-        if not transform_kwargs:
-            config = getattr(ds, CONFIG_ATTR, None)
-            if config:
-                if isinstance(ds, WordCatDataset):
-                    for name, cfg in zip(ds.list(), config):
-                        res = res \
-                          and cls.transform_dataset(ds.get_dataset(name),
-                                                    sentences)
-                        if not res:
-                            break
-                else:
-                    transform_kwargs = config.get('transform_kwargs', {})
-        if transform_kwargs is not None:
+        config = getattr(ds, CONFIG_ATTR, None)
+        if config:
+            if isinstance(ds, WordCatDataset):
+                for name, cfg in zip(ds.list(), config):
+                    res = res \
+                      and cls.transform_dataset(ds.get_dataset(name),
+                                                sentences)
+                    if not res:
+                        break
+            else:
+                kwargs = config.get('transform_kwargs', {})
+                kwargs.update(transform_kwargs)
+                transform_kwargs = kwargs
+        for _ in range(1):
             if isinstance(ds, BertDataset):
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
                 kwargs.update(transform_kwargs)
-                res = ds.transform_collate(sentences, batch_size=batch_size,
-                                           transform_kwargs=kwargs)
+                transform_kwargs = kwargs
             elif isinstance(ds, WordDataset):
-                res = ds.transform_collate(sentences, batch_size=batch_size,
-                                           transform_kwargs=transform_kwargs)
+                pass
+            else:
+                break
+            res = ds.transform_collate(sentences, batch_size=batch_size,
+                                       transform_kwargs=transform_kwargs)
         return res
 
     @staticmethod

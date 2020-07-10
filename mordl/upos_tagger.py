@@ -69,7 +69,7 @@ class UposTagger(BaseTagger):
                         with_empty=True, return_nones=True
                     )
                 preds = []
-                for batch in self._transform_collate_dataset(
+                for batch in self._transform_collate(
                     sentences, batch_size=batch_size
                 ):
                     batch = junky.to_device(batch, device)
@@ -139,7 +139,7 @@ class UposTagger(BaseTagger):
                     junky.extract_conllu_fields(
                         corpus_, fields=None, with_empty=True, return_nones=True
                     )
-                self._transform_dataset(sentences, ds=ds)
+                self._transform(sentences, ds=ds)
                 loader = ds.create_loader(batch_size=batch_size, shuffle=False)
                 preds = []
                 for batch in loader:
@@ -309,7 +309,7 @@ class UposTagger(BaseTagger):
         self._save_dataset(model_name)
         if test:
             ds_test = self._ds.clone(with_data=False)
-            self._transform_dataset(test, labels=test_labels, ds=ds_test)
+            self._transform(test, labels=test_labels, ds=ds_test)
         else:
             ds_test = None
 
