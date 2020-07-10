@@ -156,11 +156,12 @@ class BaseTagger(BaseParser):
             elif labels and typ == 'y':
                 res.append(ds_.transform_collate(labels,
                                                  batch_size=batch_size))
-        for res_ in zip(*res):
-            batch = []
-            batch.extend(res_) if isinstance(res_, tuple) else \
-            batch.append(res_)
-            yield batch
+        for batch in zip(*res):
+            batch_ = []
+            for res_ in batch:
+                batch_.extend(res_) if isinstance(res_, tuple) else \
+                batch_.append(res_)
+            yield batch_
 
     def _save_dataset(self, model_name):
         ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
