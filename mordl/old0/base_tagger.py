@@ -359,7 +359,7 @@ class BaseTagger(BaseParser):
                 print(sp   + ' correct: {}'.format(ct), file=LOG_FILE)
                 print(sp   + '   wrong: {}{}'.format(
                     nt - ct, ' [{} excess / {} absent{}]'.format(
-                        ce, ca, '' if val else ' / {} wrong type'.format(cr)
+                        ce, ca, '' if label else ' / {} wrong type'.format(cr)
                     ) if nt != n else ''
                 ), file=LOG_FILE)
                 print(sp   + 'Accuracy: {}'.format(ct / nt if nt > 0 else 1.))
@@ -368,8 +368,8 @@ class BaseTagger(BaseParser):
                               .format(c / n if n > 0 else 1.))
         return ct / nt if nt > 0 else 1.
 
-    def train(self, field, add_fields, model_class, tag_emb_names, model_name,
-              device=None, epochs=None, min_epochs=0, bad_epochs=5,
+    def train(self, field, add_fields, model_name, device=None,
+              epochs=sys.maxsize, min_epochs=0, bad_epochs=5,
               batch_size=32, control_metric='accuracy', max_grad_norm=None,
               tags_to_remove=None, word_emb_type=None, word_emb_path=None,
               word_emb_model_device=None, word_emb_tune_params=junky.kwargs(
@@ -379,9 +379,6 @@ class BaseTagger(BaseParser):
               seed=None, log_file=LOG_FILE, **model_kwargs):
 
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
-
-        if isinstance(tag_emb_names, str):
-            tag_emb_names = [tag_emb_names]
 
         if field.count(':') == 1:
             field += ':_'
@@ -484,29 +481,27 @@ class BaseTagger(BaseParser):
         # 4. Create model
         if log_file:
             print('\nCREATE A MODEL', file=log_file)
-        ds_ = self._ds.get_dataset('y')
-        model_args = [len(ds_.transform_dict)]
-        model_kwargs['labels_pad_idx'] = ds_.pad
-        if model_kwargs['word_emb_type']:
-            ds_ = self._ds.get_dataset('x')
-            model_kwargs['vec_emb_dim'] = ds_.vec_size
-        if model_kwargs['rnn_emb_dim'] or model_kwargs['cnn_emb_dim']:
-            ds_ = self._ds.get_dataset('x_ch')
-            model_kwargs['alphabet_size'] = len(ds_.transform_dict)
-            model_kwargs['char_pad_idx'] = ds_.pad
-        if tag_emb_names:
-            ds_list = self._ds.list()
-            names = iter(tag_emb_names)
-            for name in self._ds.list():
-                if name.startswith('t_'):
-                    ds_ = self._ds.get_dataset('name')
-                    name = next(tag_emb_names)
-                    emb_dim = model_kwargs[name + '_emb_dim']
-                    if emb_dim:
-                        model_kwargs[name + '_num'] = len(ds_.transform_dict)
-                        model_kwargs[name + '_pad_idx'] = ds_.pad
         self._model, criterion, optimizer, scheduler = \
-            model_class.create_model_for_train(*model_args, **model_kwargs)
+            NeTaggerModel.create_model_for_train(
+                len(self._ds.get_dataset('y').transform_dict),
+                tags_pad_idx=self._ds.get_dataset('y').pad,
+                vec_emb_dim=self._ds.get_dataset('x').vec_size
+                                if word_emb_type is not None else
+                            None,
+                alphabet_size=len(self._ds.get_dataset('x_ch').transform_dict)
+                                  if rnn_emb_dim or cnn_emb_dim else
+                              0,
+                char_pad_idx=self._ds.get_dataset('x_ch').pad
+                                 if rnn_emb_dim or cnn_emb_dim else
+                             0,
+                num_upos=len(self._ds.get_dataset('t_0').transform_dict)
+                                  if upos_emb_dim else
+                         0,
+                upos_pad_idx=self._ds.get_dataset('t_0').pad
+                                  if upos_emb_dim else
+                         0,
+                **model_kwargs
+            )
         if device:
             self._model = self._model.to(device)
         self._model.save_config(model_config_fn, log_file=log_file)

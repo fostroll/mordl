@@ -29,34 +29,123 @@ class UposTagger(BaseTagger):
          args, kwargs = junky.get_func_params(self.load, locals())
          super().load(UposTaggerModel, *args, **kwargs)
 
-    def predict(self, corpus, with_orig=False, batch_size=64, split=None,
-                clone_ds=False, save_to=None, log_file=LOG_FILE):
-         args, kwargs = junky.get_func_params(self.predict, locals())
-         return super().predict('UPOS', None, *args, **kwargs)
+    def predict(self, corpus, batch_size=32, split=None, with_orig=False,
+                save_to=None, log_file=LOG_FILE):
+        assert self._ds is not None, \
+               "ERROR: the tagger doesn't have a dataset. Call the train() " \
+               'method first'
+        assert self._model, \
+               "ERROR: the tagger doesn't have a model. Call the train() " \
+               'method first'
+        assert not with_orig or save_to is None, \
+               'ERROR: `with_orig` can be True only if save_to is None'
 
-    def evaluate(self, gold, test=None, val=None, batch_size=64, split=None,
-                 clone_ds=False, log_file=LOG_FILE):
-         args, kwargs = junky.get_func_params(self.evaluate, locals())
-         return super().evaluate('UPOS', *args, **kwargs)
+        def process(corpus):
+            corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
+            device = next(self._model.parameters()).device or junky.CPU
 
-    def train(self, model_name,
-              device=None, epochs=None, min_epochs=0, bad_epochs=5,
-              batch_size=32, control_metric='accuracy', max_grad_norm=None,
-              tags_to_remove=None, word_emb_type=None, word_emb_path=None,
-              word_emb_model_device=None, word_emb_tune_params=junky.kwargs(
-                  name='bert-base-multilingual-cased', max_len=512,
-                  epochs=4, batch_size=8
-              ), word_transform_kwargs=None, word_next_emb_params=None,
-              rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=2, lstm_do=0,
-              bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
-              log_file=LOG_FILE):
-         args, kwargs = junky.get_func_params(self.evaluate, locals())
-         return super().evaluate('UPOS', None, UposTaggerModel, None,
-                                 *args, **kwargs)
+            ds = self._ds.clone()
+            ds_y = self._ds.get_dataset('y')
+            ds.remove('y')
 
-    def train0(self, model_name,
-              device=None, epochs=None, min_epochs=0, bad_epochs=5,
+            for start in itertools.count(step=split if split else 1):
+                if isinstance(corpus, Iterator):
+                    if split:
+                        corpus_ = []
+                        for i, sentence in enumerate(corpus, start=1):
+                            corpus_.append(sentence)
+                            if i == split:
+                                break
+                    else:
+                        corpus_ = list(corpus)
+                else:
+                    if split:
+                        corpus_ = corpus[start:start + split]
+                    else:
+                        corpus_ = corpus
+                if not corpus_:
+                    break
+                sentences, empties, nones = \
+                    junky.extract_conllu_fields(
+                        corpus_, fields=None, with_empty=True, return_nones=True
+                    )
+                self._transform_dataset(sentences, ds=ds)
+                loader = ds.create_loader(batch_size=batch_size, shuffle=False)
+                preds = []
+                for batch in loader:
+                    batch = junky.to_device(batch, device)
+                    with torch.no_grad():
+                        pred = self._model(*batch)
+                    _, pred_indices = pred.max(2)
+                    preds.extend(pred_indices.cpu().numpy().tolist())
+                values = ds_y.reconstruct(preds)
+                if with_orig:
+                    res_corpus_ = deepcopy(corpus_)
+                    for orig_sentence, sentence in zip(
+                        corpus_, junky.embed_conllu_fields(
+                            res_corpus_, 'UPOS', values,
+                            empties=empties, nones=nones
+                        )
+                    ):
+                        yield sentence, orig_sentence
+                else:
+                    for sentence in junky.embed_conllu_fields(
+                        corpus_, 'UPOS', values, empties=empties, nones=nones
+                    ):
+                        yield sentence
+
+        corpus = process(corpus)
+        if save_to:
+            self.save_conllu(corpus, save_to, log_file=None)
+            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
+        return corpus
+
+    def evaluate(self, gold, test=None, batch_size=32, split=None,
+                 log_file=LOG_FILE):
+        """Score the accuracy of the POS tagger against the *gold* standard.
+        Remove POS tags from the *gold* standard text, retag it using the
+        tagger, then compute the accuracy score. If *test* is not None, compute
+        the accuracy of the *test* corpus with respect to the *gold*.
+
+        :param gold: a corpus of tagged sentences to score the tagger on.
+                     If *gold* is None then loaded test corpus is used
+        :param test: a corpus of tagged sentences to compare with *gold*
+        :param silent: suppress log
+        :return: accuracy score of the tagger against the gold
+        :rtype: float
+        """
+        gold = self._get_corpus(gold, log_file=log_file)
+        corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \
+                      if test else \
+                  self.predict(corpus=gold, batch_size=batch_size,
+                               split=split, with_orig=True, log_file=log_file)
+        header = 'UPOS'
+        if log_file:
+            print('Evaluate ' + header, file=LOG_FILE)
+        n = c = 0
+        i = -1
+        for i, sentences in enumerate(corpora):
+            for gold_token, test_token in zip(*sentences):
+                wform = gold_token['FORM']
+                if wform and '-' not in gold_token['ID']:
+                    gold_upos = gold_token['UPOS']
+                    test_upos = test_token['UPOS']
+                    n += 1
+                    c += gold_upos == test_upos
+        if log_file:
+            if i < 0:
+                print('Nothing to do!', file=LOG_FILE)
+            else:
+                sp = ' ' * (len(header) - 2)
+                print(header + ' total: {}'.format(n), file=LOG_FILE)
+                print(sp     + ' correct: {}'.format(c), file=LOG_FILE)
+                print(sp     + '   wrong: {}'.format(n - c), file=LOG_FILE)
+                print('Accuracy: {}'.format(c / n if n > 0 else 1.),
+                      file=LOG_FILE)
+        return c / n if n > 0 else 1.
+
+    def train(self, model_name, device=None,
+              epochs=sys.maxsize, min_epochs=0, bad_epochs=5,
               batch_size=32, control_metric='accuracy', max_grad_norm=None,
               tags_to_remove=None, word_emb_type=None, word_emb_path=None,
               word_emb_model_device=None, word_emb_tune_params=junky.kwargs(
@@ -150,7 +239,7 @@ class UposTagger(BaseTagger):
         self._save_dataset(model_name)
         if test:
             ds_test = self._ds.clone(with_data=False)
-            self._transform(test, labels=test_labels, ds=ds_test)
+            self._transform_dataset(test, labels=test_labels, ds=ds_test)
         else:
             ds_test = None
 

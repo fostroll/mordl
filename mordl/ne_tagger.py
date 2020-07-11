@@ -34,147 +34,13 @@ class NeTagger(BaseTagger):
          args, kwargs = junky.get_func_params(self.predict, locals())
          return super().predict('MISC:NE', 'UPOS', *args, **kwargs)
 
-    def evaluate(self, gold, test=None, label=None, batch_size=64, split=None,
+    def evaluate(self, gold, test=None, val=None, batch_size=64, split=None,
                  clone_ds=False, log_file=LOG_FILE):
          args, kwargs = junky.get_func_params(self.evaluate, locals())
-         return super().evaluate('MISC:NE', 'UPOS', *args, **kwargs)
+         return super().evaluate('MISC:NE', *args, **kwargs)
 
-    def predict0(self, corpus, with_orig=False, batch_size=64, split=None,
-                clone_ds=False, save_to=None, log_file=LOG_FILE):
-        assert self._ds is not None, \
-               "ERROR: the tagger doesn't have a dataset. Call the train() " \
-               'method first'
-        assert self._model, \
-               "ERROR: the tagger doesn't have a model. Call the train() " \
-               'method first'
-        assert not with_orig or save_to is None, \
-               'ERROR: `with_orig` can be True only if save_to is None'
-
-        def process(corpus):
-            corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
-            device = next(self._model.parameters()).device or junky.CPU
-
-            ds_y = self._ds.get_dataset('y')
-            if clone_ds:
-                ds = self._ds.clone()
-                ds.remove('y')
-
-            for start in itertools.count(step=split if split else 1):
-                if isinstance(corpus, Iterator):
-                    if split:
-                        corpus_ = []
-                        for i, sentence in enumerate(corpus, start=1):
-                            corpus_.append(sentence)
-                            if i == split:
-                                break
-                    else:
-                        corpus_ = list(corpus)
-                else:
-                    if split:
-                        corpus_ = corpus[start:start + split]
-                    else:
-                        corpus_ = corpus
-                if not corpus_:
-                    break
-                res = \
-                    junky.extract_conllu_fields(
-                        corpus_, fields='UPOS',
-                        with_empty=True, return_nones=True
-                    )
-                sentences, tags, empties, nones = \
-                    res[0], res[1:-2], res[-2], res[-1]
-                if clone_ds:
-                    self._transform(sentences, tags=tags, ds=ds,
-                                    log_file=log_file)
-                    loader = ds.create_loader(batch_size=batch_size,
-                                              shuffle=False)
-                else:
-                    loader = self._transform_collate(
-                        sentences, batch_size=batch_size, log_file=log_file
-                    )
-                preds = []
-                for batch in loader:
-                    batch = junky.to_device(batch, device)
-                    with torch.no_grad():
-                        pred = self._model(*batch)
-                    _, pred_indices = pred.max(2)
-                    preds.extend(pred_indices.cpu().numpy().tolist())
-                values = ds_y.reconstruct(preds)
-                if with_orig:
-                    res_corpus_ = deepcopy(corpus_)
-                    for orig_sentence, sentence in zip(
-                        corpus_, junky.embed_conllu_fields(
-                            res_corpus_, 'MISC:NE:_', values,
-                            empties=empties, nones=nones
-                        )
-                    ):
-                        yield sentence, orig_sentence
-                else:
-                    for sentence in junky.embed_conllu_fields(
-                        corpus_, 'MISC:NE:_', values,
-                        empties=empties, nones=nones
-                    ):
-                        yield sentence
-
-        corpus = process(corpus)
-        if save_to:
-            self.save_conllu(corpus, save_to, log_file=None)
-            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
-        return corpus
-
-    def evaluate0(self, gold, test=None, batch_size=32, split=None,
-                 clone_ds=False, log_file=LOG_FILE):
-
-        gold = self._get_corpus(gold, log_file=log_file)
-        corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \
-                      if test else \
-                  self.predict(corpus=gold, with_orig=True,
-                               batch_size=batch_size, split=split,
-                               clone_ds=clone_ds, log_file=log_file)
-        header = 'NE'
-        if log_file:
-            print('Evaluate ' + header, file=LOG_FILE)
-        n = c = nt = ct = ca = ce = cr = 0
-        i = -1
-        for i, sentences in enumerate(corpora):
-            for gold_token, test_token in zip(*sentences):
-                wform = gold_token['FORM']
-                if wform and '-' not in gold_token['ID']:
-                    gold_ne = gold_token['MISC'].get('NE')
-                    test_ne = test_token['MISC'].get('NE')
-                    n += 1
-                    if (ne and (gold_ne == ne or test_ne == ne)) \
-                    or (not ne and (gold_ne or test_ne)):
-                        nt += 1
-                        if gold_ne == test_ne:
-                            c += 1
-                            ct += 1
-                        elif not gold_ne or (ne and gold_ne != ne):
-                            ce += 1
-                        elif not test_ne or (ne and test_ne != ne):
-                            ca += 1
-                        else:
-                            cr += 1
-                    else:
-                        c += 1
-        if log_file:
-            if i < 0:
-                print('Nothing to do!', file=LOG_FILE)
-            else:
-                sp = ' ' * (len(header) - 2)
-                print(header + ' total: {}'.format(nt), file=LOG_FILE)
-                print(sp   + ' correct: {}'.format(ct), file=LOG_FILE)
-                print(sp   + '   wrong: {} [{} excess / {} absent{}]'
-                                 .format(nt - ct, ce, ca, '' if ne else
-                                                          ' / {} wrong type'
-                                                              .format(cr)),
-                      file=LOG_FILE)
-                print(sp   + 'Accuracy: {}'.format(ct / nt if nt > 0 else 1.))
-                print('[Total accuracy: {}]'.format(c / n if n > 0 else 1.))
-        return ct / nt if nt > 0 else 1.
-
-    def train(self, model_name, device=None,
-              epochs=sys.maxsize, min_epochs=0, bad_epochs=5,
+    def train(self, model_name,
+              device=None, epochs=None, min_epochs=0, bad_epochs=5,
               batch_size=32, control_metric='accuracy', max_grad_norm=None,
               tags_to_remove=None, word_emb_type=None, word_emb_path=None,
               word_emb_model_device=None, word_emb_tune_params=junky.kwargs(
@@ -182,7 +48,23 @@ class NeTagger(BaseTagger):
                   epochs=4, batch_size=8
               ), word_transform_kwargs=None, word_next_emb_params=None,
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              upos_emb_dim=None, num_upos=0, upos_pad_idx=0, emb_out_dim=512,
+              upos_emb_dims=None, emb_out_dim=512, lstm_hidden_dim=256,
+              lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
+              bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
+         args, kwargs = junky.get_func_params(self.evaluate, locals())
+         return super().evaluate('MISC:NE', 'UPOS', NeTaggerModel, 'upos',
+                                 *args, **kwargs)
+
+    def train0(self, model_name,
+              device=None, epochs=None, min_epochs=0, bad_epochs=5,
+              batch_size=32, control_metric='accuracy', max_grad_norm=None,
+              tags_to_remove=None, word_emb_type=None, word_emb_path=None,
+              word_emb_model_device=None, word_emb_tune_params=junky.kwargs(
+                  name='bert-base-multilingual-cased', max_len=512,
+                  epochs=4, batch_size=8
+              ), word_transform_kwargs=None, word_next_emb_params=None,
+              rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
+              upos_emb_dim=None, upos_num=0, upos_pad_idx=0, emb_out_dim=512,
               lstm_hidden_dim=256, lstm_layers=2, lstm_do=0, bn1=True, do1=.2,
               bn2=True, do2=.5, bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
 
@@ -295,7 +177,7 @@ class NeTagger(BaseTagger):
                              0,
                 rnn_emb_dim=rnn_emb_dim, cnn_emb_dim=cnn_emb_dim,
                 cnn_kernels=cnn_kernels, upos_emb_dim=upos_emb_dim,
-                num_upos=num_upos, upos_pad_idx=upos_pad_idx,
+                upos_num=upos_num, upos_pad_idx=upos_pad_idx,
                 emb_out_dim=emb_out_dim, lstm_hidden_dim=lstm_hidden_dim,
                 lstm_layers=lstm_layers, lstm_do=lstm_do,
                 bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4

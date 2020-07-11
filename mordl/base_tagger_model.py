@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# MorDL project: NE tagger model
+# MorDL project: Base tagger model
 #
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
@@ -7,41 +7,20 @@
 """
 from collections.abc import Iterable
 from junky import CharEmbeddingRNN, CharEmbeddingCNN, Masking, get_func_params
-from mordl.base_tagger_model import BaseTaggerModel
+from mordl.base_model import BaseModel
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
-class NeTaggerModel(BaseTaggerModel):
+class BaseTaggerModel(BaseModel):
 
-    def __init__(self, tags_count, tags_pad_idx=None, vec_emb_dim=None,
+    def __init__(self, labels_num, labels_pad_idx=None, vec_emb_dim=None,
                  alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,
                  cnn_emb_dim=None, cnn_kernels=[1, 2, 3, 4, 5, 6],
-                 upos_emb_dim=None, upos_num=0, upos_pad_idx=0,
-                 emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=1,
-                 lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
-                 bn3=True, do3=.4):
-        args, kwargs = get_func_params(self.__init__, locals())
-        if upos_emb_dim:
-            kwargs['tag_emb_params'] = {'dim': upos_emb_dim, 'num': upos_num,
-                                        'pad_idx': upos_pad_idx}
-        del kwargs['upos_emb_dim']
-        del kwargs['upos_num']
-        del kwargs['upos_pad_idx']
-        super().__init__(*args, **kwargs)
-
-
-from mordl.base_model import BaseModel
-class NeTaggerModel0(BaseModel):
-
-    def __init__(self, tags_count, tags_pad_idx=None, vec_emb_dim=None,
-                 alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,
-                 cnn_emb_dim=None, cnn_kernels=[1, 2, 3, 4, 5, 6],
-                 upos_emb_dim=None, upos_num=0, upos_pad_idx=0,
-                 emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=1,
-                 lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
+                 tag_emb_params=None, emb_out_dim=512, lstm_hidden_dim=256,
+                 lstm_layers=1, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
                  bn3=True, do3=.4):
         if isinstance(cnn_kernels, Iterable):
             cnn_kernels = list(cnn_kernels)
@@ -69,23 +48,38 @@ class NeTaggerModel0(BaseModel):
             self._cnn_emb_l = None
             cnn_emb_dim = 0
 
-        if upos_emb_dim:
-            self._upos_emb_l = \
-                nn.Embedding(num_upos, upos_emb_dim, padding_idx=upos_pad_idx)
-        else:
-            self._upos_emb_l = None
-            upos_emb_dim = 0
+        self._tag_emb_l = self._tag_emb_ls = None
+        tag_emb_dim = 0
+        if tag_emb_params:
+            if isinstance(tag_emb_params, dict):
+                tag_emb_dim = tag_emb_params['dim'] or 0
+                if tag_emb_dim:
+                    self._tag_emb_l = \
+                        nn.Embedding(tag_emb_params['num'], tag_emb_dim,
+                                     padding_idx=tag_emb_params['pad_idx'])
+            else:
+                self._tag_emb_ls = nn.ModuleList()
+                for emb_params in tag_emb_params:
+                    tag_emb_dim_ = emb_params['dim']
+                    if tag_emb_dim_:
+                        tag_emb_dim += tag_emb_dim_
+                        self._tag_emb_ls.append(
+                            nn.Embedding(emb_params['num'], tag_emb_dim_,
+                                         padding_idx=emb_params['pad_idx'])
+                        )
+                    else:
+                        self._tag_emb_ls.append(None)
 
         self._bn1 = \
             nn.BatchNorm1d(num_features=vec_emb_dim
                                       + rnn_emb_dim
                                       + cnn_emb_dim
-                                      + upos_emb_dim) if bn1 else None
+                                      + tag_emb_dim) if bn1 else None
         self._do1 = nn.Dropout(p=do1) if do1 else None
 
         self._emb_fc_l = nn.Linear(
             in_features=vec_emb_dim + rnn_emb_dim + cnn_emb_dim
-                                    + upos_emb_dim,
+                                    + tag_emb_dim,
             out_features=emb_out_dim
         )
         self._bn2 = \
@@ -104,19 +98,20 @@ class NeTaggerModel0(BaseModel):
         self._do3 = nn.Dropout(p=do3) if do3 else None
 
         self._out_l = nn.Linear(in_features=lstm_hidden_dim * 2,
-                                out_features=tags_count)
+                                out_features=labels_num)
         self._out_masking = \
-            Masking(input_size=tags_count,
-                    indices_to_highlight=tags_pad_idx,
-                    batch_first=True) if tags_pad_idx is not None else None
+            Masking(input_size=labels_num,
+                    indices_to_highlight=labels_pad_idx,
+                    batch_first=True) if labels_pad_idx is not None else None
+        setattr(self, CONFIG_ATTR, (args, kwargs))
 
-    def forward(self, x, x_lens, x_ch, x_ch_lens, x_t):
+    def forward(self, x, x_lens, x_ch, x_ch_lens, *x_t):
         """
         x:    [batch[seq[w_idx + pad]]]
         lens: [seq_word_cnt]
         x_ch: [batch[seq[word[ch_idx + pad] + word[pad]]]]
         x_ch_lens: [seq[word_char_count]]
-        x_t:  [batch[seq[upos_idx]]]
+        *x_t:  [batch[seq[upos_idx]]], ...
         """
         device = next(self.parameters()).device
 
@@ -130,8 +125,12 @@ class NeTaggerModel0(BaseModel):
             x_.append(self._rnn_emb_l(x_ch, x_ch_lens))
         if self._cnn_emb_l:
             x_.append(self._cnn_emb_l(x_ch, x_ch_lens))
-        if self._upos_emb_l:
-            x_.append(self._upos_emb_l(x_t))
+        if self._tag_emb_l:
+            x_.append(self._upos_emb_l(x_t[0]))
+        elif self._tag_emb_ls:
+            for l_, x_t_ in zip(self._tag_emb_ls, x_t):
+                if l_:
+                    x_.append(l_(x_t_))
 
         x = x_[0] if len(x_) == 1 else torch.cat(x_, dim=-1)
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# MorDL project: UPOS tagger
+# MorDL project: NE tagger
 #
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
@@ -10,7 +10,7 @@ import itertools
 import junky
 from mordl import WordEmbeddings
 from mordl.base_tagger import BaseTagger
-from mordl.upos_tagger_model import UposTaggerModel
+from mordl.ne_tagger_model import NeTaggerModel
 from mordl.utils import LOG_FILE
 import os
 import torch
@@ -18,7 +18,7 @@ from typing import Iterator
 import sys
 
 
-class UposTagger(BaseTagger):
+class NeTagger(BaseTagger):
     """"""
 
     def __init__(self):
@@ -27,20 +27,20 @@ class UposTagger(BaseTagger):
     def load(self, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
          args, kwargs = junky.get_func_params(self.load, locals())
-         super().load(UposTaggerModel, *args, **kwargs)
+         super().load(NeTaggerModel, *args, **kwargs)
 
     def predict(self, corpus, with_orig=False, batch_size=64, split=None,
                 clone_ds=False, save_to=None, log_file=LOG_FILE):
          args, kwargs = junky.get_func_params(self.predict, locals())
-         return super().predict('UPOS', None, *args, **kwargs)
+         return super().predict('MISC:NE', 'UPOS', *args, **kwargs)
 
-    def evaluate(self, gold, test=None, val=None, batch_size=64, split=None,
+    def evaluate(self, gold, test=None, label=None, batch_size=64, split=None,
                  clone_ds=False, log_file=LOG_FILE):
          args, kwargs = junky.get_func_params(self.evaluate, locals())
-         return super().evaluate('UPOS', *args, **kwargs)
+         return super().evaluate('MISC:NE', *args, **kwargs)
 
-    def train(self, model_name,
-              device=None, epochs=None, min_epochs=0, bad_epochs=5,
+    def train0(self, model_name, device=None,
+              epochs=sys.maxsize, min_epochs=0, bad_epochs=5,
               batch_size=32, control_metric='accuracy', max_grad_norm=None,
               tags_to_remove=None, word_emb_type=None, word_emb_path=None,
               word_emb_model_device=None, word_emb_tune_params=junky.kwargs(
@@ -48,40 +48,26 @@ class UposTagger(BaseTagger):
                   epochs=4, batch_size=8
               ), word_transform_kwargs=None, word_next_emb_params=None,
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=2, lstm_do=0,
-              bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
-              log_file=LOG_FILE):
-         args, kwargs = junky.get_func_params(self.evaluate, locals())
-         return super().evaluate('UPOS', None, UposTaggerModel, None,
-                                 *args, **kwargs)
-
-    def train0(self, model_name,
-              device=None, epochs=None, min_epochs=0, bad_epochs=5,
-              batch_size=32, control_metric='accuracy', max_grad_norm=None,
-              tags_to_remove=None, word_emb_type=None, word_emb_path=None,
-              word_emb_model_device=None, word_emb_tune_params=junky.kwargs(
-                  name='bert-base-multilingual-cased', max_len=512,
-                  epochs=4, batch_size=8
-              ), word_transform_kwargs=None, word_next_emb_params=None,
-              rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=2, lstm_do=0,
-              bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
-              log_file=LOG_FILE):
+              upos_emb_dim=None, num_upos=0, upos_pad_idx=0, emb_out_dim=512,
+              lstm_hidden_dim=256, lstm_layers=2, lstm_do=0, bn1=True, do1=.2,
+              bn2=True, do2=.5, bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
 
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
         if log_file:
-            print('=== UPOS TAGGER TRAINING PIPELINE ===')
+            print('=== NE TAGGER TRAINING PIPELINE ===')
 
         model_fn, model_config_fn = self._get_filenames(model_name)[:2]
 
         # 1. Prepare corpora
-        train, train_labels = self._prepare_corpus(
-            self._train_corpus, fields='UPOS', tags_to_remove=tags_to_remove
+        train = self._prepare_corpus(
+            self._train_corpus, fields=['UPOS', 'MISC:NE:_'],
+            tags_to_remove=tags_to_remove
         )
-        test, test_labels = self._prepare_corpus(
-            self._test_corpus, fields='UPOS', tags_to_remove=tags_to_remove
-        ) if self._test_corpus is not None else (None, None)
+        test = self._prepare_corpus(
+            self._test_corpus, fields=['UPOS', 'MISC:NE:_'],
+            tags_to_remove=tags_to_remove
+        ) if self._test_corpus is not None else [None]
 
         # 2. Tune embeddings
         def tune_word_emb(emb_type, emb_path, emb_model_device=None,
@@ -93,9 +79,9 @@ class UposTagger(BaseTagger):
             if isinstance(emb_tune_params, dict):
                 if emb_type == 'bert':
                     if 'test_data' not in emb_tune_params and test:
-                        emb_tune_params['test_data'] = (test, test_labels)
+                        emb_tune_params['test_data'] = (test[0], test[-1])
                     emb_tune_params['save_to'] = emb_path if emb_path else \
-                                                 'upos_'
+                                                 'ne_'
                     if emb_model_device and 'device' not in emb_tune_params:
                         emb_tune_params['device'] = emb_model_device
                     if 'seed' not in emb_tune_params:
@@ -105,7 +91,7 @@ class UposTagger(BaseTagger):
                     if log_file:
                         print(file=log_file)
                     emb_path = WordEmbeddings.bert_tune(
-                        train, train_labels, **emb_tune_params
+                        train[0], train[-1], **emb_tune_params
                     )['model_name']
                 else:
                     raise ValueError("ERROR: tune method for '{}' embeddings "
@@ -142,15 +128,18 @@ class UposTagger(BaseTagger):
         if log_file:
             print('\nCREATE DATASETS', file=log_file)
         self._ds = self._create_dataset(
-            train, word_emb_type=word_emb_type, word_emb_path=word_emb_path,
+            train[0],
+            word_emb_type=word_emb_type, word_emb_path=word_emb_path,
             word_emb_model_device=word_emb_model_device,
             word_transform_kwargs=word_transform_kwargs,
             word_next_emb_params=word_next_emb_params,
-            with_chars=rnn_emb_dim or cnn_emb_dim, labels=train_labels)
+            with_chars=rnn_emb_dim or cnn_emb_dim, tags=train[1:-1],
+            labels=train[-1])
         self._save_dataset(model_name)
         if test:
             ds_test = self._ds.clone(with_data=False)
-            self._transform(test, labels=test_labels, ds=ds_test)
+            self._transform_dataset(test[0], tags=test[1:-1],
+                                    labels=test[-1], ds=ds_test)
         else:
             ds_test = None
 
@@ -158,7 +147,7 @@ class UposTagger(BaseTagger):
         if log_file:
             print('\nCREATE A MODEL', file=log_file)
         self._model, criterion, optimizer, scheduler = \
-            UposTaggerModel.create_model_for_train(
+            NeTaggerModel.create_model_for_train(
                 len(self._ds.get_dataset('y').transform_dict),
                 tags_pad_idx=self._ds.get_dataset('y').pad,
                 vec_emb_dim=self._ds.get_dataset('x').vec_size
@@ -170,8 +159,9 @@ class UposTagger(BaseTagger):
                 char_pad_idx=self._ds.get_dataset('x_ch').pad
                                  if rnn_emb_dim or cnn_emb_dim else
                              0,
-                rnn_emb_dim=rnn_emb_dim,
-                cnn_emb_dim=cnn_emb_dim, cnn_kernels=cnn_kernels,
+                rnn_emb_dim=rnn_emb_dim, cnn_emb_dim=cnn_emb_dim,
+                cnn_kernels=cnn_kernels, upos_emb_dim=upos_emb_dim,
+                num_upos=num_upos, upos_pad_idx=upos_pad_idx,
                 emb_out_dim=emb_out_dim, lstm_hidden_dim=lstm_hidden_dim,
                 lstm_layers=lstm_layers, lstm_do=lstm_do,
                 bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4
