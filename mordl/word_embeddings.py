@@ -16,15 +16,15 @@ from junky.dataset import BertDataset, WordCatDataset, WordDataset
 from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, LOG_FILE
 import numpy as np
 import os
-from tqdm import tqdm
-import torch
-from torch.utils.data import Dataset, DataLoader
-from tempfile import mkstemp
-from transformers import AdamW, BertConfig, BertForTokenClassification, \
-                         BertTokenizer, get_linear_schedule_with_warmup
 from sklearn.metrics import accuracy_score, confusion_matrix, \
                             f1_score, precision_score, recall_score
 import sys
+from tempfile import mkstemp
+from tqdm import tqdm
+import torch
+from torch.utils.data import Dataset, DataLoader
+from transformers import AdamW, BertConfig, BertForTokenClassification, \
+                         BertTokenizer, get_linear_schedule_with_warmup
 
 _DEFAULT_BERT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
     max_len=0, batch_size=BATCH_SIZE, hidden_ids=11,
@@ -585,6 +585,31 @@ class WordEmbeddings:
                                  emb_model_device=emb_model_device)
 
             if emb_type == 'bert':
+                kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
+                if transform_kwargs:
+                    kwargs.update(transform_kwargs)
+                if batch_size:
+                    transform_kwargs['batch_size'] = batch_size
+                transform_kwargs['loglevel'] = \
+                    0 if not log_file else \
+                    1 if log_file == sys.stdout else \
+                    2
+                transform_kwargs = kwargs
+                x = BertDataset(model, tokenizer)
+            else:
+                x = WordDataset(
+                    emb_model=emb_model,
+                    vec_size=len(next(iter(emb_model.values())))
+                                 if isinstance(emb_model, dict) else
+                             emb_model.vector_size,
+                    unk_token='<UNK>', pad_token='<PAD>'
+                )
+            junky.clear_tqdm()
+            x.transform(sentences, **transform_kwargs)
+            ds.append(x)
+
+            """
+            if emb_type == 'bert':
                 model, tokenizer = emb_model
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
                 if transform_kwargs:
@@ -606,6 +631,7 @@ class WordEmbeddings:
                 )
                 x.transform(sentences, **transform_kwargs)
             ds.append(x)
+            """
 
         if len(ds) == 1:
             ds, config = ds[0], config[0]
@@ -657,6 +683,7 @@ class WordEmbeddings:
                 pass
             else:
                 break
+            junky.clear_tqdm()
             ds.transform(sentences, **transform_kwargs)
             res = True
         return res
@@ -692,6 +719,7 @@ class WordEmbeddings:
                 loglevel = transform_kwargs.pop('loglevel', 1)
             else:
                 break
+            junky.clear_tqdm()
             res = ds.transform_collate(sentences, batch_size=batch_size,
                                        transform_kwargs=transform_kwargs,
                                        loglevel=loglevel)
