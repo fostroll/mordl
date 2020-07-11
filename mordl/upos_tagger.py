@@ -31,6 +31,16 @@ class UposTagger(BaseTagger):
 
     def predict(self, corpus, with_orig=False, batch_size=64, split=None,
                 clone_ds=False, save_to=None, log_file=LOG_FILE):
+         args, kwargs = junky.get_func_params(self.load, locals())
+         super().predict('UPOS', None, *args, **kwargs)
+
+    def evaluate(self, gold, test=None, label=None, batch_size=64, split=None,
+                 clone_ds=False, log_file=LOG_FILE):
+         args, kwargs = junky.get_func_params(self.load, locals())
+         super().predict('UPOS', None, *args, **kwargs)
+
+    def predict0(self, corpus, with_orig=False, batch_size=64, split=None,
+                clone_ds=False, save_to=None, log_file=LOG_FILE):
         assert self._ds is not None, \
                "ERROR: the tagger doesn't have a dataset. Call the train() " \
                'method first'
@@ -108,7 +118,7 @@ class UposTagger(BaseTagger):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
-    def evaluate(self, gold, test=None, batch_size=32, split=None,
+    def evaluate0(self, gold, test=None, batch_size=32, split=None,
                  clone_ds=False, log_file=LOG_FILE):
         """Score the accuracy of the POS tagger against the *gold* standard.
         Remove POS tags from the *gold* standard text, retag it using the

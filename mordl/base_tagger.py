@@ -204,3 +204,152 @@ class BaseTagger(BaseParser):
             model_config_fn, state_dict_f=model_fn, device=device,
             log_file=log_file
         )
+
+    def predict(self, field, add_fields, corpus, with_orig=False,
+                batch_size=64, split=None, clone_ds=False, save_to=None,
+                log_file=LOG_FILE):
+        assert self._ds is not None, \
+               "ERROR: the tagger doesn't have a dataset. Call the train() " \
+               'method first'
+        assert self._model, \
+               "ERROR: the tagger doesn't have a model. Call the train() " \
+               'method first'
+        assert not with_orig or save_to is None, \
+               'ERROR: `with_orig` can be True only if save_to is None'
+
+        if field.count(':') == 1:
+            field += ':_'
+
+        def process(corpus):
+            corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
+            device = next(self._model.parameters()).device or junky.CPU
+
+            ds_y = self._ds.get_dataset('y')
+            if clone_ds:
+                ds = self._ds.clone()
+                ds.remove('y')
+
+            for start in itertools.count(step=split if split else 1):
+                if isinstance(corpus, Iterator):
+                    if split:
+                        corpus_ = []
+                        for i, sentence in enumerate(corpus, start=1):
+                            corpus_.append(sentence)
+                            if i == split:
+                                break
+                    else:
+                        corpus_ = list(corpus)
+                else:
+                    if split:
+                        corpus_ = corpus[start:start + split]
+                    else:
+                        corpus_ = corpus
+                if not corpus_:
+                    break
+                res = \
+                    junky.extract_conllu_fields(
+                        corpus_, fields=add_fields,
+                        with_empty=True, return_nones=True
+                    )
+                sentences, tags, empties, nones = \
+                    res[0], res[1:-2], res[-2], res[-1]
+                if clone_ds:
+                    self._transform(sentences, tags=tags, ds=ds,
+                                    log_file=log_file)
+                    loader = ds.create_loader(batch_size=batch_size,
+                                              shuffle=False)
+                else:
+                    loader = self._transform_collate(
+                        sentences, batch_size=batch_size, log_file=log_file
+                    )
+                preds = []
+                for batch in loader:
+                    batch = junky.to_device(batch, device)
+                    with torch.no_grad():
+                        pred = self._model(*batch)
+                    _, pred_indices = pred.max(2)
+                    preds.extend(pred_indices.cpu().numpy().tolist())
+                values = ds_y.reconstruct(preds)
+                if with_orig:
+                    res_corpus_ = deepcopy(corpus_)
+                    for orig_sentence, sentence in zip(
+                        corpus_, junky.embed_conllu_fields(
+                            res_corpus_, field, values,
+                            empties=empties, nones=nones
+                        )
+                    ):
+                        yield sentence, orig_sentence
+                else:
+                    for sentence in junky.embed_conllu_fields(
+                        corpus_, field, values,
+                        empties=empties, nones=nones
+                    ):
+                        yield sentence
+
+        corpus = process(corpus)
+        if save_to:
+            self.save_conllu(corpus, save_to, log_file=None)
+            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
+        return corpus
+
+    def evaluate(self, field, add_fields, gold, test=None, label=None,
+                 batch_size=64, split=None, clone_ds=False,
+                 log_file=LOG_FILE):
+
+        gold = self._get_corpus(gold, log_file=log_file)
+        corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \
+                      if test else \
+                  self.predict(field, add_field, gold, with_orig=True,
+                               batch_size=batch_size, split=split,
+                               clone_ds=clone_ds, log_file=log_file)
+        field = field.split(':')
+        val = field[1] if len(field) > 1 else ''
+        field = field[0]
+        header = ':'.join(field, val)
+        if log_file:
+            print('Evaluate ' + header, file=LOG_FILE)
+        n = c = nt = ct = ca = ce = cr = 0
+        i = -1
+        for i, sentences in enumerate(corpora):
+            for gold_token, test_token in zip(*sentences):
+                wform = gold_token['FORM']
+                if wform and '-' not in gold_token['ID']:
+
+
+                    gold_val = gold_token[field]
+                    test_val = test_token[field]
+                    if val:
+                        gold_val = gold_val.get(val)
+                        test_val = test_val.get(val)
+                    n += 1
+                    if (label and (gold_val == label or test_val == label)) \
+                    or (not label and (gold_val or test_val)):
+                        nt += 1
+                        if gold_val == test_val:
+                            c += 1
+                            ct += 1
+                        elif not gold_val or (label and gold_val != label):
+                            ce += 1
+                        elif not test_val or (label and test_val != label):
+                            ca += 1
+                        else:
+                            cr += 1
+                    else:
+                        c += 1
+        if log_file:
+            if i < 0:
+                print('Nothing to do!', file=LOG_FILE)
+            else:
+                sp = ' ' * (len(header) - 2)
+                print(header + ' total: {}'.format(nt), file=LOG_FILE)
+                print(sp   + ' correct: {}'.format(ct), file=LOG_FILE)
+                print(sp   + '   wrong: {}{}'.format(
+                    nt - ct, ' [{} excess / {} absent{}]'.format(
+                        ce, ca, '' if ne else ' / {} wrong type'.format(cr)
+                    ) if nt != n else ''
+                ), file=LOG_FILE)
+                print(sp   + 'Accuracy: {}'.format(ct / nt if nt > 0 else 1.))
+                if nt != n:
+                    print('[Total accuracy: {}]'
+                              .format(c / n if n > 0 else 1.))
+        return ct / nt if nt > 0 else 1.

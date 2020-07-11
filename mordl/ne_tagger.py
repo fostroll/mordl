@@ -29,8 +29,18 @@ class NeTagger(BaseTagger):
          args, kwargs = junky.get_func_params(self.load, locals())
          super().load(NeTaggerModel, *args, **kwargs)
 
-    def predict(self, corpus, batch_size=32, split=None, with_orig=False,
-                save_to=None, log_file=LOG_FILE):
+    def predict(self, corpus, with_orig=False, batch_size=64, split=None,
+                clone_ds=False, save_to=None, log_file=LOG_FILE):
+         args, kwargs = junky.get_func_params(self.load, locals())
+         super().predict('MISC:NE', 'UPOS', *args, **kwargs)
+
+    def evaluate(self, gold, test=None, label=None, batch_size=64, split=None,
+                 clone_ds=False, log_file=LOG_FILE):
+         args, kwargs = junky.get_func_params(self.load, locals())
+         super().evaluate('MISC:NE', 'UPOS', *args, **kwargs)
+
+    def predict0(self, corpus, with_orig=False, batch_size=64, split=None,
+                clone_ds=False, save_to=None, log_file=LOG_FILE):
         assert self._ds is not None, \
                "ERROR: the tagger doesn't have a dataset. Call the train() " \
                'method first'
@@ -44,9 +54,10 @@ class NeTagger(BaseTagger):
             corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
             device = next(self._model.parameters()).device or junky.CPU
 
-            ds = self._ds.clone()
             ds_y = self._ds.get_dataset('y')
-            ds.remove('y')
+            if clone_ds:
+                ds = self._ds.clone()
+                ds.remove('y')
 
             for start in itertools.count(step=split if split else 1):
                 if isinstance(corpus, Iterator):
@@ -67,12 +78,20 @@ class NeTagger(BaseTagger):
                     break
                 res = \
                     junky.extract_conllu_fields(
-                        corpus_, fields='UPOS', with_empty=True, return_nones=True
+                        corpus_, fields='UPOS',
+                        with_empty=True, return_nones=True
                     )
                 sentences, tags, empties, nones = \
                     res[0], res[1:-2], res[-2], res[-1]
-                self._transform_dataset(sentences, tags=tags, ds=ds)
-                loader = ds.create_loader(batch_size=batch_size, shuffle=False)
+                if clone_ds:
+                    self._transform(sentences, tags=tags, ds=ds,
+                                    log_file=log_file)
+                    loader = ds.create_loader(batch_size=batch_size,
+                                              shuffle=False)
+                else:
+                    loader = self._transform_collate(
+                        sentences, batch_size=batch_size, log_file=log_file
+                    )
                 preds = []
                 for batch in loader:
                     batch = junky.to_device(batch, device)
@@ -103,14 +122,15 @@ class NeTagger(BaseTagger):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
-    def evaluate(self, gold, test=None, ne=None, batch_size=32, split=None,
-                 log_file=LOG_FILE):
+    def evaluate0(self, gold, test=None, batch_size=32, split=None,
+                 clone_ds=False, log_file=LOG_FILE):
 
         gold = self._get_corpus(gold, log_file=log_file)
         corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \
                       if test else \
-                  self.predict(corpus=gold, batch_size=batch_size,
-                               split=split, with_orig=True, log_file=log_file)
+                  self.predict(corpus=gold, with_orig=True,
+                               batch_size=batch_size, split=split,
+                               clone_ds=clone_ds, log_file=log_file)
         header = 'NE'
         if log_file:
             print('Evaluate ' + header, file=LOG_FILE)
