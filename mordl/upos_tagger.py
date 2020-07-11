@@ -52,8 +52,8 @@ class UposTagger(BaseTagger):
               bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
               log_file=LOG_FILE):
          args, kwargs = junky.get_func_params(self.evaluate, locals())
-         return super().evaluate('UPOS', None, UposTaggerModel, None,
-                                 *args, **kwargs)
+         return super().train('UPOS', None, UposTaggerModel, None,
+                              *args, **kwargs)
 
     def train0(self, model_name,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,

@@ -52,8 +52,8 @@ class NeTagger(BaseTagger):
               lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
          args, kwargs = junky.get_func_params(self.evaluate, locals())
-         return super().evaluate('MISC:NE', 'UPOS', NeTaggerModel, 'upos',
-                                 *args, **kwargs)
+         return super().train('MISC:NE', 'UPOS', NeTaggerModel, 'upos',
+                              *args, **kwargs)
 
     def train0(self, model_name,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
