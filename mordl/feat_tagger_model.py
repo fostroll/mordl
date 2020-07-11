@@ -7,6 +7,7 @@
 """
 from junky import get_func_params
 from mordl.base_tagger_model import BaseTaggerModel
+from mordl.defaults import CONFIG_ATTR
 
 
 class FeatTaggerModel(BaseTaggerModel):

@@ -25,7 +25,7 @@ class UposTaggerModel(BaseTaggerModel):
         args, kwargs = get_func_params(UposTaggerModel.__init__, locals())
         super().__init__(*args, **kwargs)
 
-
+'''
 from mordl.base_model import BaseModel
 class UposTaggerModel0(BaseModel):
 
@@ -150,3 +150,4 @@ class UposTaggerModel0(BaseModel):
         x = self._out_masking(x, x_lens)
 
         return x
+'''

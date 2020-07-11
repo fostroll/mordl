@@ -32,7 +32,7 @@ class NeTaggerModel(BaseTaggerModel):
         del kwargs['upos_pad_idx']
         super().__init__(*args, **kwargs)
 
-
+'''
 from mordl.base_model import BaseModel
 class NeTaggerModel0(BaseModel):
 
@@ -170,3 +170,4 @@ class NeTaggerModel0(BaseModel):
         x = self._out_masking(x, x_lens)
 
         return x
+'''
