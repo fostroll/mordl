@@ -78,7 +78,8 @@ class BaseModel(nn.Module):
         if log_file:
             print('Loading state_dict...', end=' ', file=log_file)
             log_file.flush()
-        super().load_state_dict(torch.load(f))
+        device = next(self.parameters()).device
+        super().load_state_dict(torch.load(f, map_location=device))
         self.eval()
         if log_file:
             print('done.', file=log_file)
