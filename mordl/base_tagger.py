@@ -323,6 +323,8 @@ class BaseTagger(BaseParser):
         header = field
         if val:
             header += ':' + val
+        if label:
+            header += '::' + label
         if log_file:
             print('Evaluate ' + header, file=LOG_FILE)
         n = c = nt = ct = ca = ce = cr = 0
