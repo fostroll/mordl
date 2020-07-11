@@ -266,8 +266,10 @@ class BaseTagger(BaseParser):
                 sentences, tags, empties, nones = \
                     res[0], res[1:-2], res[-2], res[-1]
                 if clone_ds:
-                    self._transform(sentences, tags=tags, ds=ds,
-                                    log_file=log_file)
+                    self._transform(
+                        sentences, tags=tags, batch_size=batch_size, ds=ds,
+                        log_file=log_file
+                    )
                     loader = ds.create_loader(batch_size=batch_size,
                                               shuffle=False)
                 else:
