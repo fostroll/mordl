@@ -14,6 +14,7 @@ from junky.dataset import CharDataset, DummyDataset, FrameDataset, \
 from mordl import WordEmbeddings
 from mordl.utils import CONFIG_ATTR, LOG_FILE
 from morra.base_parser import BaseParser
+from typing import Iterator
 
 
 class BaseTagger(BaseParser):
@@ -182,7 +183,7 @@ class BaseTagger(BaseParser):
     def _load_dataset(self, model_name, device=None, log_file=LOG_FILE):
         ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
         if log_file:
-            print('Creating model...', end=' ', file=log_file)
+            print('Loading dataset...', end=' ', file=log_file)
             log_file.flush()
         self._ds = FrameDataset.load(ds_fn)
         with open(ds_config_fn, 'rt', encoding='utf-8') as f:
