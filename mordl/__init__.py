@@ -10,5 +10,5 @@ named-entity recognition.
 from mordl._version import __version__
 from mordl.word_embeddings import WordEmbeddings
 from mordl.upos_tagger import UposTagger
+from mordl.feat_tagger import FeatTagger
 from mordl.ne_tagger import NeTagger
-from mordl.feats_tagger import FeatsTagger
