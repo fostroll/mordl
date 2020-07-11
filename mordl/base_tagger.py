@@ -362,7 +362,7 @@ class BaseTagger(BaseParser):
                 print(sp   + ' correct: {}'.format(ct), file=LOG_FILE)
                 print(sp   + '   wrong: {}{}'.format(
                     nt - ct, ' [{} excess / {} absent{}]'.format(
-                        ce, ca, '' if ne else ' / {} wrong type'.format(cr)
+                        ce, ca, '' if label else ' / {} wrong type'.format(cr)
                     ) if nt != n else ''
                 ), file=LOG_FILE)
                 print(sp   + 'Accuracy: {}'.format(ct / nt if nt > 0 else 1.))
