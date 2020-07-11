@@ -19,10 +19,12 @@ class FeatTaggerModel(BaseTaggerModel):
                  lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
                  bn3=True, do3=.4):
         args, kwargs = get_func_params(FeatTaggerModel.__init__, locals())
+        kwargs_ = {x: y for x, y in kwargs.itemsif x not in [
+            'upos_emb_dim', 'upos_num', 'upos_pad_idx'
+        ]}
         if upos_emb_dim:
-            kwargs['tag_emb_params'] = {'dim': upos_emb_dim, 'num': upos_num,
-                                        'pad_idx': upos_pad_idx}
-        del kwargs['upos_emb_dim']
-        del kwargs['upos_num']
-        del kwargs['upos_pad_idx']
-        super().__init__(*args, **kwargs)
+            kwargs_['tag_emb_params'] = {
+                'dim': upos_emb_dim, 'num': upos_num, 'pad_idx': upos_pad_idx
+            }
+        super().__init__(*args, **kwargs_)
+        setattr(self, CONFIG_ATTR, (args, kwargs))
