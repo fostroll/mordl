@@ -54,11 +54,13 @@ class BaseModel(nn.Module):
                 args = cfg
             elif isinstance(cfg, dict) and not kwargs:
                 kwargs = cfg
+        if log_file:
+            print('Creating model...', end=' ', file=log_file)
         model = cls(*args, **kwargs)
         if device:
             model.to(device)
         if log_file:
-            print('Model created', file=log_file)
+            print('done.', file=log_file)
         if state_dict_f:
             model.load_state_dict(state_dict_f, log_file=log_file)
         return model

@@ -6,6 +6,7 @@
 """
 """
 from corpuscula.corpus_utils import _AbstractCorpus
+import itertools
 import json
 import junky
 from junky.dataset import CharDataset, DummyDataset, FrameDataset, \
