@@ -25,7 +25,7 @@ class NeTagger(FeatTagger):
     def __init__(self):
         super().__init__('MISC:NE')
 
-
+'''
 class NeTagger0(BaseTagger):
     """"""
 
@@ -236,3 +236,4 @@ class NeTagger0(BaseTagger):
                     res[key][:best_epoch] = value
 
         return res
+'''
