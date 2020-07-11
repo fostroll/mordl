@@ -492,7 +492,7 @@ class BaseTagger(BaseParser):
         ds_ = self._ds.get_dataset('y')
         model_args = [len(ds_.transform_dict)]
         model_kwargs['labels_pad_idx'] = ds_.pad
-        if model_kwargs['word_emb_type']:
+        if word_emb_type:
             ds_ = self._ds.get_dataset('x')
             model_kwargs['vec_emb_dim'] = ds_.vec_size
         if model_kwargs.get('rnn_emb_dim') or model_kwargs.get('cnn_emb_dim'):
