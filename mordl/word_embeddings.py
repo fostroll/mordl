@@ -585,17 +585,17 @@ class WordEmbeddings:
                                  emb_model_device=emb_model_device)
 
             if emb_type == 'bert':
-                model, tokenizer = emb_model
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
                 if transform_kwargs:
                     kwargs.update(transform_kwargs)
                 if batch_size:
-                    transform_kwargs['batch_size'] = batch_size
-                transform_kwargs['loglevel'] = \
+                    kwargs['batch_size'] = batch_size
+                kwargs['loglevel'] = \
                     0 if not log_file else \
                     1 if log_file == sys.stdout else \
                     2
                 transform_kwargs = kwargs
+                model, tokenizer = emb_model
                 x = BertDataset(model, tokenizer)
             else:
                 x = WordDataset(
