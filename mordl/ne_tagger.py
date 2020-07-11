@@ -11,6 +11,7 @@ import junky
 from mordl import WordEmbeddings
 from mordl.base_tagger import BaseTagger
 from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
+from mordl.feat_tagger import FeatTagger
 from mordl.ne_tagger_model import NeTaggerModel
 import os
 import torch
@@ -18,7 +19,14 @@ from typing import Iterator
 import sys
 
 
-class NeTagger(BaseTagger):
+class NeTagger(FeatTagger):
+    """"""
+
+    def __init__(self):
+        super().__init__('MISC:NE')
+
+
+class NeTagger0(BaseTagger):
     """"""
 
     def __init__(self):
