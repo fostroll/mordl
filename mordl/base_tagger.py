@@ -313,9 +313,11 @@ class BaseTagger(BaseParser):
                                batch_size=batch_size, split=split,
                                clone_ds=clone_ds, log_file=log_file)
         field = field.split(':')
-        val = field[1] if len(field) > 1 else ''
+        val = field[1] if len(field) > 1 else None
         field = field[0]
-        header = ':'.join(field, val)
+        header = field
+        if val:
+            header += ':' + val
         if log_file:
             print('Evaluate ' + header, file=LOG_FILE)
         n = c = nt = ct = ca = ce = cr = 0
