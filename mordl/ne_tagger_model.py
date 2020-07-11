@@ -16,7 +16,7 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 class NeTaggerModel(BaseTaggerModel):
 
-    def __init__(self, labels_count, labels_pad_idx=None, vec_emb_dim=None,
+    def __init__(self, labels_num, labels_pad_idx=None, vec_emb_dim=None,
                  alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,
                  cnn_emb_dim=None, cnn_kernels=[1, 2, 3, 4, 5, 6],
                  upos_emb_dim=None, upos_num=0, upos_pad_idx=0,
