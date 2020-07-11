@@ -6,7 +6,7 @@
 """
 """
 import json
-from mordl.utils import CONFIG_ATTR, LOG_FILE
+from mordl.defaults import CONFIG_ATTR, LOG_FILE
 import torch
 import torch.nn as nn
 

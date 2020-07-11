@@ -13,8 +13,8 @@ import junky
 from junky.dataset import CharDataset, DummyDataset, FrameDataset, \
                           LenDataset, TokenDataset
 from mordl import WordEmbeddings
-from mordl.utils import CONFIG_ATTR, LOG_FILE
 from morra.base_parser import BaseParser
+from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, LOG_FILE, TRAIN_BATCH_SIZE
 import torch
 from typing import Iterator
 
@@ -84,7 +84,7 @@ class BaseTagger(BaseParser):
         sentences, word_emb_type=None, word_emb_path=None,
         word_emb_model_device=None, word_transform_kwargs=None,
         word_next_emb_params=None, with_chars=False, tags=None,
-        labels=None
+        labels=None, log_file=LOG_FILE
     ):
         ds = FrameDataset()
 
@@ -123,7 +123,7 @@ class BaseTagger(BaseParser):
         return ds
 
     def _transform(self, sentences, tags=None, labels=None, ds=None,
-                   batch_size=64, log_file=LOG_FILE):
+                   batch_size=BATCH_SIZE, log_file=LOG_FILE):
         if ds is None:
             ds = self._ds
         for name in ds.list():
@@ -141,7 +141,7 @@ class BaseTagger(BaseParser):
                 ds_.transform(labels)
 
     def _transform_collate(self, sentences, tags=None, labels=None,
-                           batch_size=64, log_file=LOG_FILE):
+                           batch_size=BATCH_SIZE, log_file=LOG_FILE):
         res = []
         for name in self._ds.list():
             ds_ = self._ds.get_dataset(name)
@@ -218,8 +218,8 @@ class BaseTagger(BaseParser):
         )
 
     def predict(self, field, add_fields, corpus, with_orig=False,
-                batch_size=64, split=None, clone_ds=False, save_to=None,
-                log_file=LOG_FILE):
+                batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                save_to=None, log_file=LOG_FILE):
         assert self._ds is not None, \
                "ERROR: the tagger doesn't have a dataset. Call the train() " \
                'method first'
@@ -307,8 +307,9 @@ class BaseTagger(BaseParser):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
-    def evaluate(self, field, gold, test=None, label=None, batch_size=64,
-                 split=None, clone_ds=False, log_file=LOG_FILE):
+    def evaluate(self, field, gold, test=None, label=None,
+                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                 log_file=LOG_FILE):
 
         gold = self._get_corpus(gold, log_file=log_file)
         corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \
@@ -373,12 +374,11 @@ class BaseTagger(BaseParser):
 
     def train(self, field, add_fields, model_class, tag_emb_names, model_name,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
-              batch_size=32, control_metric='accuracy', max_grad_norm=None,
-              tags_to_remove=None, word_emb_type=None, word_emb_path=None,
-              word_emb_model_device=None, word_emb_tune_params=junky.kwargs(
-                  name='bert-base-multilingual-cased', max_len=512,
-                  epochs=4, batch_size=8
-              ), word_transform_kwargs=None, word_next_emb_params=None,
+              batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
+              max_grad_norm=None, tags_to_remove=None,
+              word_emb_type='bert', word_emb_model_device=None,
+              word_emb_path=None, word_emb_tune_params=None,
+              word_transform_kwargs=None, word_next_emb_params=None,
               seed=None, log_file=LOG_FILE, **model_kwargs):
 
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
@@ -467,7 +467,7 @@ class BaseTagger(BaseParser):
 
         # 3. Create datasets
         if log_file:
-            print('\nCREATE DATASETS', file=log_file)
+            print('\nDATASETS CREATION', file=log_file)
         self._ds = self._create_dataset(
             train[0],
             word_emb_type=word_emb_type, word_emb_path=word_emb_path,
@@ -487,7 +487,7 @@ class BaseTagger(BaseParser):
 
         # 4. Create model
         if log_file:
-            print('\nCREATE A MODEL', file=log_file)
+            print('\nMODEL CREATION', file=log_file)
         ds_ = self._ds.get_dataset('y')
         model_args = [len(ds_.transform_dict)]
         model_kwargs['labels_pad_idx'] = ds_.pad
@@ -517,7 +517,7 @@ class BaseTagger(BaseParser):
 
         # 5. Train model
         if log_file:
-            print('\nTRAIN THE MODEL', file=log_file)
+            print('\nMODEL TRAINING', file=log_file)
         def best_model_backup_method(model, model_score):
             if log_file:
                 print('new maximum score {:.8f}'.format(model_score),
@@ -537,7 +537,7 @@ class BaseTagger(BaseParser):
 
         # 6. Tune model
         if log_file:
-            print('\nTUNE THE MODEL', file=log_file)
+            print('\nMODEL TUNING', file=log_file)
         self._model.load_state_dict(model_fn, log_file=log_file)
         criterion, optimizer, scheduler = self._model.adjust_model_for_tune()
         res_= junky.train(

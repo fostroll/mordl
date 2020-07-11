@@ -13,7 +13,7 @@ from gensim.models import KeyedVectors
 import json
 import junky
 from junky.dataset import BertDataset, WordCatDataset, WordDataset
-from mordl.utils import CONFIG_ATTR, LOG_FILE
+from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, LOG_FILE
 import numpy as np
 import os
 from tqdm import tqdm
@@ -27,7 +27,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, \
 import sys
 
 _DEFAULT_BERT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
-    max_len=0, batch_size=64, hidden_ids=11,
+    max_len=0, batch_size=BATCH_SIZE, hidden_ids=11,
     aggregate_hiddens_op='cat', aggregate_subtokens_op='max',
     to=junky.CPU, loglevel=1
 )
@@ -38,9 +38,9 @@ class WordEmbeddings:
 
     @staticmethod
     def bert_tune(train_sentences, train_labels, test_data=None,
-                  model_name='bert-base-multilingual-cased', save_to=None,
-                  device=None, max_len=512, epochs=4, batch_size=8, seed=None,
-                  log_file=LOG_FILE):
+                  model_name='bert-base-multilingual-cased', device=None,
+                  save_to=None, max_len=512, epochs=3, batch_size=8,
+                  seed=None, log_file=LOG_FILE):
 
         prefix = ''
         if save_to and save_to.endswith('_'):
@@ -53,7 +53,7 @@ class WordEmbeddings:
                 save_to += '_seed{}'.format(seed)
 
         if log_file:
-            print("TUNE BERT MODEL '{}'. The result's model name will be '{}'"
+            print("BERT MODEL TUNING '{}'. The result's model name will be '{}'"
                       .format(model_name, save_to),
                   file=log_file)
 
@@ -529,8 +529,9 @@ class WordEmbeddings:
 
     @classmethod
     def create_dataset(cls, sentences, emb_type='ft', emb_path=None,
-                       emb_model_device=None, transform_kwargs=None,
-                       next_emb_params=None):
+                       emb_model_device=None, batch_size=BATCH_SIZE,
+                       transform_kwargs=None, next_emb_params=None,
+                       log_file=LOG_FILE):
 
         emb_params = \
             [(emb_type, emb_path, emb_model_device, transform_kwargs)]
@@ -588,6 +589,10 @@ class WordEmbeddings:
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
                 if transform_kwargs:
                     kwargs.update(transform_kwargs)
+                if batch_size:
+                    transform_kwargs['batch_size'] = batch_size
+                transform_kwargs['loglevel'] = \
+                    0 if not log_file else 1 if log_file == sys.stdout else 2
                 junky.clear_tqdm()
                 x = BertDataset(model, tokenizer)
                 x.transform(sentences, **kwargs)
@@ -620,8 +625,8 @@ class WordEmbeddings:
         return ds
 
     @classmethod
-    def transform(cls, ds, sentences, batch_size=64, transform_kwargs=None,
-                  log_file=LOG_FILE):
+    def transform(cls, ds, sentences, batch_size=BATCH_SIZE,
+                  transform_kwargs=None, log_file=LOG_FILE):
         res = False
         config = getattr(ds, CONFIG_ATTR, None)
         if config:
@@ -639,10 +644,9 @@ class WordEmbeddings:
                 transform_kwargs = kwargs
                 if batch_size:
                     transform_kwargs['batch_size'] = batch_size
-                if log_file == sys.stdout:
-                    loglevel = 1
-                else:
-                    loglevel = 2
+                loglevel = 0 if not log_file else \
+                           1 if log_file == sys.stdout else \
+                           2
         for _ in range(1):
             if isinstance(ds, BertDataset):
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
@@ -658,7 +662,7 @@ class WordEmbeddings:
         return res
 
     @classmethod
-    def transform_collate(cls, ds, sentences, batch_size=64,
+    def transform_collate(cls, ds, sentences, batch_size=BATCH_SIZE,
                           transform_kwargs=None, log_file=LOG_FILE):
         res = False
         config = getattr(ds, CONFIG_ATTR, None)
@@ -681,10 +685,9 @@ class WordEmbeddings:
                 if transform_kwargs:
                     kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
-                if log_file == sys.stdout:
-                    loglevel = 1
-                else:
-                    loglevel = 2
+                loglevel = 0 if not log_file else \
+                           1 if log_file == sys.stdout else \
+                           2
             elif isinstance(ds, WordDataset):
                 loglevel = transform_kwargs.pop('loglevel', 1)
             else:

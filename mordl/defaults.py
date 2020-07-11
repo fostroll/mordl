@@ -8,5 +8,8 @@ Provides a bunch of utilities to use with PyTorch.
 """
 import sys
 
+
+BATCH_SIZE = 64
+TRAIN_BATCH_SIZE = 32
 CONFIG_ATTR = '_mordl_config'
 LOG_FILE = sys.stdout

@@ -8,7 +8,7 @@
 from collections.abc import Iterable
 from junky import CharEmbeddingRNN, CharEmbeddingCNN, Masking, get_func_params
 from mordl.base_model import BaseModel
-from mordl.utils import CONFIG_ATTR
+from mordl.defaults import CONFIG_ATTR
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
