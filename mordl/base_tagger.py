@@ -123,7 +123,7 @@ class BaseTagger(BaseParser):
         return ds
 
     def _transform(self, sentences, tags=None, labels=None, ds=None,
-                   log_file=LOG_FILE):
+                   batch_size=64, log_file=LOG_FILE):
         if ds is None:
             ds = self._ds
         for name in ds.list():
@@ -132,8 +132,7 @@ class BaseTagger(BaseParser):
             typ, idx = name_[0], name_[1] if len(name_) > 1 else None
             if typ == 'x':
                 if not WordEmbeddings.transform(
-                    ds_, sentences,
-                    transform_kwargs={} if log_file else {'loglevel': 0}
+                    ds_, sentences,, batch_size=batch_size, log_file=log_file
                 ):
                     ds_.transform(sentences)
             elif typ == 't':
@@ -150,8 +149,7 @@ class BaseTagger(BaseParser):
             typ, idx = name_[0], name_[1] if len(name_) > 1 else None
             if typ == 'x':
                 res_ = WordEmbeddings.transform_collate(
-                    ds_, sentences, batch_size=batch_size,
-                    transform_kwargs={} if log_file else {'loglevel': 0}
+                    ds_, sentences, batch_size=batch_size, log_file=log_file
                 )
                 if not res_:
                     res_ = ds_.transform_collate(sentences,

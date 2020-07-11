@@ -24,6 +24,7 @@ from transformers import AdamW, BertConfig, BertForTokenClassification, \
                          BertTokenizer, get_linear_schedule_with_warmup
 from sklearn.metrics import accuracy_score, confusion_matrix, \
                             f1_score, precision_score, recall_score
+import sys
 
 _DEFAULT_BERT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
     max_len=0, batch_size=64, hidden_ids=11,
@@ -618,7 +619,8 @@ class WordEmbeddings:
         return ds
 
     @classmethod
-    def transform(cls, ds, sentences, transform_kwargs=None):
+    def transform(cls, ds, sentences, batch_size=64, transform_kwargs=None,
+                  log_file=LOG_FILE):
         res = False
         config = getattr(ds, CONFIG_ATTR, None)
         if config:
@@ -633,6 +635,12 @@ class WordEmbeddings:
                 kwargs = config.get('transform_kwargs', {})
                 kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
+                if batch_size:
+                    transform_kwargs['batch_size'] = batch_size
+                if log_file == sys.stdout:
+                    loglevel = 1
+                else:
+                    loglevel = 2
         for _ in range(1):
             if isinstance(ds, BertDataset):
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
@@ -648,7 +656,7 @@ class WordEmbeddings:
 
     @classmethod
     def transform_collate(cls, ds, sentences, batch_size=64,
-                          transform_kwargs=None):
+                          transform_kwargs=None, log_file=LOG_FILE):
         res = False
         config = getattr(ds, CONFIG_ATTR, None)
         if config:
@@ -663,13 +671,15 @@ class WordEmbeddings:
                 kwargs = config.get('transform_kwargs', {})
                 kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
-        loglevel = 0
         for _ in range(1):
             if isinstance(ds, BertDataset):
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
                 kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
-                loglevel = transform_kwargs.get('loglevel', 1)
+                if log_file == sys.stdout:
+                    loglevel = 1
+                else:
+                    loglevel = 2
             elif isinstance(ds, WordDataset):
                 loglevel = transform_kwargs.pop('loglevel', 1)
             else:
