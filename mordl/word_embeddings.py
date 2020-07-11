@@ -609,31 +609,6 @@ class WordEmbeddings:
             x.transform(sentences, **transform_kwargs)
             ds.append(x)
 
-            """
-            if emb_type == 'bert':
-                model, tokenizer = emb_model
-                kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
-                if transform_kwargs:
-                    kwargs.update(transform_kwargs)
-                if batch_size:
-                    transform_kwargs['batch_size'] = batch_size
-                transform_kwargs['loglevel'] = \
-                    0 if not log_file else 1 if log_file == sys.stdout else 2
-                junky.clear_tqdm()
-                x = BertDataset(model, tokenizer)
-                x.transform(sentences, **kwargs)
-            else:
-                x = WordDataset(
-                    emb_model=emb_model,
-                    vec_size=len(next(iter(emb_model.values())))
-                                 if isinstance(emb_model, dict) else
-                             emb_model.vector_size,
-                    unk_token='<UNK>', pad_token='<PAD>'
-                )
-                x.transform(sentences, **transform_kwargs)
-            ds.append(x)
-            """
-
         if len(ds) == 1:
             ds, config = ds[0], config[0]
         else:
@@ -668,12 +643,12 @@ class WordEmbeddings:
                 kwargs = config.get('transform_kwargs', {})
                 if transform_kwargs:
                     kwargs.update(transform_kwargs)
-                transform_kwargs = kwargs
                 if batch_size:
-                    transform_kwargs['batch_size'] = batch_size
-                loglevel = 0 if not log_file else \
-                           1 if log_file == sys.stdout else \
-                           2
+                    kwargs['batch_size'] = batch_size
+                kwargs['loglevel'] = 0 if not log_file else \
+                                     1 if log_file == sys.stdout else \
+                                     2
+                transform_kwargs = kwargs
         for _ in range(1):
             if isinstance(ds, BertDataset):
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)

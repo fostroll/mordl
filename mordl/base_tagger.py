@@ -505,7 +505,7 @@ class BaseTagger(BaseParser):
             for name in self._ds.list():
                 if name.startswith('t_'):
                     ds_ = self._ds.get_dataset(name)
-                    name = next(tag_emb_names)
+                    name = next(names)
                     emb_dim = model_kwargs[name + '_emb_dim']
                     if emb_dim:
                         model_kwargs[name + '_num'] = len(ds_.transform_dict)
