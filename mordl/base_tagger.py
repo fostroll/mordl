@@ -305,7 +305,7 @@ class BaseTagger(BaseParser):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
-    def evaluate(self, field, gold, test=None, val=None, batch_size=64,
+    def evaluate(self, field, gold, test=None, label=None, batch_size=64,
                  split=None, clone_ds=False, log_file=LOG_FILE):
 
         gold = self._get_corpus(gold, log_file=log_file)
@@ -318,8 +318,8 @@ class BaseTagger(BaseParser):
         field = field_[0]
         name = field_[1] if len(field_) > 1 else None
         header = ':'.join(field_[:2])
-        if val:
-            header += '::' + val
+        if label:
+            header += '::' + label
         if log_file:
             print('Evaluate ' + header, file=LOG_FILE)
         n = c = nt = ct = ca = ce = cr = 0
@@ -328,21 +328,24 @@ class BaseTagger(BaseParser):
             for gold_token, test_token in zip(*sentences):
                 wform = gold_token['FORM']
                 if wform and '-' not in gold_token['ID']:
-                    gold_val = gold_token[field]
-                    test_val = test_token[field]
+                    gold_label = gold_token[field]
+                    test_label = test_token[field]
                     if name:
-                        gold_val = gold_val.get(name)
-                        test_val = test_val.get(name)
+                        gold_label = gold_label.get(name)
+                        test_label = test_label.get(name)
                     n += 1
-                    if (val and (gold_val == val or test_val == val)) \
-                    or (not val and (gold_val or test_val)):
+                    if (label and (gold_label == label
+                                or test_label == label)) \
+                    or (not label and (gold_label or test_label)):
                         nt += 1
-                        if gold_val == test_val:
+                        if gold_label == test_label:
                             c += 1
                             ct += 1
-                        elif not gold_val or (val and gold_val != val):
+                        elif not gold_label or (label
+                                            and gold_label != label):
                             ce += 1
-                        elif not test_val or (val and test_val != val):
+                        elif not test_label or (label
+                                            and test_label != label):
                             ca += 1
                         else:
                             cr += 1
@@ -357,7 +360,7 @@ class BaseTagger(BaseParser):
                 print(sp   + ' correct: {}'.format(ct), file=LOG_FILE)
                 print(sp   + '   wrong: {}{}'.format(
                     nt - ct, ' [{} excess / {} absent{}]'.format(
-                        ce, ca, '' if val else ' / {} wrong type'.format(cr)
+                        ce, ca, '' if label else ' / {} wrong type'.format(cr)
                     ) if nt != n else ''
                 ), file=LOG_FILE)
                 print(sp   + 'Accuracy: {}'.format(ct / nt if nt > 0 else 1.))
