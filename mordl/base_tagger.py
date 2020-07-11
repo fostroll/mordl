@@ -6,6 +6,7 @@
 """
 """
 from corpuscula.corpus_utils import _AbstractCorpus
+from copy import deepcopy
 import itertools
 import json
 import junky
