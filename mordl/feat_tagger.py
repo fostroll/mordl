@@ -5,7 +5,7 @@
 # License: BSD, see LICENSE for details
 """
 """
-import junky
+from junky import get_func_params
 from mordl.base_tagger import BaseTagger
 from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.feat_tagger_model import FeatTaggerModel
@@ -22,17 +22,17 @@ class FeatTagger(BaseTagger):
 
     def load(self, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
-         args, kwargs = junky.get_func_params(self.load, locals())
+         args, kwargs = get_func_params(FeatTagger.load, locals())
          super().load(FeatTaggerModel, *args, **kwargs)
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
-         args, kwargs = junky.get_func_params(self.predict, locals())
+         args, kwargs = get_func_params(FeatTagger.predict, locals())
          return super().predict(self._feat, 'UPOS', *args, **kwargs)
 
     def evaluate(self, gold, test=None, label=None, batch_size=BATCH_SIZE,
                  split=None, clone_ds=False, log_file=LOG_FILE):
-         args, kwargs = junky.get_func_params(self.evaluate, locals())
+         args, kwargs = get_func_params(FeatTagger.evaluate, locals())
          return super().evaluate(self._feat, *args, **kwargs)
 
     def train(self, model_name,
@@ -46,6 +46,6 @@ class FeatTagger(BaseTagger):
               upos_emb_dim=None, emb_out_dim=512, lstm_hidden_dim=256,
               lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
-         args, kwargs = junky.get_func_params(self.train, locals())
+         args, kwargs = get_func_params(FeatTagger.train, locals())
          return super().train(self._feat, 'UPOS', FeatTaggerModel, 'upos',
                               *args, **kwargs)

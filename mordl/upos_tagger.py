@@ -7,7 +7,7 @@
 """
 from copy import deepcopy
 import itertools
-import junky
+from junky import get_func_params
 from mordl import WordEmbeddings
 from mordl.base_tagger import BaseTagger
 from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
@@ -26,17 +26,17 @@ class UposTagger(BaseTagger):
 
     def load(self, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
-         args, kwargs = junky.get_func_params(self.load, locals())
+         args, kwargs = get_func_params(UposTagger.load, locals())
          super().load(UposTaggerModel, *args, **kwargs)
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
-         args, kwargs = junky.get_func_params(self.predict, locals())
+         args, kwargs = get_func_params(UposTagger.predict, locals())
          return super().predict('UPOS', None, *args, **kwargs)
 
     def evaluate(self, gold, test=None, label=None, batch_size=BATCH_SIZE,
                  split=None, clone_ds=False, log_file=LOG_FILE):
-         args, kwargs = junky.get_func_params(self.evaluate, locals())
+         args, kwargs = get_func_params(UposTagger.evaluate, locals())
          return super().evaluate('UPOS', *args, **kwargs)
 
     def train(self, model_name,
@@ -50,7 +50,7 @@ class UposTagger(BaseTagger):
               emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=2, lstm_do=0,
               bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
               log_file=LOG_FILE):
-         args, kwargs = junky.get_func_params(self.train, locals())
+         args, kwargs = get_func_params(UposTagger.train, locals())
          return super().train('UPOS', None, UposTaggerModel, None,
                               *args, **kwargs)
 

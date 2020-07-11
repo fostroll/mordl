@@ -23,7 +23,7 @@ class NeTaggerModel(BaseTaggerModel):
                  emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=1,
                  lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
                  bn3=True, do3=.4):
-        args, kwargs = get_func_params(self.__init__, locals())
+        args, kwargs = get_func_params(NeTaggerModel.__init__, locals())
         if upos_emb_dim:
             kwargs['tag_emb_params'] = {'dim': upos_emb_dim, 'num': upos_num,
                                         'pad_idx': upos_pad_idx}
