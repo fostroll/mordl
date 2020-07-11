@@ -159,14 +159,14 @@ class BaseTagger(BaseParser):
                 res.append(res_)
             elif typ == 't':
                 res.append(ds_.transform_collate(
-                    tags[int(idx)], batch_size=batch_size),
+                    tags[int(idx)], batch_size=batch_size,
                     collate_args={'with_lens': False}
-                )
+                ))
             elif labels and typ == 'y':
                 res.append(ds_.transform_collate(
-                    labels, batch_size=batch_size),
+                    labels, batch_size=batch_size,
                     collate_args={'with_lens': False}
-                )
+                ))
         for batch in zip(*res):
             batch_ = []
             for res_ in batch:
