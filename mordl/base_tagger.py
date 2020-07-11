@@ -15,6 +15,7 @@ from junky.dataset import CharDataset, DummyDataset, FrameDataset, \
 from mordl import WordEmbeddings
 from morra.base_parser import BaseParser
 from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, LOG_FILE, TRAIN_BATCH_SIZE
+import sys
 import torch
 from typing import Iterator
 
@@ -93,7 +94,7 @@ class BaseTagger(BaseParser):
                 sentences, emb_type=word_emb_type, emb_path=word_emb_path,
                 emb_model_device=word_emb_model_device,
                 transform_kwargs=word_transform_kwargs,
-                next_emb_params=word_next_emb_params
+                next_emb_params=word_next_emb_params, log_file=log_file
             )
             ds.add('x', x)
         else:
@@ -476,7 +477,7 @@ class BaseTagger(BaseParser):
             word_next_emb_params=word_next_emb_params,
             with_chars=model_kwargs.get('rnn_emb_dim') \
                     or model_kwargs.get('cnn_emb_dim'),
-            tags=train[1:-1], labels=train[-1])
+            tags=train[1:-1], labels=train[-1], log_file=sys.stderr)
         self._save_dataset(model_name)
         if test:
             ds_test = self._ds.clone(with_data=False)
