@@ -19,7 +19,7 @@ class FeatTaggerModel(BaseTaggerModel):
                  lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
                  bn3=True, do3=.4):
         args, kwargs = get_func_params(FeatTaggerModel.__init__, locals())
-        kwargs_ = {x: y for x, y in kwargs.itemsif x not in [
+        kwargs_ = {x: y for x, y in kwargs.items() if x not in [
             'upos_emb_dim', 'upos_num', 'upos_pad_idx'
         ]}
         if upos_emb_dim:
