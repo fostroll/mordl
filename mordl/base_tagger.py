@@ -482,7 +482,7 @@ class BaseTagger(BaseParser):
         if test:
             ds_test = self._ds.clone(with_data=False)
             self._transform(test[0], tags=test[1:-1], labels=test[-1],
-                            ds=ds_test)
+                            ds=ds_test, log_file=sys.stderr)
         else:
             ds_test = None
 
@@ -504,7 +504,7 @@ class BaseTagger(BaseParser):
             names = iter(tag_emb_names)
             for name in self._ds.list():
                 if name.startswith('t_'):
-                    ds_ = self._ds.get_dataset('name')
+                    ds_ = self._ds.get_dataset(name)
                     name = next(tag_emb_names)
                     emb_dim = model_kwargs[name + '_emb_dim']
                     if emb_dim:
