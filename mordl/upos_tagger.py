@@ -37,7 +37,7 @@ class UposTagger(BaseTagger):
     def evaluate(self, gold, test=None, label=None, batch_size=64, split=None,
                  clone_ds=False, log_file=LOG_FILE):
          args, kwargs = junky.get_func_params(self.evaluate, locals())
-         super().predict('UPOS', None, *args, **kwargs)
+         super().evaluate('UPOS', None, *args, **kwargs)
 
     def predict0(self, corpus, with_orig=False, batch_size=64, split=None,
                 clone_ds=False, save_to=None, log_file=LOG_FILE):
