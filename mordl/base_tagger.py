@@ -14,6 +14,7 @@ from junky.dataset import CharDataset, DummyDataset, FrameDataset, \
 from mordl import WordEmbeddings
 from mordl.utils import CONFIG_ATTR, LOG_FILE
 from morra.base_parser import BaseParser
+import torch
 from typing import Iterator
 
 
