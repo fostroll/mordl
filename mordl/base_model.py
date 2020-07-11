@@ -56,6 +56,7 @@ class BaseModel(nn.Module):
                 kwargs = cfg
         if log_file:
             print('Creating model...', end=' ', file=log_file)
+            log_file.flush()
         model = cls(*args, **kwargs)
         if device:
             model.to(device)

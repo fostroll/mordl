@@ -179,8 +179,11 @@ class BaseTagger(BaseParser):
             print(json.dumps(config, sort_keys=True, indent=4), file=f)
         self._ds.save(ds_fn, with_data=False)
 
-    def _load_dataset(self, model_name, device=None):
+    def _load_dataset(self, model_name, device=None, log_file=LOG_FILE):
         ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
+        if log_file:
+            print('Creating model...', end=' ', file=log_file)
+            log_file.flush()
         self._ds = FrameDataset.load(ds_fn)
         with open(ds_config_fn, 'rt', encoding='utf-8') as f:
             config = json.loads(f.read())
@@ -188,6 +191,8 @@ class BaseTagger(BaseParser):
                 WordEmbeddings.apply_config(self._ds.get_dataset(name), cfg)
             if device:
                 self._ds.to(device)
+        if log_file:
+            print('done.', file=log_file)
 
     def save(self, model_name, log_file=LOG_FILE):
         assert self._ds, "ERROR: the tagger doesn't have a dataset to save"
@@ -199,7 +204,8 @@ class BaseTagger(BaseParser):
 
     def load(self, model_class, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
-        self._load_dataset(model_name, device=dataset_device)
+        self._load_dataset(model_name, device=dataset_device,
+                           log_file=log_file)
         model_fn, model_config_fn = self._get_filenames(model_name)[:2]
         self._model = model_class.create_from_config(
             model_config_fn, state_dict_f=model_fn, device=device,
