@@ -43,7 +43,7 @@ class FeatTagger(BaseTagger):
               word_emb_path=None, word_emb_tune_params=None,
               word_transform_kwargs=None, word_next_emb_params=None,
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              upos_emb_dims=None, emb_out_dim=512, lstm_hidden_dim=256,
+              upos_emb_dim=None, emb_out_dim=512, lstm_hidden_dim=256,
               lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
          args, kwargs = junky.get_func_params(self.train, locals())
