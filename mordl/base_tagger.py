@@ -389,7 +389,7 @@ class BaseTagger(BaseParser):
         if field.count(':') == 1:
             field += ':_'
         header = ':'.join(field.split(':')[:2])
-        bert_header = header.replace(':', '_') + '_'
+        bert_header = header.lower().replace(':', '_') + '_'
         fields = [] if add_fields is None else \
                        [add_fields] if isinstance(add_fields, str) else \
                        add_fields
