@@ -127,7 +127,7 @@ class BaseTaggerModel(BaseModel):
         if self._cnn_emb_l:
             x_.append(self._cnn_emb_l(x_ch, x_ch_lens))
         if self._tag_emb_l:
-            x_.append(self._upos_emb_l(x_t[0]))
+            x_.append(self._tag_emb_l(x_t[0]))
         elif self._tag_emb_ls:
             for l_, x_t_ in zip(self._tag_emb_ls, x_t):
                 if l_:
