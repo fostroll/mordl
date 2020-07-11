@@ -307,8 +307,9 @@ class BaseTagger(BaseParser):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
-    def evaluate(self, field, gold, test=None, val=None, batch_size=64,
-                 split=None, clone_ds=False, log_file=LOG_FILE):
+    def evaluate(self, field, add_fields, gold, test=None, label=None,
+                 batch_size=64, split=None, clone_ds=False,
+                 log_file=LOG_FILE):
 
         gold = self._get_corpus(gold, log_file=log_file)
         corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \
@@ -316,12 +317,14 @@ class BaseTagger(BaseParser):
                   self.predict(gold, with_orig=True,
                                batch_size=batch_size, split=split,
                                clone_ds=clone_ds, log_file=log_file)
-        field_ = field.split(':')
-        field = field_[0]
-        name = field_[1] if len(field_) > 1 else None
-        header = ':'.join(field_[:2])
+        field = field.split(':')
+        val = field[1] if len(field) > 1 else None
+        field = field[0]
+        header = field
         if val:
-            header += '::' + val
+            header += ':' + val
+        if label:
+            header += '::' + label
         if log_file:
             print('Evaluate ' + header, file=LOG_FILE)
         n = c = nt = ct = ca = ce = cr = 0
@@ -330,21 +333,23 @@ class BaseTagger(BaseParser):
             for gold_token, test_token in zip(*sentences):
                 wform = gold_token['FORM']
                 if wform and '-' not in gold_token['ID']:
+
+
                     gold_val = gold_token[field]
                     test_val = test_token[field]
-                    if name:
-                        gold_val = gold_val.get(name)
-                        test_val = test_val.get(name)
+                    if val:
+                        gold_val = gold_val.get(val)
+                        test_val = test_val.get(val)
                     n += 1
-                    if (val and (gold_val == val or test_val == val)) \
-                    or (not val and (gold_val or test_val)):
+                    if (label and (gold_val == label or test_val == label)) \
+                    or (not label and (gold_val or test_val)):
                         nt += 1
                         if gold_val == test_val:
                             c += 1
                             ct += 1
-                        elif not gold_val or (val and gold_val != val):
+                        elif not gold_val or (label and gold_val != label):
                             ce += 1
-                        elif not test_val or (val and test_val != val):
+                        elif not test_val or (label and test_val != label):
                             ca += 1
                         else:
                             cr += 1
@@ -367,185 +372,3 @@ class BaseTagger(BaseParser):
                     print('[Total accuracy: {}]'
                               .format(c / n if n > 0 else 1.))
         return ct / nt if nt > 0 else 1.
-
-    def train(self, field, add_fields, model_name, device=None,
-              epochs=sys.maxsize, min_epochs=0, bad_epochs=5,
-              batch_size=32, control_metric='accuracy', max_grad_norm=None,
-              tags_to_remove=None, word_emb_type=None, word_emb_path=None,
-              word_emb_model_device=None, word_emb_tune_params=junky.kwargs(
-                  name='bert-base-multilingual-cased', max_len=512,
-                  epochs=4, batch_size=8
-              ), word_transform_kwargs=None, word_next_emb_params=None,
-              seed=None, log_file=LOG_FILE, **model_kwargs):
-
-        assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
-
-        if field.count(':') == 1:
-            field += ':_'
-        header = ':'.join(field.split(':')[:2])
-        bert_header = header.replace(':', '_') + '_'
-        fields = [] if add_fields is None else \
-                       [add_fields] if isinstance(add_fields, str) else \
-                       add_fields
-        fields.append(field)
-
-        if log_file:
-            print('=== {} TAGGER TRAINING PIPELINE ==='.format(header))
-
-        model_fn, model_config_fn = self._get_filenames(model_name)[:2]
-
-        # 1. Prepare corpora
-        train = self._prepare_corpus(
-            self._train_corpus, fields=fields,
-            tags_to_remove=tags_to_remove
-        )
-        test = self._prepare_corpus(
-            self._test_corpus, fields=fields,
-            tags_to_remove=tags_to_remove
-        ) if self._test_corpus is not None else [None]
-
-        # 2. Tune embeddings
-        def tune_word_emb(emb_type, emb_path, emb_model_device=None,
-                          emb_tune_params=None):
-            if emb_tune_params is True:
-                emb_tune_params = {}
-            elif isinstance(emb_tune_params, str):
-                emb_tune_params = {'model_name': emb_tune_params}
-            if isinstance(emb_tune_params, dict):
-                if emb_type == 'bert':
-                    if 'test_data' not in emb_tune_params and test:
-                        emb_tune_params['test_data'] = (test[0], test[-1])
-                    emb_tune_params['save_to'] = emb_path if emb_path else \
-                                                 bert_header
-                    if emb_model_device and 'device' not in emb_tune_params:
-                        emb_tune_params['device'] = emb_model_device
-                    if 'seed' not in emb_tune_params:
-                        emb_tune_params['seed'] = seed
-                    if 'log_file' not in emb_tune_params:
-                        emb_tune_params['log_file'] = log_file
-                    if log_file:
-                        print(file=log_file)
-                    emb_path = WordEmbeddings.bert_tune(
-                        train[0], train[-1], **emb_tune_params
-                    )['model_name']
-                else:
-                    raise ValueError("ERROR: tune method for '{}' embeddings "
-                                         .format(emb_type)
-                                   + 'is not implemented')
-            return emb_path
-
-        word_emb_path = tune_word_emb(
-            word_emb_type, word_emb_path,
-            emb_model_device=word_emb_model_device,
-            emb_tune_params=word_emb_tune_params
-        )
-        if word_next_emb_params:
-            if isinstance(word_next_emb_params, dict):
-                word_next_emb_params = [word_next_emb_params]
-            for emb_params in word_next_emb_params:
-                tune_params = emb_params.get('emb_tune_params',
-                              emb_params.get('word_emb_tune_params'))
-                emb_params['emb_path'] = tune_word_emb(
-                    emb_params.get('emb_type', emb_params['word_emb_type']),
-                    emb_params.get('emb_path', emb_params['word_emb_path']),
-                    emb_model_device=emb_params.get('emb_model_device',
-                                     emb_params.get('word_emb_model_device'),
-                                     word_emb_model_device),
-                    emb_tune_params=\
-                        emb_params.get('emb_tune_params',
-                        emb_params.get('word_emb_tune_params'))
-                )
-
-        if seed:
-            junky.enforce_reproducibility(seed=seed)
-
-        # 3. Create datasets
-        if log_file:
-            print('\nCREATE DATASETS', file=log_file)
-        self._ds = self._create_dataset(
-            train[0],
-            word_emb_type=word_emb_type, word_emb_path=word_emb_path,
-            word_emb_model_device=word_emb_model_device,
-            word_transform_kwargs=word_transform_kwargs,
-            word_next_emb_params=word_next_emb_params,
-            with_chars=rnn_emb_dim or cnn_emb_dim, tags=train[1:-1],
-            labels=train[-1])
-        self._save_dataset(model_name)
-        if test:
-            ds_test = self._ds.clone(with_data=False)
-            self._transform_dataset(test[0], tags=test[1:-1],
-                                    labels=test[-1], ds=ds_test)
-        else:
-            ds_test = None
-
-        # 4. Create model
-        if log_file:
-            print('\nCREATE A MODEL', file=log_file)
-        self._model, criterion, optimizer, scheduler = \
-            NeTaggerModel.create_model_for_train(
-                len(self._ds.get_dataset('y').transform_dict),
-                tags_pad_idx=self._ds.get_dataset('y').pad,
-                vec_emb_dim=self._ds.get_dataset('x').vec_size
-                                if word_emb_type is not None else
-                            None,
-                alphabet_size=len(self._ds.get_dataset('x_ch').transform_dict)
-                                  if rnn_emb_dim or cnn_emb_dim else
-                              0,
-                char_pad_idx=self._ds.get_dataset('x_ch').pad
-                                 if rnn_emb_dim or cnn_emb_dim else
-                             0,
-                num_upos=len(self._ds.get_dataset('t_0').transform_dict)
-                                  if upos_emb_dim else
-                         0,
-                upos_pad_idx=self._ds.get_dataset('t_0').pad
-                                  if upos_emb_dim else
-                         0,
-                **model_kwargs
-            )
-        if device:
-            self._model = self._model.to(device)
-        self._model.save_config(model_config_fn, log_file=log_file)
-
-        # 5. Train model
-        if log_file:
-            print('\nTRAIN THE MODEL', file=log_file)
-        def best_model_backup_method(model, model_score):
-            if log_file:
-                print('new maximum score {:.8f}'.format(model_score),
-                      file=log_file)
-            self._model.save_state_dict(model_fn, log_file=log_file)
-        res_ = junky.train(
-            None, self._model, criterion, optimizer, scheduler,
-            best_model_backup_method, datasets=(self._ds, ds_test),
-            epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
-            batch_size=batch_size, control_metric='accuracy',
-            max_grad_norm=max_grad_norm,
-            with_progress=log_file is not None, log_file=log_file
-        )
-        best_epoch, best_score = res_['best_epoch'], res_['best_score']
-        res = {x: y for x, y in res_.items()
-                        if x not in ['best_epoch', 'best_score']}
-
-        # 6. Tune model
-        if log_file:
-            print('\nTUNE THE MODEL', file=log_file)
-        self._model.load_state_dict(model_fn, log_file=log_file)
-        criterion, optimizer, scheduler = self._model.adjust_model_for_tune()
-        res_= junky.train(
-            None, self._model, criterion, optimizer, scheduler,
-            best_model_backup_method, datasets=(self._ds, ds_test),
-            epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
-            batch_size=batch_size, control_metric='accuracy',
-            max_grad_norm=max_grad_norm, best_score=best_score,
-            with_progress=log_file is not None, log_file=log_file
-        )
-        if res_['best_epoch'] is not None:
-            for key, value in res.items():
-                if key == 'best_epoch':
-                    res[key] += value
-                elif key == 'best_score':
-                    res[key] = value
-                else:
-                    res[key][:best_epoch] = value
-
-        return res
