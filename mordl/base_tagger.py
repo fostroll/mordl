@@ -474,8 +474,9 @@ class BaseTagger(BaseParser):
             word_emb_model_device=word_emb_model_device,
             word_transform_kwargs=word_transform_kwargs,
             word_next_emb_params=word_next_emb_params,
-            with_chars=rnn_emb_dim or cnn_emb_dim, tags=train[1:-1],
-            labels=train[-1])
+            with_chars=model_kwargs.get('rnn_emb_dim') \
+                    or model_kwargs.get('cnn_emb_dim'),
+            tags=train[1:-1], labels=train[-1])
         self._save_dataset(model_name)
         if test:
             ds_test = self._ds.clone(with_data=False)
@@ -493,7 +494,7 @@ class BaseTagger(BaseParser):
         if model_kwargs['word_emb_type']:
             ds_ = self._ds.get_dataset('x')
             model_kwargs['vec_emb_dim'] = ds_.vec_size
-        if model_kwargs['rnn_emb_dim'] or model_kwargs['cnn_emb_dim']:
+        if model_kwargs.get('rnn_emb_dim') or model_kwargs.get('cnn_emb_dim'):
             ds_ = self._ds.get_dataset('x_ch')
             model_kwargs['alphabet_size'] = len(ds_.transform_dict)
             model_kwargs['char_pad_idx'] = ds_.pad
