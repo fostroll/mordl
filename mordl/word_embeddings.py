@@ -585,6 +585,7 @@ class WordEmbeddings:
                                  emb_model_device=emb_model_device)
 
             if emb_type == 'bert':
+                model, tokenizer = emb_model
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
                 if transform_kwargs:
                     kwargs.update(transform_kwargs)
