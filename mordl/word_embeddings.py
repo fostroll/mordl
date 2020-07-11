@@ -586,7 +586,8 @@ class WordEmbeddings:
             if emb_type == 'bert':
                 model, tokenizer = emb_model
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
-                kwargs.update(transform_kwargs)
+                if transform_kwargs:
+                    kwargs.update(transform_kwargs)
                 junky.clear_tqdm()
                 x = BertDataset(model, tokenizer)
                 x.transform(sentences, **kwargs)
@@ -633,7 +634,8 @@ class WordEmbeddings:
                         break
             else:
                 kwargs = config.get('transform_kwargs', {})
-                kwargs.update(transform_kwargs)
+                if transform_kwargs:
+                    kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
                 if batch_size:
                     transform_kwargs['batch_size'] = batch_size
@@ -644,7 +646,8 @@ class WordEmbeddings:
         for _ in range(1):
             if isinstance(ds, BertDataset):
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
-                kwargs.update(transform_kwargs)
+                if transform_kwargs:
+                    kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
             elif isinstance(ds, WordDataset):
                 pass
@@ -669,12 +672,14 @@ class WordEmbeddings:
                         break
             else:
                 kwargs = config.get('transform_kwargs', {})
-                kwargs.update(transform_kwargs)
+                if transform_kwargs:
+                    kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
         for _ in range(1):
             if isinstance(ds, BertDataset):
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
-                kwargs.update(transform_kwargs)
+                if transform_kwargs:
+                    kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
                 if log_file == sys.stdout:
                     loglevel = 1
