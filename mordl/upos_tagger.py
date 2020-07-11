@@ -32,12 +32,12 @@ class UposTagger(BaseTagger):
     def predict(self, corpus, with_orig=False, batch_size=64, split=None,
                 clone_ds=False, save_to=None, log_file=LOG_FILE):
          args, kwargs = junky.get_func_params(self.predict, locals())
-         super().predict('UPOS', None, *args, **kwargs)
+         return super().predict('UPOS', None, *args, **kwargs)
 
     def evaluate(self, gold, test=None, label=None, batch_size=64, split=None,
                  clone_ds=False, log_file=LOG_FILE):
          args, kwargs = junky.get_func_params(self.evaluate, locals())
-         super().evaluate('UPOS', None, *args, **kwargs)
+         return super().evaluate('UPOS', None, *args, **kwargs)
 
     def predict0(self, corpus, with_orig=False, batch_size=64, split=None,
                 clone_ds=False, save_to=None, log_file=LOG_FILE):
