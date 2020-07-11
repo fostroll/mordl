@@ -671,7 +671,7 @@ class WordEmbeddings:
                 transform_kwargs = kwargs
                 loglevel = transform_kwargs.get('loglevel', 1)
             elif isinstance(ds, WordDataset):
-                pass
+                loglevel = transform_kwargs.pop('loglevel', 1)
             else:
                 break
             res = ds.transform_collate(sentences, batch_size=batch_size,
