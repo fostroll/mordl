@@ -8,7 +8,7 @@
 from mordl.base_tagger_model import BaseTaggerModel
 
 
-class FeatsTaggerModel(BaseModel):
+class FeatTaggerModel(BaseTaggerModel):
 
     def __init__(self, labels_num, labels_pad_idx=None, vec_emb_dim=None,
                  alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,

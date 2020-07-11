@@ -11,7 +11,7 @@ from mordl.feat_tagger_model import FeatTaggerModel
 from mordl.utils import LOG_FILE
 
 
-class FeatsTagger(BaseTagger):
+class FeatTagger(BaseTagger):
     """"""
 
     def __init__(self, feat):
