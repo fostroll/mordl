@@ -51,7 +51,7 @@ class UposTagger(BaseTagger):
               emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=2, lstm_do=0,
               bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
               log_file=LOG_FILE):
-         args, kwargs = junky.get_func_params(self.evaluate, locals())
+         args, kwargs = junky.get_func_params(self.train, locals())
          return super().train('UPOS', None, UposTaggerModel, None,
                               *args, **kwargs)
 
