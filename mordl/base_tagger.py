@@ -308,7 +308,7 @@ class BaseTagger(BaseParser):
         gold = self._get_corpus(gold, log_file=log_file)
         corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \
                       if test else \
-                  self.predict(field, add_field, gold, with_orig=True,
+                  self.predict(field, add_fields, gold, with_orig=True,
                                batch_size=batch_size, split=split,
                                clone_ds=clone_ds, log_file=log_file)
         field = field.split(':')
