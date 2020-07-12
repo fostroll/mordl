@@ -8,7 +8,7 @@
 from junky import clear_tqdm, get_func_params
 from mordl import FeatTagger
 from mordl.base_tagger import BaseTagger
-from mordl.defaults import CONFIG_EXT, LOG_FILE, TRAIN_BATCH_SIZE
+from mordl.defaults import BATCH_SIZE, CONFIG_EXT, LOG_FILE, TRAIN_BATCH_SIZE
 
 
 class FeatsTagger(BaseTagger):
@@ -22,7 +22,13 @@ class FeatsTagger(BaseTagger):
         if not model_name.endswith(CONFIG_EXT):
             model_name += CONFIG_EXT
         with open(model_name, 'wt', encoding='utf-8') as f:
-            print(json.dumps(self._feats, sort_keys=True, indent=4), file=f)
+            config = {x: [y[0], next(y[1].parameters()).device
+                                    if isinstance(y[1], FeatTagger) else
+                                y[1]]
+                             if isinstance(y[1], dict) else
+                         y
+                          for x, y in self._feats.items()}
+            print(json.dumps(config, sort_keys=True, indent=4), file=f)
         if log_file:
             print('Config saved', file=log_file)
 
@@ -37,6 +43,152 @@ class FeatsTagger(BaseTagger):
         for feat, params in self._feats.items():
             if log_file:
                 print('\n=== {}:'.format(feat), file=log_file)
+
+    def predict(self, corpus, feat=None, with_orig=False,
+                batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                save_to=None, log_file=LOG_FILE):
+
+        args, kwargs = get_func_params(FeatsTagger.predict, locals())
+        del kwargs['feat']
+
+        if feat:
+            attrs = self._feats[feat]
+            tagger = attrs[1] if isinstance(attrs) > 1 else None
+            assert isinstance(tagger, FeatTagger), \
+                'ERROR: model is not loaded. Use the .load() method prior'
+            corpus = tagger.predict(*args, **kwargs)
+
+        else:
+            kwargs['with_orig'] = False
+            kwargs['save_to'] = None
+
+            def process(corpus):
+                corpus = self._get_corpus(corpus, asis=True,
+                                          log_file=log_file)
+                for start in itertools.count(step=split if split else 1):
+                    if isinstance(corpus, Iterator):
+                        if split:
+                            corpus_ = []
+                            for i, sentence in enumerate(corpus, start=1):
+                                corpus_.append(sentence)
+                                if i == split:
+                                    break
+                        else:
+                            corpus_ = list(corpus)
+                    else:
+                        if split:
+                            corpus_ = corpus[start:start + split]
+                        else:
+                            corpus_ = corpus
+                    if not corpus_:
+                        break
+
+                    res_corpus_ = deepcopy(corpus_) if with_orig else corpus_
+
+                    for attrs in self._feats.values():
+                        tagger = attrs[1] if isinstance(attrs) > 1 else None
+                        assert isinstance(tagger, FeatTagger), \
+                            'ERROR: model is not loaded. Use the .load() '
+                            'method prior'
+                        corpus = tagger.predict(res_corpus_, **kwargs)
+
+                    if with_orig:
+                        for orig_sentence, sentence in zip(corpus_,
+                                                           res_corpus_):
+                            yield sentence, orig_sentence
+                    else:
+                        for sentence in res_corpus_:
+                            yield sentence
+
+            corpus = process(corpus)
+            if save_to:
+                self.save_conllu(corpus, save_to, log_file=None)
+                corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
+
+        return corpus
+
+    def evaluate(self, gold, test=None, feat=None, label=None,
+                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                 log_file=LOG_FILE):
+
+        if feat:
+            attrs = self._feats[feat]
+            tagger = attrs[1] if isinstance(attrs) > 1 else None
+            assert isinstance(tagger, FeatTagger), \
+                'ERROR: model is not loaded. Use the .load() method prior'
+            args, kwargs = get_func_params(FeatsTagger.evaluate, locals())
+            del kwargs['feat']
+            res = tagger.evaluate(*args, **kwargs)
+
+        else:
+            gold = self._get_corpus(gold, log_file=log_file)
+            corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \
+                          if test else \
+                      self.predict(gold, with_orig=True,
+                                   batch_size=batch_size, split=split,
+                                   clone_ds=clone_ds, log_file=log_file)
+            field_ = field.split(':')
+            field = field_[0]
+            name = field_[1] if len(field_) > 1 else None
+            header = ':'.join(field_[:2])
+            if label:
+                header += '::' + label
+            if log_file:
+                print('Evaluate ' + header, file=log_file)
+            n = c = nt = ct = ca = ce = cr = 0
+            i = -1
+            for i, sentences in enumerate(corpora):
+                for gold_token, test_token in zip(*sentences):
+                    wform = gold_token['FORM']
+                    if wform and '-' not in gold_token['ID']:
+                        gold_label = gold_token[field]
+                        test_label = test_token[field]
+                        if name:
+                            gold_label = gold_label.get(name)
+                            test_label = test_label.get(name)
+                        n += 1
+                        if (label and (gold_label == label
+                                    or test_label == label)) \
+                        or (not label and (gold_label or test_label)):
+                            nt += 1
+                            if gold_label == test_label:
+                                c += 1
+                                ct += 1
+                            elif not gold_label or (label
+                                                and gold_label != label):
+                                ce += 1
+                            elif not test_label or (label
+                                                and test_label != label):
+                                ca += 1
+                            else:
+                                cr += 1
+                        else:
+                            c += 1
+            if log_file:
+                if i < 0:
+                    print('Nothing to do!', file=log_file)
+                else:
+                    sp = ' ' * (len(header) - 2)
+                    print(header + ' total: {}'.format(nt), file=log_file)
+                    print(sp   + ' correct: {}'.format(ct), file=log_file)
+                    print(sp   + '   wrong: {}{}'.format(
+                        nt - ct, ' [{} excess / {} absent{}]'.format(
+                            ce, ca, '' if label else ' / {} wrong type'.format(cr)
+                        ) if nt != n else ''
+                    ), file=log_file)
+                    print(sp   + 'Accuracy: {}'.format(ct / nt if nt > 0 else 1.),
+                          file=log_file)
+                    if nt != n:
+                        print('[Total accuracy: {}]'
+                                  .format(c / n if n > 0 else 1.), file=log_file)
+            res = ct / nt if nt > 0 else 1.
+
+        return res
+
+    def evaluate0(self, gold, test=None, label=None, batch_size=BATCH_SIZE,
+                 split=None, clone_ds=False, log_file=LOG_FILE):
+        args, kwargs = get_func_params(FeatTagger.evaluate, locals())
+        return super().evaluate(self._feat, *args, **kwargs)
 
     def train(self, model_name, feats=None,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
@@ -68,14 +220,15 @@ class FeatsTagger(BaseTagger):
         if log_file:
             print(', '.join(feats), file=log_file)
 
-        for feat in feats:
-            self._feats[feat] = ['{}-{}'.format(model_name, feat), device]
-
         res = {}
         for feat in feats:
             if log_file:
                 print(file=log_file)
                 clear_tqdm()
+
+            model_name_ = '{}-{}'.format(model_name, feat)
+            self._feats[feat] = [model_name_, str(device)] if device else \
+                                model_name_
 
             tagger = FeatTagger(feat)
             tagger._train_corpus, tagger._test_corpus = \
@@ -83,7 +236,7 @@ class FeatsTagger(BaseTagger):
             if word_emb_path_suffix:
                 kwargs['word_emb_path'] = \
                     'feat-{}_{}'.format(feat, word_emb_path_suffix)
-            res[feat] = tagger.train(self._feats[feat][0], **kwargs)
+            res[feat] = tagger.train(model_name_, **kwargs)
 
             del tagger
 
