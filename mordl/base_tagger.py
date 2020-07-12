@@ -463,11 +463,6 @@ class BaseTagger(BaseParser):
                 emb_tune_params = {}
             elif isinstance(emb_tune_params, str):
                 emb_tune_params = {'model_name': emb_tune_params}
-            elif emb_tune_params not in [None, False]:
-                raise TypeError(
-                    'ERROR: emb_tune_params is of incorrect type. '
-                    'It can be either dict, str, bool or None'
-                )
             if isinstance(emb_tune_params, dict):
                 emb_tune_params = dict(emb_tune_params.items())
                 if emb_type == 'bert':
@@ -490,6 +485,11 @@ class BaseTagger(BaseParser):
                     raise ValueError("ERROR: Tune method for '{}' embeddings "
                                          .format(emb_type)
                                    + 'is not implemented')
+            elif emb_tune_params not in [None, False]:
+                raise TypeError(
+                    'ERROR: emb_tune_params is of incorrect type. '
+                    'It can be either dict, str, bool or None'
+                )
             return emb_path
 
         word_emb_path = tune_word_emb(
