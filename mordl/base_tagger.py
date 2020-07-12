@@ -421,29 +421,26 @@ class BaseTagger(BaseParser):
                               {'model_name': emb_tune_params} \
                                   if isinstance(emb_tune_params, str) else \
                               dict(emb_tune_params.items())
-            elif isinstance(emb_tune_params, str):
-                emb_tune_params = {'model_name': emb_tune_params}
-            if isinstance(emb_tune_params, dict):
-                if emb_type == 'bert':
-                    if 'test_data' not in emb_tune_params and test:
-                        emb_tune_params['test_data'] = test[0], test[-1]
-                    emb_tune_params['save_to'] = emb_path if emb_path else \
-                                                 bert_header
-                    if emb_model_device and 'device' not in emb_tune_params:
-                        emb_tune_params['device'] = emb_model_device
-                    if 'seed' not in emb_tune_params:
-                        emb_tune_params['seed'] = seed
-                    if 'log_file' not in emb_tune_params:
-                        emb_tune_params['log_file'] = log_file
-                    if log_file:
-                        print(file=log_file)
-                    emb_path = WordEmbeddings.bert_tune(
-                        train[0], train[-1], **emb_tune_params
-                    )['model_name']
-                else:
-                    raise ValueError("ERROR: tune method for '{}' embeddings "
-                                         .format(emb_type)
-                                   + 'is not implemented')
+            if emb_type == 'bert':
+                if 'test_data' not in emb_tune_params and test:
+                    emb_tune_params['test_data'] = test[0], test[-1]
+                emb_tune_params['save_to'] = emb_path if emb_path else \
+                                             bert_header
+                if emb_model_device and 'device' not in emb_tune_params:
+                    emb_tune_params['device'] = emb_model_device
+                if 'seed' not in emb_tune_params:
+                    emb_tune_params['seed'] = seed
+                if 'log_file' not in emb_tune_params:
+                    emb_tune_params['log_file'] = log_file
+                if log_file:
+                    print(file=log_file)
+                emb_path = WordEmbeddings.bert_tune(
+                    train[0], train[-1], **emb_tune_params
+                )['model_name']
+            else:
+                raise ValueError("ERROR: tune method for '{}' embeddings "
+                                     .format(emb_type)
+                               + 'is not implemented')
             return emb_path
 
         word_emb_path = tune_word_emb(
