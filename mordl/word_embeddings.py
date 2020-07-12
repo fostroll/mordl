@@ -146,7 +146,7 @@ class WordEmbeddings:
             ]), max_len)
 
         if log_file:
-            print('Prepare corpora...', end=' ', file=log_file)
+            print('Corpora processing...', end=' ', file=log_file)
             log_file.flush()
         train_sentences_, train_labels_ = \
             prepare_corpus(train_sentences, train_labels, max_len)
@@ -231,13 +231,15 @@ class WordEmbeddings:
             ]
         else:
             param_optimizer = list(model.classifier.named_parameters())
-            optimizer_grouped_parameters = [{'params': [p for n, p in param_optimizer]}]
+            optimizer_grouped_parameters = \
+                [{'params': [p for n, p in param_optimizer]}]
 
         optimizer = AdamW(optimizer_grouped_parameters, lr=3e-5, eps=1e-8)
 
         max_grad_norm = 1.
 
-        # Total number of training steps is number of batches * number of epochs
+        # Total number of training steps is
+        # number of batches * number of epochs
         total_steps = len(train_loader) * epochs
 
         # Create the learning rate scheduler

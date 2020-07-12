@@ -56,7 +56,7 @@ class FeatsTagger(BaseTagger):
             attrs = self._feats[feat]
             tagger = attrs[1] if isinstance(attrs) > 1 else None
             assert isinstance(tagger, FeatTagger), \
-                'ERROR: model is not loaded. Use the .load() method prior'
+                'ERROR: Model is not loaded. Use the .load() method prior'
             corpus = tagger.predict(*args, **kwargs)
 
         else:
@@ -89,7 +89,7 @@ class FeatsTagger(BaseTagger):
                     for attrs in self._feats.values():
                         tagger = attrs[1] if isinstance(attrs) > 1 else None
                         assert isinstance(tagger, FeatTagger), \
-                            'ERROR: model is not loaded. Use the .load() ' \
+                            'ERROR: Model is not loaded. Use the .load() ' \
                             'method prior'
                         corpus = tagger.predict(res_corpus_, **kwargs)
 
@@ -112,7 +112,7 @@ class FeatsTagger(BaseTagger):
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
         assert not feat and label, \
-            "ERROR: to evaluate the exact label you must specify it's " \
+            "ERROR: To evaluate the exact label you must specify it's " \
             'feat, too'
         args, kwargs = get_func_params(FeatTagger.evaluate, locals())
         del kwargs['feat']
@@ -129,14 +129,14 @@ class FeatsTagger(BaseTagger):
             attrs = self._feats[feat]
             tagger = attrs[1] if isinstance(attrs) > 1 else None
             assert isinstance(tagger, FeatTagger), \
-                'ERROR: model is not loaded. Use the .load() method prior'
+                'ERROR: Model is not loaded. Use the .load() method prior'
             args, kwargs = get_func_params(FeatsTagger.evaluate, locals())
             del kwargs['feat']
             res = tagger.evaluate(*args, **kwargs)
 
         else:
             assert not label, \
-                "ERROR: to evaluate the exact label you must specify it's " \
+                "ERROR: To evaluate the exact label you must specify it's " \
                 'feat, too'
 
             gold = self._get_corpus(gold, log_file=log_file)

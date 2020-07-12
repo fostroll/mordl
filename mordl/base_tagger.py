@@ -202,8 +202,8 @@ class BaseTagger(BaseParser):
             print('done.', file=log_file)
 
     def save(self, model_name, log_file=LOG_FILE):
-        assert self._ds, "ERROR: the tagger doesn't have a dataset to save"
-        assert self._model, "ERROR: the tagger doesn't have a model to save"
+        assert self._ds, "ERROR: The tagger doesn't have a dataset to save"
+        assert self._model, "ERROR: The tagger doesn't have a model to save"
         self._save_dataset(model_name)
         model_fn, model_config_fn = cls._get_filenames(model_name)[:2]
         self._model.save_config(model_config_fn, log_file=log_file)
@@ -223,10 +223,10 @@ class BaseTagger(BaseParser):
                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
                 save_to=None, log_file=LOG_FILE):
         assert self._ds is not None, \
-               "ERROR: the tagger doesn't have a dataset. Call the train() " \
+               "ERROR: The tagger doesn't have a dataset. Call the train() " \
                'method first'
         assert self._model, \
-               "ERROR: the tagger doesn't have a model. Call the train() " \
+               "ERROR: The tagger doesn't have a model. Call the train() " \
                'method first'
         assert not with_orig or save_to is None, \
                'ERROR: `with_orig` can be True only if save_to is None'
@@ -326,7 +326,7 @@ class BaseTagger(BaseParser):
         if label:
             header += '::' + label
         if log_file:
-            print('Evaluate ' + header, file=log_file)
+            print('Evaluating ' + header, file=log_file)
 
         def compare(gold_label, test_label, n, c, nt, ct, ca, ce, cr):
             n += 1
@@ -364,7 +364,7 @@ class BaseTagger(BaseParser):
                     istest = isinstance(test_label, dict)
                     if isgold and istest:
                         assert label, \
-                            'ERROR: to evaluate exact label of dict field, ' \
+                            'ERROR: To evaluate exact label of dict field, ' \
                             "add feat name to field param as '<field:feat>'"
                         ctok_ = 1
                         for feat in feats if feats else set(
@@ -408,72 +408,6 @@ class BaseTagger(BaseParser):
                                                  ' / {} wrong type'.format(cr)
                                      ) if nt != n else
                                      '')), file=log_file)
-                print(sp   + 'Accuracy: {}'.format(ct / nt if nt > 0 else 1.),
-                      file=log_file)
-                if nt != n:
-                    print('[Total accuracy: {}]'
-                              .format(c / n if n > 0 else 1.), file=log_file)
-        return ct / nt if nt > 0 else 1.
-
-    def evaluate0(self, field, gold, test=None, label=None,
-                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                 log_file=LOG_FILE):
-
-        gold = self._get_corpus(gold, log_file=log_file)
-        corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \
-                      if test else \
-                  self.predict(gold, with_orig=True,
-                               batch_size=batch_size, split=split,
-                               clone_ds=clone_ds, log_file=log_file)
-        field_ = field.split(':')
-        field = field_[0]
-        name = field_[1] if len(field_) > 1 else None
-        header = ':'.join(field_[:2])
-        if label:
-            header += '::' + label
-        if log_file:
-            print('Evaluate ' + header, file=log_file)
-        n = c = nt = ct = ca = ce = cr = 0
-        i = -1
-        for i, sentences in enumerate(corpora):
-            for gold_token, test_token in zip(*sentences):
-                wform = gold_token['FORM']
-                if wform and '-' not in gold_token['ID']:
-                    gold_label = gold_token[field]
-                    test_label = test_token[field]
-                    if name:
-                        gold_label = gold_label.get(name)
-                        test_label = test_label.get(name)
-                    n += 1
-                    if (label and (gold_label == label
-                                or test_label == label)) \
-                    or (not label and (gold_label or test_label)):
-                        nt += 1
-                        if gold_label == test_label:
-                            c += 1
-                            ct += 1
-                        elif not gold_label or (label
-                                            and gold_label != label):
-                            ce += 1
-                        elif not test_label or (label
-                                            and test_label != label):
-                            ca += 1
-                        else:
-                            cr += 1
-                    else:
-                        c += 1
-        if log_file:
-            if i < 0:
-                print('Nothing to do!', file=log_file)
-            else:
-                sp = ' ' * (len(header) - 2)
-                print(header + ' total: {}'.format(nt), file=log_file)
-                print(sp   + ' correct: {}'.format(ct), file=log_file)
-                print(sp   + '   wrong: {}{}'.format(
-                    nt - ct, ' [{} excess / {} absent{}]'.format(
-                        ce, ca, '' if label else ' / {} wrong type'.format(cr)
-                    ) if nt != n else ''
-                ), file=log_file)
                 print(sp   + 'Accuracy: {}'.format(ct / nt if nt > 0 else 1.),
                       file=log_file)
                 if nt != n:
@@ -544,7 +478,7 @@ class BaseTagger(BaseParser):
                     train[0], train[-1], **emb_tune_params
                 )['model_name']
             else:
-                raise ValueError("ERROR: tune method for '{}' embeddings "
+                raise ValueError("ERROR: Tune method for '{}' embeddings "
                                      .format(emb_type)
                                + 'is not implemented')
             return emb_path

@@ -119,7 +119,7 @@ class BaseTaggerModel(BaseModel):
         x_ = []
         if self.vec_emb_dim:
             assert x.shape[2] == self.vec_emb_dim, \
-                   'ERROR: invalid vector size: {} whereas vec_emb_dim = {}' \
+                   'ERROR: Invalid vector size: {} whereas vec_emb_dim = {}' \
                        .format(x.shape[2], self.vec_emb_dim)
             x_.append(x)
         if self._rnn_emb_l:
