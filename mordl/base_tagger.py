@@ -417,9 +417,10 @@ class BaseTagger(BaseParser):
         # 2. Tune embeddings
         def tune_word_emb(emb_type, emb_path, emb_model_device=None,
                           emb_tune_params=None):
-            emb_tune_params = dict(emb_tune_params.items()) \
-                                  if emb_tune_params is None else \
-                              {}
+            emb_tune_params = {} if emb_tune_params is None else \
+                              {'model_name': emb_tune_params} \
+                                  if isinstance(emb_tune_params, str) else \
+                              dict(emb_tune_params.items())
             elif isinstance(emb_tune_params, str):
                 emb_tune_params = {'model_name': emb_tune_params}
             if isinstance(emb_tune_params, dict):
