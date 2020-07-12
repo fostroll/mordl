@@ -226,7 +226,7 @@ class FeatsTagger(BaseTagger):
                 print(file=log_file)
                 clear_tqdm()
 
-            model_name_ = '{}-{}'.format(model_name, feat)
+            model_name_ = '{}-{}'.format(model_name, feat.lower())
             self._feats[feat] = [model_name_, str(device)] if device else \
                                 model_name_
 
@@ -235,7 +235,7 @@ class FeatsTagger(BaseTagger):
                 self._train_corpus, self._test_corpus
             if word_emb_path_suffix:
                 kwargs['word_emb_path'] = \
-                    'feat-{}_{}'.format(feat, word_emb_path_suffix)
+                    'feat-{}_{}'.format(feat.lower(), word_emb_path_suffix)
             res[feat] = tagger.train(model_name_, **kwargs)
 
             del tagger
