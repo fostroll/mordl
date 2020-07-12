@@ -88,7 +88,7 @@ class FeatsTagger(BaseTagger):
                     for attrs in self._feats.values():
                         tagger = attrs[1] if isinstance(attrs) > 1 else None
                         assert isinstance(tagger, FeatTagger), \
-                            'ERROR: model is not loaded. Use the .load() '
+                            'ERROR: model is not loaded. Use the .load() ' \
                             'method prior'
                         corpus = tagger.predict(res_corpus_, **kwargs)
 
