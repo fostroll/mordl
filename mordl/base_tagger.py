@@ -386,8 +386,10 @@ class BaseTagger(BaseParser):
                             compare(gold_label, test_label,
                                     n, c, nt, ct, ca, ce, cr)
                     else:
-                        raise AttributeError('Inconsistent field types in '
-                                             'gold and test corpora')
+                        raise TypeError(
+                            'Inconsistent field types in gold and test '
+                            'corpora'
+                        )
         if log_file:
             if i < 0:
                 print('Nothing to do!', file=log_file)
@@ -460,7 +462,12 @@ class BaseTagger(BaseParser):
             if emb_tune_params is True:
                 emb_tune_params = {}
             elif isinstance(emb_tune_params, str):
-                emb_tune_params = {'model_name': emb_tune_params} \
+                emb_tune_params = {'model_name': emb_tune_params}
+            elif emb_tune_params not in [None, False]:
+                raise TypeError(
+                    'ERROR: emb_tune_params is of incorrect type. '
+                    'It can be either dict, str, bool or None'
+                )
             if isinstance(emb_tune_params, dict):
                 emb_tune_params = dict(emb_tune_params.items())
                 if emb_type == 'bert':
