@@ -326,7 +326,7 @@ class BaseTagger(BaseParser):
         if label:
             header += '::' + label
         if log_file:
-            print('Evaluate ' + header, file=LOG_FILE)
+            print('Evaluate ' + header, file=log_file)
         n = c = nt = ct = ca = ce = cr = 0
         i = -1
         for i, sentences in enumerate(corpora):
@@ -358,20 +358,21 @@ class BaseTagger(BaseParser):
                         c += 1
         if log_file:
             if i < 0:
-                print('Nothing to do!', file=LOG_FILE)
+                print('Nothing to do!', file=log_file)
             else:
                 sp = ' ' * (len(header) - 2)
-                print(header + ' total: {}'.format(nt), file=LOG_FILE)
-                print(sp   + ' correct: {}'.format(ct), file=LOG_FILE)
+                print(header + ' total: {}'.format(nt), file=log_file)
+                print(sp   + ' correct: {}'.format(ct), file=log_file)
                 print(sp   + '   wrong: {}{}'.format(
                     nt - ct, ' [{} excess / {} absent{}]'.format(
                         ce, ca, '' if label else ' / {} wrong type'.format(cr)
                     ) if nt != n else ''
-                ), file=LOG_FILE)
-                print(sp   + 'Accuracy: {}'.format(ct / nt if nt > 0 else 1.))
+                ), file=log_file)
+                print(sp   + 'Accuracy: {}'.format(ct / nt if nt > 0 else 1.),
+                      file=log_file)
                 if nt != n:
                     print('[Total accuracy: {}]'
-                              .format(c / n if n > 0 else 1.))
+                              .format(c / n if n > 0 else 1.), file=log_file)
         return ct / nt if nt > 0 else 1.
 
     def train(self, field, add_fields, model_class, tag_emb_names, model_name,
@@ -398,7 +399,8 @@ class BaseTagger(BaseParser):
         fields.append(field)
 
         if log_file:
-            print('=== {} TAGGER TRAINING PIPELINE ==='.format(header))
+            print('=== {} TAGGER TRAINING PIPELINE ==='.format(header),
+                  file=log_file)
 
         model_fn, model_config_fn = self._get_filenames(model_name)[:2]
 

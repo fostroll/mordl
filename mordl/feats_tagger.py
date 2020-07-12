@@ -56,16 +56,17 @@ class FeatsTagger(BaseTagger):
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
         if log_file:
-            print('###### FEATS TAGGER TRAINING PIPELINE ######')
+            print('###### FEATS TAGGER TRAINING PIPELINE ######',
+                  file=log_file)
             print("\nWe're gonna train separate models for {} FEATS in train "
                       .format('the requested' if feats else 'all')
-                + 'corpus. Feats are:\n')
+                + 'corpus. Feats are:\n', file=log_file)
         if not feats:
             feats = sorted(set(x for x in self._train_corpus
                                  for x in x
                                  for x in x['FEATS'].keys()))
         if log_file:
-            print(', '.join(feats))
+            print(', '.join(feats), file=log_file)
 
         for feat in feats:
             self._feats[feat] = ['{}-{}'.format(model_name, feat), device]
@@ -73,7 +74,7 @@ class FeatsTagger(BaseTagger):
         res = {}
         for feat in feats:
             if log_file:
-                print('\n--------- FEAT:{} ---------'.format(feat))
+                print(file=log_file)
 
             tagger = FeatTagger(feat)
             tagger._train_corpus, tagger._test_corpus = \
