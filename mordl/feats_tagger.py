@@ -5,7 +5,7 @@
 # License: BSD, see LICENSE for details
 """
 """
-from junky import get_func_params
+from junky import clear_tqdm, get_func_params
 from mordl import FeatTagger
 from mordl.base_tagger import BaseTagger
 from mordl.defaults import CONFIG_EXT, LOG_FILE, TRAIN_BATCH_SIZE
@@ -75,6 +75,7 @@ class FeatsTagger(BaseTagger):
         for feat in feats:
             if log_file:
                 print(file=log_file)
+                clear_tqdm()
 
             tagger = FeatTagger(feat)
             tagger._train_corpus, tagger._test_corpus = \
