@@ -309,7 +309,7 @@ class BaseTagger(BaseParser):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
-    def evaluate(self, field, gold, test=None, label=None,
+    def evaluate(self, field, gold, test=None, feats=None, label=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
 
@@ -367,8 +367,9 @@ class BaseTagger(BaseParser):
                             'ERROR: to evaluate exact label of dict field, ' \
                             "add feat name to field param as '<field:feat>'"
                         ctok_ = 1
-                        for feat in set([*gold_label.keys(),
-                                         *test_label.keys()]):
+                        for feat in feats if feats else set(
+                            [*gold_label.keys(), *test_label.keys()]
+                        ):
                             gold_feat = gold_label.get(feat)
                             test_feat = test_label.get(feat)
                             n, c_, nt, ct, ca, ce, cr = \
