@@ -5,6 +5,7 @@
 # License: BSD, see LICENSE for details
 """
 """
+import json
 from junky import clear_tqdm, get_func_params
 from mordl import FeatTagger
 from mordl.base_tagger import BaseTagger
@@ -110,6 +111,19 @@ class FeatsTagger(BaseTagger):
     def evaluate(self, gold, test=None, feat=None, label=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
+        assert not feat and label, \
+            "ERROR: to evaluate the exact label you must specify it's " \
+            'feat, too'
+        args, kwargs = get_func_params(FeatTagger.evaluate, locals())
+        del kwargs['feat']
+        field = 'FEATS'
+        if feat:
+            field += ':{}' + feat
+        return super().evaluate(field, *args, **kwargs)
+
+    def evaluate(self, gold, test=None, feat=None, label=None,
+                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                 log_file=LOG_FILE):
 
         if feat:
             attrs = self._feats[feat]
@@ -121,6 +135,10 @@ class FeatsTagger(BaseTagger):
             res = tagger.evaluate(*args, **kwargs)
 
         else:
+            assert not label, \
+                "ERROR: to evaluate the exact label you must specify it's " \
+                'feat, too'
+
             gold = self._get_corpus(gold, log_file=log_file)
             corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \
                           if test else \
@@ -184,11 +202,6 @@ class FeatsTagger(BaseTagger):
             res = ct / nt if nt > 0 else 1.
 
         return res
-
-    def evaluate0(self, gold, test=None, label=None, batch_size=BATCH_SIZE,
-                 split=None, clone_ds=False, log_file=LOG_FILE):
-        args, kwargs = get_func_params(FeatTagger.evaluate, locals())
-        return super().evaluate(self._feat, *args, **kwargs)
 
     def train(self, model_name, feats=None,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
