@@ -5,7 +5,7 @@
 # License: BSD, see LICENSE for details
 """
 """
-import junky
+from junky import get_func_params
 from mordl import FeatTagger
 from mordl.base_tagger import BaseTagger
 from mordl.defaults import CONFIG_EXT, LOG_FILE, TRAIN_BATCH_SIZE
