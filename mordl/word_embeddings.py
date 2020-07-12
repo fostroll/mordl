@@ -13,7 +13,7 @@ from gensim.models import KeyedVectors
 import json
 import junky
 from junky.dataset import BertDataset, WordCatDataset, WordDataset
-from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, LOG_FILE
+from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE
 import numpy as np
 import os
 from sklearn.metrics import accuracy_score, confusion_matrix, \
@@ -705,7 +705,7 @@ class WordEmbeddings:
     def save_dataset(ds, f, config_f=True):
         if config_f is True and isinstance(f, str):
             pref, suff = os.path.splitext(f)
-            config_f = pref + '.config.json'
+            config_f = pref + CONFIG_EXT
         if config_f:
             need_close = False
             if isinstance(config_f, str):
@@ -728,7 +728,7 @@ class WordEmbeddings:
             assert isinstance(f, str), \
                    'ERROR: config_f can be True only with f of str type'
             pref, suff = os.path.splitext(f)
-            config_f_ = pref + '.config.json'
+            config_f_ = pref + CONFIG_EXT
             if os.path.isfile(config_f_):
                 config_f = config_f_
         if config_f:

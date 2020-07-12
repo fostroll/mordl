@@ -14,7 +14,8 @@ from junky.dataset import CharDataset, DummyDataset, FrameDataset, \
                           LenDataset, TokenDataset
 from mordl import WordEmbeddings
 from morra.base_parser import BaseParser
-from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, LOG_FILE, TRAIN_BATCH_SIZE
+from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE, \
+                           TRAIN_BATCH_SIZE
 import sys
 import torch
 from typing import Iterator
@@ -69,8 +70,8 @@ class BaseTagger(BaseParser):
             if model_name.endswith('.pt'):
                 model_name = model.name[:-3]
             model_fn, model_config_fn, ds_fn, ds_config_fn = \
-                model_name + '.pt', model_name + '.config.json', \
-                model_name + '_ds.pt', model_name + '_ds.config.json'
+                model_name + '.pt', model_name + CONFIG_EXT, \
+                model_name + '_ds.pt', model_name + '_ds' + CONFIG_EXT
         return model_fn, model_config_fn, ds_fn, ds_config_fn
 
     @staticmethod

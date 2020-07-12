@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# MorDL project: NE tagger
+# MorDL project: FEATS:feat tagger
 #
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
@@ -16,24 +16,24 @@ class FeatTagger(BaseTagger):
 
     def __init__(self, feat):
         if feat.find(':') == -1:
-            feat = 'FEAT:' + feat
+            feat = 'FEATS:' + feat
         self._feat = feat
         super().__init__()
 
     def load(self, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
-         args, kwargs = get_func_params(FeatTagger.load, locals())
-         super().load(FeatTaggerModel, *args, **kwargs)
+        args, kwargs = get_func_params(FeatTagger.load, locals())
+        super().load(FeatTaggerModel, *args, **kwargs)
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
-         args, kwargs = get_func_params(FeatTagger.predict, locals())
-         return super().predict(self._feat, 'UPOS', *args, **kwargs)
+        args, kwargs = get_func_params(FeatTagger.predict, locals())
+        return super().predict(self._feat, 'UPOS', *args, **kwargs)
 
     def evaluate(self, gold, test=None, label=None, batch_size=BATCH_SIZE,
                  split=None, clone_ds=False, log_file=LOG_FILE):
-         args, kwargs = get_func_params(FeatTagger.evaluate, locals())
-         return super().evaluate(self._feat, *args, **kwargs)
+        args, kwargs = get_func_params(FeatTagger.evaluate, locals())
+        return super().evaluate(self._feat, *args, **kwargs)
 
     def train(self, model_name,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
@@ -46,6 +46,6 @@ class FeatTagger(BaseTagger):
               upos_emb_dim=None, emb_out_dim=512, lstm_hidden_dim=256,
               lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
-         args, kwargs = get_func_params(FeatTagger.train, locals())
-         return super().train(self._feat, 'UPOS', FeatTaggerModel, 'upos',
-                              *args, **kwargs)
+        args, kwargs = get_func_params(FeatTagger.train, locals())
+        return super().train(self._feat, 'UPOS', FeatTaggerModel, 'upos',
+                             *args, **kwargs)
