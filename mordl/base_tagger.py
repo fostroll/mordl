@@ -399,10 +399,10 @@ class BaseTagger(BaseParser):
                 print(header + ' total: '
                     + ('{} tokens, {} tags'.format(ntok, nt) if ntok else
                        '{}'.format(nt)), file=log_file)
-                print(sp   + ' correct: '
+                print(sp + ' correct: '
                     + ('{} tokens, {} tags'.format(ctok, ct) if ntok else
                        '{}'.format(ct)), file=log_file)
-                print(sp   + '   wrong: '
+                print(sp + '   wrong: '
                     + ('{} tokens, {} tags'.format(ntok - ctok, nt - ct)
                            if ntok else
                        '{}{}'.format(nt - ct,
@@ -411,7 +411,13 @@ class BaseTagger(BaseParser):
                                                  ' / {} wrong type'.format(cr)
                                      ) if nt != n else
                                      '')), file=log_file)
-                print(sp   + 'Accuracy: {}'.format(ct / nt if nt > 0 else 1.),
+                print(sp + 'Accuracy: {}{}'
+                               .format('{} / '.format(ctok / ntok
+                                                          if ntok > 0 else
+                                                      1.)
+                                           if ntok else
+                                       '',
+                                       ct / nt if nt > 0 else 1.),
                       file=log_file)
                 if nt != n:
                     print('[Total accuracy: {}]'
