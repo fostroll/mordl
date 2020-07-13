@@ -15,10 +15,10 @@ class FeatTagger(BaseTagger):
     """"""
 
     def __init__(self, feat):
+        super().__init__()
         if feat.find(':') == -1:
             feat = 'FEATS:' + feat
         self._feat = feat
-        super().__init__()
 
     def load(self, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):

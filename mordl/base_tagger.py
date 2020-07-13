@@ -46,8 +46,9 @@ class BaseTagger(BaseParser):
         self._ds = None
 
     def load_train_corpus(self, corpus, append=False, test=None, seed=None):
-        super().load_train_corpus(corpus, append=append, parse=False,
-                                  test=test, seed=seed)
+        args, kwargs = junky.get_func_params(BaseTagger.load_train_corpus,
+                                             locals())
+        super().load_train_corpus(*args, parse=False, **kwargs)
 
     @classmethod
     def _get_corpus(cls, corpus, asis=False, log_file=LOG_FILE):

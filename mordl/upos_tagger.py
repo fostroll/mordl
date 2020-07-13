@@ -14,8 +14,9 @@ from mordl.upos_tagger_model import UposTaggerModel
 class UposTagger(BaseTagger):
     """"""
 
-    def __init__(self):
+    def __init__(self, field='UPOS'):
         super().__init__()
+        self._field = field
 
     def load(self, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
@@ -25,12 +26,12 @@ class UposTagger(BaseTagger):
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
         args, kwargs = get_func_params(UposTagger.predict, locals())
-        return super().predict('UPOS', None, *args, **kwargs)
+        return super().predict(self._field, None, *args, **kwargs)
 
     def evaluate(self, gold, test=None, label=None, batch_size=BATCH_SIZE,
                  split=None, clone_ds=False, log_file=LOG_FILE):
         args, kwargs = get_func_params(UposTagger.evaluate, locals())
-        return super().evaluate('UPOS', *args, **kwargs)
+        return super().evaluate(self._field, *args, **kwargs)
 
     def train(self, model_name,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
@@ -44,5 +45,5 @@ class UposTagger(BaseTagger):
               bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
               log_file=LOG_FILE):
         args, kwargs = get_func_params(UposTagger.train, locals())
-        return super().train('UPOS', None, UposTaggerModel, None,
+        return super().train(self._field, None, UposTaggerModel, None,
                              *args, **kwargs)

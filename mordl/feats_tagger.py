@@ -15,8 +15,9 @@ from mordl.defaults import BATCH_SIZE, CONFIG_EXT, LOG_FILE, TRAIN_BATCH_SIZE
 class FeatsTagger(BaseTagger):
     """"""
 
-    def __init__(self):
+    def __init__(self, field='FEATS'):
         super().__init__()
+        self._field = field
         self._feats = {}
 
     def save(self, model_name, log_file=LOG_FILE):
@@ -118,9 +119,9 @@ class FeatsTagger(BaseTagger):
             'feat, too'
         args, kwargs = get_func_params(FeatTagger.evaluate, locals())
         del kwargs['feat']
-        field = 'FEATS'
+        field = self._field
         if feat:
-            field += ':{}' + feat
+            field += ':' + feat
         return super().evaluate(field, *args, **kwargs)
 
     def train(self, model_name, feats=None,
@@ -141,15 +142,16 @@ class FeatsTagger(BaseTagger):
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
         if log_file:
-            print('###### FEATS TAGGER TRAINING PIPELINE ######',
-                  file=log_file)
-            print("\nWe're gonna train separate models for {} FEATS in train "
-                      .format('the requested' if feats else 'all')
+            print('###### {} TAGGER TRAINING PIPELINE ######'
+                      .format(self._field), file=log_file)
+            print("\nWe're gonna train separate models for {} {} in train "
+                      .format('the requested' if feats else 'all',
+                              self._field)
                 + 'corpus. Feats are:\n', file=log_file)
         if not feats:
             feats = sorted(set(x for x in self._train_corpus
                                  for x in x
-                                 for x in x['FEATS'].keys()))
+                                 for x in x[self._field].keys()))
         if log_file:
             print(', '.join(feats), file=log_file)
 
@@ -162,25 +164,27 @@ class FeatsTagger(BaseTagger):
             model_name_ = '{}-{}'.format(model_name, feat.lower())
             self._feats[feat] = model_name_
 
-            tagger = FeatTagger(feat)
+            tagger = FeatTagger(self._field + ':' + feat)
             tagger._train_corpus, tagger._test_corpus = \
                 self._train_corpus, self._test_corpus
             if word_emb_path_suffix:
                 kwargs['word_emb_path'] = \
-                    'feats-{}_{}'.format(feat.lower(), word_emb_path_suffix)
+                    '{}-{}_{}'.format(self._field.lower(), feat.lower(),
+                                      word_emb_path_suffix)
             res[feat] = tagger.train(model_name_, **kwargs)
 
             del tagger
 
         self.save(model_name, log_file=log_file)
         if log_file:
-            print('\n###### FEATS TAGGER TRAINING HAS FINISHED ######\n',
-                  file=log_file)
-            print(("Now, check the separate FEATS models' and datasets' "
+            print('\n###### {} TAGGER TRAINING HAS FINISHED ######\n'
+                      .format(self._field), file=log_file)
+            print(("Now, check the separate {} models' and datasets' "
                    'config files and consider to change some device names '
                    'to be able load all the models jointly. You can find '
                    'the separate models\' list in the "{}" config file. '
                    "Then, use the `.load('{}')` method to start working "
-                   'with the FEATS tagger.')
-                      .format(model_name, model_name), file=log_file)
+                   'with the {} tagger.').format(self._field, model_name,
+                                                 model_name, self._field),
+                      file=log_file)
         return res
