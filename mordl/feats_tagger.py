@@ -5,6 +5,7 @@
 # License: BSD, see LICENSE for details
 """
 """
+from collections import OrderedDict
 import json
 from junky import clear_tqdm, get_func_params
 from mordl import FeatTagger
