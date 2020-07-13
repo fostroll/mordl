@@ -234,10 +234,11 @@ class FeatsJointTagger(BaseTagger):
                     sentence = sentence[0]
                 for token in sentence:
                     token[self._orig_field] = OrderedDict(
-                        [(x, y) for x, y in
-                             [x.split('=')
-                                  for x in token[self._orig_field].split('|')]]
-                    )
+                        [(x, y) for x, y in [
+                            x.split('=')
+                                for x in token[self._orig_field].split('|')
+                        ]]
+                    ) if token[self._orig_field] else OrderedDict()
                 yield sentence
 
         corpus = process(
