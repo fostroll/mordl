@@ -35,13 +35,39 @@ class JointFeatsTagger(UposTagger):
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
-        args, kwargs = get_func_params(FeatTagger.predict, locals())
-        return super().predict(self._feat, 'UPOS', *args, **kwargs)
+        assert not with_orig or save_to is None, \
+               'ERROR: `with_orig` can be True only if save_to is None'
+        args, kwargs = get_func_params(JointFeatsTagger.predict, locals())
+        kwargs['save_to'] = None
 
-    def evaluate(self, gold, test=None, label=None, batch_size=BATCH_SIZE,
-                 split=None, clone_ds=False, log_file=LOG_FILE):
-        args, kwargs = get_func_params(FeatTagger.evaluate, locals())
-        return super().evaluate(self._feat, *args, **kwargs)
+        def process(corpus):
+            for sentence in corpus:
+                [x.update({self._orig_field: OrderedDict(
+                    {x: y for x, y in [x.split('=')
+                          for x in x[self._orig_field].split('|')]}
+                )}) for x in (sentence[0] if with_orig else sentence)]
+                yield sentence
+
+        corpus = process(
+            super().predict(self._orig_field, None, *args, **kwargs)
+        )
+        if save_to:
+            self.save_conllu(corpus, save_to, log_file=None)
+            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
+        return corpus
+
+    def evaluate(self, gold, test=None, feat=None, label=None,
+                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                 log_file=LOG_FILE):
+        assert not feat and label, \
+            "ERROR: To evaluate the exact label you must specify it's " \
+            'feat, too'
+        args, kwargs = get_func_params(JointFeatsTagger.evaluate, locals())
+        del kwargs['feat']
+        field = self._orig_field
+        if feat:
+            field += ':' + feat
+        return super().evaluate(field, *args, **kwargs)
 
     def train(self, *args, **kwargs):
         key_vals = set(x[self._field] for x in self._train_corpus for x in x)
