@@ -6,16 +6,17 @@
 """
 """
 from junky import get_func_params
-from mordl import UposTagger
+from mordl.base_tagger import BaseTagger
 from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.feat_tagger_model import FeatTaggerModel
 
 
-class JointFeatsTagger(UposTagger):
+class JointFeatsTagger(BaseTagger):
     """"""
 
     def __init__(self, field='FEATS', work_field=None):
         super().__init__()
+        del self._feat
         self._orig_field = field
         self._field = work_field if work_field else field + '-joint'
 
@@ -33,6 +34,11 @@ class JointFeatsTagger(UposTagger):
                                     for y in sorted(x[self._orig_field]))})
              for x in self._test_corpus for x in x]
 
+    def load(self, model_name, device=None, dataset_device=None,
+             log_file=LOG_FILE):
+        args, kwargs = get_func_params(JointFeatsTagger.load, locals())
+        super().load(FeatTaggerModel, *args, **kwargs)
+
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
         assert not with_orig or save_to is None, \
@@ -49,7 +55,7 @@ class JointFeatsTagger(UposTagger):
                 yield sentence
 
         corpus = process(
-            super().predict(self._orig_field, None, *args, **kwargs)
+            super().predict(self._orig_field, 'UPOS', *args, **kwargs)
         )
         if save_to:
             self.save_conllu(corpus, save_to, log_file=None)
@@ -73,4 +79,5 @@ class JointFeatsTagger(UposTagger):
         key_vals = set(x[self._field] for x in self._train_corpus for x in x)
         [None if x[self._field] in key_vals else x.update({self._field: ''})
              for x in self._test_corpus for x in x]
-        super().train(*args, **kwargs)
+        return super().train(self._field, 'UPOS', FeatTaggerModel, 'upos',
+                             *args, **kwargs)
