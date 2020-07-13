@@ -374,7 +374,7 @@ class BaseTagger(BaseParser):
                             gold_feat = gold_label.get(feat)
                             test_feat = test_label.get(feat)
                             n, c_, nt, ct, ca, ce, cr = \
-                                compare(gold_label, test_label,
+                                compare(gold_feat, test_feat,
                                         n, c, nt, ct, ca, ce, cr)
                             if c_ == c:
                                 ctok_ = 0
