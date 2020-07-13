@@ -42,3 +42,9 @@ class JointFeatsTagger(UposTagger):
                  split=None, clone_ds=False, log_file=LOG_FILE):
         args, kwargs = get_func_params(FeatTagger.evaluate, locals())
         return super().evaluate(self._feat, *args, **kwargs)
+
+    def train(self, *args, **kwargs):
+        key_flds = set(x[self._field] for x in self._train_corpus for x in x)
+        [update({self._field: ''}) if x[self._field] in key_fields else None
+             for x in self._test_corpus for x in x]
+        super().train(*args, **kwargs)
