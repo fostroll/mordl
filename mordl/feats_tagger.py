@@ -265,6 +265,7 @@ class FeatsJointTagger(BaseTagger):
               upos_emb_dim=None, emb_out_dim=512, lstm_hidden_dim=256,
               lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
+        args, kwargs = get_func_params(FeatsJointTagger.train, locals())
         key_vals = set(x[self._field] for x in self._train_corpus for x in x)
         [None if x[self._field] in key_vals else x.update({self._field: ''})
              for x in self._test_corpus for x in x]
