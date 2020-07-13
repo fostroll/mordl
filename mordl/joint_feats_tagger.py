@@ -75,7 +75,17 @@ class JointFeatsTagger(BaseTagger):
             field += ':' + feat
         return super().evaluate(field, *args, **kwargs)
 
-    def train(self, *args, **kwargs):
+    def train(self, model_name,
+              device=None, epochs=None, min_epochs=0, bad_epochs=5,
+              batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
+              max_grad_norm=None, tags_to_remove=None,
+              word_emb_type='bert', word_emb_model_device=None,
+              word_emb_path=None, word_emb_tune_params=None,
+              word_transform_kwargs=None, word_next_emb_params=None,
+              rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
+              upos_emb_dim=None, emb_out_dim=512, lstm_hidden_dim=256,
+              lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
+              bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
         key_vals = set(x[self._field] for x in self._train_corpus for x in x)
         [None if x[self._field] in key_vals else x.update({self._field: ''})
              for x in self._test_corpus for x in x]
