@@ -521,7 +521,7 @@ class BaseTagger(BaseParser):
         # 3. Create datasets
         if log_file:
             print('\nDATASETS CREATION', file=log_file)
-        self._ds = self._create_dataset(
+        ds_train = self._create_dataset(
             train[0],
             word_emb_type=word_emb_type, word_emb_path=word_emb_path,
             word_emb_model_device=word_emb_model_device,
@@ -532,7 +532,7 @@ class BaseTagger(BaseParser):
             tags=train[1:-1], labels=train[-1], log_file=sys.stderr)
         self._save_dataset(model_name)
         if test:
-            ds_test = self._ds.clone(with_data=False)
+            ds_test = ds_train.clone(with_data=False)
             self._transform(test[0], tags=test[1:-1], labels=test[-1],
                             ds=ds_test, log_file=sys.stderr)
         else:
@@ -541,32 +541,32 @@ class BaseTagger(BaseParser):
         # 4. Create model
         if log_file:
             print('\nMODEL CREATION', file=log_file)
-        ds_ = self._ds.get_dataset('y')
+        ds_ = ds_train.get_dataset('y')
         model_args = [len(ds_.transform_dict)]
         model_kwargs['labels_pad_idx'] = ds_.pad
         if word_emb_type:
-            ds_ = self._ds.get_dataset('x')
+            ds_ = ds_train.get_dataset('x')
             model_kwargs['vec_emb_dim'] = ds_.vec_size
         if model_kwargs.get('rnn_emb_dim') or model_kwargs.get('cnn_emb_dim'):
-            ds_ = self._ds.get_dataset('x_ch')
+            ds_ = ds_train.get_dataset('x_ch')
             model_kwargs['alphabet_size'] = len(ds_.transform_dict)
             model_kwargs['char_pad_idx'] = ds_.pad
         if tag_emb_names:
-            ds_list = self._ds.list()
+            ds_list = ds_train.list()
             names = iter(tag_emb_names)
-            for name in self._ds.list():
+            for name in ds_train.list():
                 if name.startswith('t_'):
-                    ds_ = self._ds.get_dataset(name)
+                    ds_ = ds_train.get_dataset(name)
                     name = next(names)
                     emb_dim = model_kwargs[name + '_emb_dim']
                     if emb_dim:
                         model_kwargs[name + '_num'] = len(ds_.transform_dict)
                         model_kwargs[name + '_pad_idx'] = ds_.pad
-        self._model, criterion, optimizer, scheduler = \
+        model, criterion, optimizer, scheduler = \
             model_class.create_model_for_train(*model_args, **model_kwargs)
         if device:
-            self._model = self._model.to(device)
-        self._model.save_config(model_config_fn, log_file=log_file)
+            model.to(device)
+        model.save_config(model_config_fn, log_file=log_file)
 
         # 5. Train model
         if log_file:
@@ -575,10 +575,10 @@ class BaseTagger(BaseParser):
             if log_file:
                 print('new maximum score {:.8f}'.format(model_score),
                       file=log_file)
-            self._model.save_state_dict(model_fn, log_file=log_file)
+            model.save_state_dict(model_fn, log_file=log_file)
         res_ = junky.train(
-            None, self._model, criterion, optimizer, scheduler,
-            best_model_backup_method, datasets=(self._ds, ds_test),
+            None, model, criterion, optimizer, scheduler,
+            best_model_backup_method, datasets=(ds_train, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
             batch_size=batch_size, control_metric='accuracy',
             max_grad_norm=max_grad_norm,
@@ -591,11 +591,11 @@ class BaseTagger(BaseParser):
         # 6. Tune model
         if log_file:
             print('\nMODEL TUNING', file=log_file)
-        self._model.load_state_dict(model_fn, log_file=log_file)
-        criterion, optimizer, scheduler = self._model.adjust_model_for_tune()
+        model.load_state_dict(model_fn, log_file=log_file)
+        criterion, optimizer, scheduler = model.adjust_model_for_tune()
         res_= junky.train(
-            None, self._model, criterion, optimizer, scheduler,
-            best_model_backup_method, datasets=(self._ds, ds_test),
+            None, model, criterion, optimizer, scheduler,
+            best_model_backup_method, datasets=(ds_train, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
             batch_size=batch_size, control_metric='accuracy',
             max_grad_norm=max_grad_norm, best_score=best_score,
@@ -609,5 +609,14 @@ class BaseTagger(BaseParser):
                     res[key] = value
                 else:
                     res[key][:best_epoch] = value
+
+        del model, ds
+
+        if log_file:
+            print('\n=== {} TAGGER TRAINING HAS FINISHED ===\n'
+                      .format(header), file=log_file)
+            print(("Use the `.load('{}')` method to start working "
+                   'with the {} tagger.').format(model_name, header),
+                      file=log_file)
 
         return res
