@@ -364,7 +364,7 @@ class BaseTagger(BaseParser):
                     isgold = isinstance(gold_label, dict)
                     istest = isinstance(test_label, dict)
                     if isgold and istest:
-                        assert label, \
+                        assert not label, \
                             'ERROR: To evaluate exact label of dict field, ' \
                             "add feat name to field param as '<field:feat>'"
                         ctok_ = 1
