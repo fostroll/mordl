@@ -314,6 +314,8 @@ class BaseTagger(BaseParser):
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
 
+        if isinstance(feats, str):
+            feats = [feats]
         gold = self._get_corpus(gold, log_file=log_file)
         corpora = zip(gold, self._get_corpus(test, log_file=log_file)) \
                       if test else \
