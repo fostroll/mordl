@@ -228,7 +228,11 @@ class FeatsJointTagger(BaseTagger):
 
         def process(corpus):
             for sentence in corpus:
-                for token in (sentence[0] if with_orig else sentence):
+                if with_orig:
+                    sentence = sentence[0]
+                if isinstance(sentence, tuple):
+                    sentence = sentence[0]
+                for token in sentence:
                     token[self._orig_field] = OrderedDict(
                         [(x, y) for x, y in
                              [x.split('=')
