@@ -236,7 +236,7 @@ class FeatsJointTagger(BaseTagger):
                     token[self._orig_field] = OrderedDict(
                         [(x, y) for x, y in
                              [x.split('=')
-                                  for x in token[self._field].split('|')]]
+                                  for x in token[self._orig_field].split('|')]]
                     )
                 yield sentence
 
