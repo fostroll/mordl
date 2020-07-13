@@ -367,7 +367,7 @@ class BaseTagger(BaseParser):
                         assert not label, \
                             'ERROR: To evaluate exact label of dict field, ' \
                             "add feat name to field param as '<field:feat>'"
-                        if gold_label or gold_test:
+                        if gold_label or test_label:
                             ctok_ = 1
                             for feat in feats if feats else set(
                                 [*gold_label.keys(), *test_label.keys()]
