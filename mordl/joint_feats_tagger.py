@@ -16,7 +16,6 @@ class JointFeatsTagger(BaseTagger):
 
     def __init__(self, field='FEATS', work_field=None):
         super().__init__()
-        del self._feat
         self._orig_field = field
         self._field = work_field if work_field else field + '-joint'
 
