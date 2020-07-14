@@ -95,7 +95,7 @@ class FeatsTagger(BaseTagger):
 
                     for attrs in self._feats.values():
                         tagger = attrs[1] \
-                                     if isinstance(attrs, list) > 1 else \
+                                     if isinstance(attrs, list) else \
                                  None
                         assert isinstance(tagger, FeatTagger), \
                             'ERROR: Model is not loaded. Use the .load() ' \
