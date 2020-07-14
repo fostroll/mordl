@@ -296,6 +296,3 @@ class FeatsSeparateTagger(BaseTagger):
                                                  model_name, self._field),
                       file=log_file)
         return res
-
-        
-FeatsTagger = FeatsJointTagger
