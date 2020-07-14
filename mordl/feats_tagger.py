@@ -52,12 +52,13 @@ class FeatsTagger(BaseTagger):
             print('\n{} tagger have been loaded ###'.format(self._field),
                   file=log_file)
 
-    def predict(self, corpus, feat=None, with_orig=False,
-                batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                save_to=None, log_file=LOG_FILE):
+    def predict(self, corpus, feat=None, remove_excess_feats=True,
+                with_orig=False, batch_size=BATCH_SIZE, split=None,
+                clone_ds=False, save_to=None, log_file=LOG_FILE):
 
         args, kwargs = get_func_params(FeatsTagger.predict, locals())
         del kwargs['feat']
+        del kwargs['remove_excess_feats']
 
         if feat:
             attrs = self._feats[feat]
@@ -120,7 +121,9 @@ class FeatsTagger(BaseTagger):
                         for sentence in res_corpus_:
                             yield sentence
 
-            corpus = process(clear(corpus))
+            if remove_excess_feats:
+                corpus = clear(corpus)
+            corpus = process(corpus)
             if save_to:
                 self.save_conllu(corpus, save_to, log_file=None)
                 corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
