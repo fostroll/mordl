@@ -326,9 +326,8 @@ class BaseTagger(BaseParser):
         if isinstance(feats, str):
             feats = [feats]
         gold = self._get_corpus(gold, log_file=log_file)
-        test_iter = self._get_corpus(test, log_file=log_file) if test else \
-                    None
-        corpora = zip(gold, test_iter) if test_iter else \
+        corpora = zip(self._get_corpus(test, log_file=log_file), gold)
+                      if test else \
                   self.predict(gold, with_orig=True,
                                batch_size=batch_size, split=split,
                                clone_ds=clone_ds, log_file=log_file)
@@ -404,9 +403,9 @@ class BaseTagger(BaseParser):
                             'Inconsistent field types in gold and test '
                             'corpora'
                         )
-        if test_iter:
+        if test:
             try:
-                next(test_iter)
+                next(gold)
             except StopIteration:
                 pass
         if log_file:
