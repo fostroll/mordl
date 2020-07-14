@@ -629,7 +629,7 @@ class BaseTagger(BaseParser):
                 else:
                     res[key][:best_epoch] = value
 
-        del model, ds
+        del model, ds_train, ds_test
 
         if log_file:
             print('\n=== {} TAGGER TRAINING HAS FINISHED ===\n'
