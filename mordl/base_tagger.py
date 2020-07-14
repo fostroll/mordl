@@ -82,12 +82,11 @@ class BaseTagger(BaseParser):
             fields=fields
         )
 
-    @staticmethod
     def _create_dataset(
         sentences, word_emb_type=None, word_emb_path=None,
         word_emb_model_device=None, word_transform_kwargs=None,
         word_next_emb_params=None, with_chars=False, tags=None,
-        labels=None, log_file=LOG_FILE
+        labels=None, for_self=True, log_file=LOG_FILE
     ):
         ds = FrameDataset()
 
@@ -123,6 +122,8 @@ class BaseTagger(BaseParser):
                              keep_empty=False)
             ds.add('y', y, with_lens=False)
 
+        if for_self:
+            self._ds = ds
         return ds
 
     def _transform(self, sentences, tags=None, labels=None, ds=None,
@@ -143,8 +144,10 @@ class BaseTagger(BaseParser):
             elif labels and typ == 'y':
                 ds_.transform(labels)
 
-    def _transform_collate(self, sentences, tags=None, labels=None,
+    def _transform_collate(self, sentences, tags=None, labels=None, ds=None,
                            batch_size=BATCH_SIZE, log_file=LOG_FILE):
+        if ds is None:
+            ds = self._ds
         res = []
         for name in self._ds.list():
             ds_ = self._ds.get_dataset(name)
@@ -175,32 +178,38 @@ class BaseTagger(BaseParser):
                 batch_.append(res_)
             yield batch_
 
-    def _save_dataset(self, model_name):
+    def _save_dataset(self, model_name, ds=None):
+        if ds is None:
+            ds = self._ds
         ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
         config = {}
-        for name in self._ds.list():
-            ds_ = self._ds.get_dataset(name)
+        for name in ds.list():
+            ds_ = ds.get_dataset(name)
             cfg = getattr(ds_, CONFIG_ATTR, None)
             if cfg:
                 config[name] = cfg
         with open(ds_config_fn, 'wt', encoding='utf-8') as f:
             print(json.dumps(config, sort_keys=True, indent=4), file=f)
-        self._ds.save(ds_fn, with_data=False)
+        ds.save(ds_fn, with_data=False)
 
-    def _load_dataset(self, model_name, device=None, log_file=LOG_FILE):
+    def _load_dataset(self, model_name, device=None, for_self=True,
+                      log_file=LOG_FILE):
         ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
         if log_file:
             print('Loading dataset...', end=' ', file=log_file)
             log_file.flush()
-        self._ds = FrameDataset.load(ds_fn)
+        ds = FrameDataset.load(ds_fn)
         with open(ds_config_fn, 'rt', encoding='utf-8') as f:
             config = json.loads(f.read())
             for name, cfg in config.items():
-                WordEmbeddings.apply_config(self._ds.get_dataset(name), cfg)
+                WordEmbeddings.apply_config(ds.get_dataset(name), cfg)
             if device:
-                self._ds.to(device)
+                ds.to(device)
         if log_file:
             print('done.', file=log_file)
+        if for_self:
+            self._ds = ds
+        return ds
 
     def save(self, model_name, log_file=LOG_FILE):
         assert self._ds, "ERROR: The tagger doesn't have a dataset to save"
@@ -538,8 +547,9 @@ class BaseTagger(BaseParser):
             word_next_emb_params=word_next_emb_params,
             with_chars=model_kwargs.get('rnn_emb_dim') \
                     or model_kwargs.get('cnn_emb_dim'),
-            tags=train[1:-1], labels=train[-1], log_file=sys.stderr)
-        self._save_dataset(model_name)
+            tags=train[1:-1], labels=train[-1], for_self=False,
+            log_file=sys.stderr)
+        self._save_dataset(model_name, ds=ds_train)
         if test:
             ds_test = ds_train.clone(with_data=False)
             self._transform(test[0], tags=test[1:-1], labels=test[-1],
