@@ -73,7 +73,7 @@ class FeatsTagger(BaseTagger):
             def clear(corpus):
                 corpus = self._get_corpus(corpus, asis=True,
                                           log_file=log_file)
-                for sentence in enumerate(corpus, start=1):
+                for sentence in corpus:
                     if isinstance(sentence, tuple):
                         sentence_ = sentence[0]
                     for token in sentence_:
