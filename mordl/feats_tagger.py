@@ -70,6 +70,16 @@ class FeatsTagger(BaseTagger):
             kwargs['with_orig'] = False
             kwargs['save_to'] = None
 
+            def clear(corpus):
+                corpus = self._get_corpus(corpus, asis=True,
+                                          log_file=log_file)
+                for sentence in enumerate(corpus, start=1):
+                    if isinstance(sentence, tuple):
+                        sentence_ = sentence[0]
+                    for token in sentence_:
+                        token[self._field] = OrderedDict()
+                    yield sentence
+
             def process(corpus):
                 corpus = self._get_corpus(corpus, asis=True,
                                           log_file=log_file)
@@ -110,7 +120,7 @@ class FeatsTagger(BaseTagger):
                         for sentence in res_corpus_:
                             yield sentence
 
-            corpus = process(corpus)
+            corpus = process(clear(corpus))
             if save_to:
                 self.save_conllu(corpus, save_to, log_file=None)
                 corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
