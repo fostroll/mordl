@@ -326,7 +326,7 @@ class BaseTagger(BaseParser):
         if isinstance(feats, str):
             feats = [feats]
         gold = self._get_corpus(gold, log_file=log_file)
-        corpora = zip(self._get_corpus(test, log_file=log_file), gold)
+        corpora = zip(self._get_corpus(test, log_file=log_file), gold) \
                       if test else \
                   self.predict(gold, with_orig=True,
                                batch_size=batch_size, split=split,
