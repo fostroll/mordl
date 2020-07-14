@@ -136,7 +136,7 @@ class FeatsTagger(BaseTagger):
         assert feat or not label, \
             "ERROR: To evaluate the exact label you must specify it's " \
             'feat, too'
-        args, kwargs = get_func_params(FeatTagger.evaluate, locals())
+        args, kwargs = get_func_params(FeatsTagger.evaluate, locals())
         del kwargs['feat']
         field = self._field
         if feat:
