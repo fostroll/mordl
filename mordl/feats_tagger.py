@@ -38,7 +38,7 @@ class FeatsTagger(BaseTagger):
         with open(model_name, 'rt', encoding='utf-8') as f:
             self._feats = json.loads(f.read())
         if log_file:
-            print('### Load models for feats:', file=log_file)
+            print('### Loading {} tagger:'.format(self._field), file=log_file)
         for feat in sorted(self._feats):
             if log_file:
                 print('\n--- {}:'.format(feat), file=log_file)
@@ -47,7 +47,8 @@ class FeatsTagger(BaseTagger):
             tagger.load(model_name_)
             self._feats[feat] = [model_name, tagger]
         if log_file:
-            print('### done.', file=log_file)
+            print('{} tagger have been loaded ###'.format(self._field),
+                  file=log_file)
 
     def predict(self, corpus, feat=None, with_orig=False,
                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
