@@ -13,6 +13,7 @@ from mordl import FeatTagger
 from mordl.base_tagger import BaseTagger
 from mordl.defaults import BATCH_SIZE, CONFIG_EXT, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.feat_tagger_model import FeatTaggerModel
+from typing import Iterator
 
 
 class FeatsTagger(BaseTagger):
