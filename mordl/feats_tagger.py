@@ -5,8 +5,8 @@
 # License: BSD, see LICENSE for details
 """
 """
-from collections import OrderedDict
 from copy import deepcopy
+from collections import OrderedDict
 import itertools
 import json
 from junky import clear_tqdm, get_func_params
@@ -16,43 +16,6 @@ from mordl.defaults import BATCH_SIZE, CONFIG_EXT, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.feat_tagger_model import FeatTaggerModel
 from typing import Iterator
 
-
-class FeatsTagger:
-
-    def __init__(j_tagger, s_tagger):
-        self._jt = j_tagger
-        self._st = s_tagger
-
-    def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
-                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
-
-        args, kwargs = get_func_params(FeatsTagger.evaluate, locals())
-
-        scorp = list(self._jt.predict(corpus, **kwargs))
-        jcorp = deepcopy(scorp)
-        scorp = self._st.predict(scorp)
-        field = self._st._field
-
-        for jsent, ssent in zip(jcorp, scorp):
-            jsent_ = jsent[0] if with_orig else jsent
-            ssent_ = ssent[0] if with_orig else ssent
-            for jtok, stok in zip(jsent_[0]
-                                      if isinstance(jsent_, tuple) else
-                                  jsent_,
-                                  ssent_[0]
-                                      if isinstance(ssent_, tuple) else
-                                  ssent_):
-                jfld, sfld = jtok[field], stok[field]
-                for feat, val in jfld.items():
-                    if feat not in sfld:
-                        sfld[feat] = val
-                del_feats = []
-                for feat, val in sfld.items():
-                    if feat not in jfld:
-                        del_feats.append(feat)
-                for feat in del_feats:
-                    sfld.pop(feat, None)
-            yield ssent
 
 class FeatsJointTagger(BaseTagger):
     """"""
@@ -333,3 +296,6 @@ class FeatsSeparateTagger(BaseTagger):
                                                  model_name, self._field),
                       file=log_file)
         return res
+
+        
+FeatsTagger = FeatsJointTagger
