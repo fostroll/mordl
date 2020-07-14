@@ -39,9 +39,10 @@ class FeatsTagger(BaseTagger):
             self._feats = json.loads(f.read())
         if log_file:
             print('### Load models for feats:', file=log_file)
-        for feat, model_name_ in self._feats.items():
+        for feat in sorted(self._feats):
             if log_file:
                 print('\n--- {}:'.format(feat), file=log_file)
+            model_name_ = self._feats[feat]
             tagger = FeatTagger(feat)
             tagger.load(model_name_)
             self._feats[feat] = [model_name, tagger]
