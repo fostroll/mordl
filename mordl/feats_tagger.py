@@ -133,7 +133,7 @@ class FeatsTagger(BaseTagger):
     def evaluate(self, gold, test=None, feat=None, label=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
-        assert not feat and label, \
+        assert feat or not label, \
             "ERROR: To evaluate the exact label you must specify it's " \
             'feat, too'
         args, kwargs = get_func_params(FeatTagger.evaluate, locals())
