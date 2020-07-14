@@ -423,11 +423,11 @@ class BaseTagger(BaseParser):
                     + ('{} tokens, {} tags'.format(ntok - ctok, nt - ct)
                            if ntok else
                       '{}'.format(nt - ct))
-                    + ' [{} excess / {} absent{}]'
-                          .format(ce, ca, '' if label else
-                                          ' / {} wrong type'.format(cr))
-                          if nt != n else
-                      '', file=log_file)
+                    + (' [{} excess / {} absent{}]'
+                           .format(ce, ca, '' if label else
+                                           ' / {} wrong type'.format(cr))
+                           if cr != nt - ct else
+                       ''), file=log_file)
                 print(sp + 'Accuracy: {}{}'
                                .format('{} / '.format(ctok / ntok
                                                           if ntok > 0 else
