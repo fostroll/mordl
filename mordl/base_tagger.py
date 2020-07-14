@@ -83,7 +83,7 @@ class BaseTagger(BaseParser):
         )
 
     def _create_dataset(
-        sentences, word_emb_type=None, word_emb_path=None,
+        self, sentences, word_emb_type=None, word_emb_path=None,
         word_emb_model_device=None, word_transform_kwargs=None,
         word_next_emb_params=None, with_chars=False, tags=None,
         labels=None, for_self=True, log_file=LOG_FILE
