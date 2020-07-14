@@ -100,7 +100,7 @@ class FeatsTagger(BaseTagger):
                         assert isinstance(tagger, FeatTagger), \
                             'ERROR: Model is not loaded. Use the .load() ' \
                             'method prior'
-                        corpus = tagger.predict(res_corpus_, **kwargs)
+                        res_corpus_ = tagger.predict(res_corpus_, **kwargs)
 
                     if with_orig:
                         for orig_sentence, sentence in zip(corpus_,
