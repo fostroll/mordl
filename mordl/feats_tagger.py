@@ -6,6 +6,7 @@
 """
 """
 from collections import OrderedDict
+import itertools
 import json
 from junky import clear_tqdm, get_func_params
 from mordl import FeatTagger
@@ -47,7 +48,7 @@ class FeatsTagger(BaseTagger):
             tagger.load(model_name_)
             self._feats[feat] = [model_name, tagger]
         if log_file:
-            print('{} tagger have been loaded ###'.format(self._field),
+            print('\n{} tagger have been loaded ###'.format(self._field),
                   file=log_file)
 
     def predict(self, corpus, feat=None, with_orig=False,
