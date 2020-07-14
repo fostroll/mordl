@@ -11,5 +11,6 @@ from mordl._version import __version__
 from mordl.word_embeddings import WordEmbeddings
 from mordl.upos_tagger import UposTagger
 from mordl.feat_tagger import FeatTagger
-from mordl.feats_tagger import FeatsJointTagger, FeatsTagger
+from mordl.feats_tagger import FeatsJointTagger, FeatsSeparateTagger, \
+                               FeatsTagger
 from mordl.ne_tagger import NeTagger
