@@ -35,13 +35,43 @@ _MAX_BAD_EPOCHS = 1
 
 
 class WordEmbeddings:
+    """A class that handles loading various pretrained word embeddings.
+    """
 
     @staticmethod
     def bert_tune(train_sentences, train_labels, test_data=None,
                   model_name='bert-base-multilingual-cased', device=None,
                   save_to=None, max_len=512, epochs=3, batch_size=8,
                   seed=None, log_file=LOG_FILE):
+        """Method for finetuning base BERT model on custom data.
 
+        Args:
+
+        **train_sentences**: sentences that will be used to train the model.
+
+        **train_labels**: labels that will be used to train the model.
+
+        **test_data**: development test set.
+
+        **model_name**: pre-trained BERT model name or path to the model.
+        Default `model_name='bert-base-multilingual-cased'`.
+
+        **device**: device for the BERT model. Default device is CPU.
+
+        **save_to**: path where the finetuned BERT model will be saved.
+
+        **max_len**: maximum input sequence length. By default, restricted
+        by BERT's positional embeddings, `max_len=512`.
+
+        **epochs**: number of finetuning epochs. Default `epochs=3`.
+
+        **batch_size**: number of sentences per batch. Default `batch_size=8`.
+
+        **seed**: random seed.
+
+        **log_file**: name of the log file to save logs. If not specified,
+        logs are printed to stdout.
+        """
         prefix = ''
         if save_to and save_to.endswith('_'):
             prefix, save_to = save_to, prefix
@@ -63,6 +93,15 @@ class WordEmbeddings:
             junky.enforce_reproducibility(seed)
 
         def seq2ix(seq, extra_labels=None):
+            """Method to create sequence-to-index dictionary.
+
+            Args:
+
+            **seq**: sequence of tokenized sentences.
+
+            **extra_labels**: any additional tokens or labels to add
+            to the dictionary.
+            """
 
             seq2ix = {x: i for i, x in enumerate(sorted(set(x for x in seq
                                                               for x in x)))}
@@ -90,8 +129,22 @@ class WordEmbeddings:
                   file=log_file)
 
         def prepare_corpus(sentences, labels, max_len=None):
+            """Method to run input sentences through tokenization and 
+            apply overlays if input sentence is longer than the specified
+            `max_len`.
+            """
 
             def tokenize_and_preserve_labels(sentence, text_labels):
+                """Tokenizes input using BertTokenizer from tranformers library.
+                Each token's labels are broadcasted to all wordpieces of that
+                token.
+
+                Args:
+
+                **sentence**: input sentence.
+                
+                **text_labels**: labels for each token from the input sentence.
+                """
                 tokenized_sentence = []
                 labels = []
 
@@ -112,6 +165,17 @@ class WordEmbeddings:
                 return tokenized_sentence, labels
 
             def apply_max_len(sents, labs, max_len):
+                """Applies max_len restriction to split input sentences
+                and labels with overlays.
+
+                Args:
+
+                **sents**: input sentences.
+
+                **labs**: input labels.
+
+                **max_len**: maximum input sequence length.
+                """
                 if max_len:
                     max_len -= 2
                     sents_, labs_ = [], []
@@ -156,6 +220,15 @@ class WordEmbeddings:
             print('done.', file=log_file)
 
         def collate(batch):
+            """Encodes and pads input batch, adding special tokens
+            (`[CLS]`, `[SEP]`) and creating attention mask for the batch.
+            Output input indexes, attention masks, label indexes and 
+            sequence lengths.
+
+            Args:
+
+            **batch**: input batch - tokenized sentences and aligned tags.
+            """
             sents, tags = zip(*batch)
             max_len_ = max(len(x) for x in sents)
             encoded_sents = [
@@ -182,7 +255,9 @@ class WordEmbeddings:
             return input_ids, attention_masks, output_ids, lens
 
         class SubwordDataset(Dataset):
-
+            """Creates subword dataset from sentences tokenized with
+            `transformers.BertTokenizer`.
+            """
             def __init__(self, x_data, y_data):
                 super().__init__()
                 self.x_data = x_data
@@ -251,6 +326,14 @@ class WordEmbeddings:
         )
 
         def save_finetuned_bert(model, output_dir):
+            """Saves finetuned BERT model to the specified output directory.
+
+            Args:
+
+            **model**: finetuned BERT model.
+
+            **output_dir**: output directory to save the finetuned model. 
+            """
             # Saving best-practices: if you use defaults names for the model,
             # you can reload it using from_pretrained()
 
@@ -475,6 +558,17 @@ class WordEmbeddings:
 
     @staticmethod
     def load(emb_type, emb_path, emb_model_device=None):
+        """Method to load pretrained embeddings.
+
+        Args:
+
+        **emb_type**: one of ('bert'|'glove'|'ft'|'w2v') embedding types.
+
+        **emb_path**: path to the file with embeddings.
+
+        **emb_model_device**: relevant, if `emb_type='bert'`. The device 
+        where Bert model will be loaded. By default, model is loaded to CPU.
+        """
 
         if emb_type == 'bert':
             tokenizer = BertTokenizer.from_pretrained(
@@ -531,9 +625,36 @@ class WordEmbeddings:
 
     @classmethod
     def create_dataset(cls, sentences, emb_type='ft', emb_path=None,
-                       emb_model_device=None, batch_size=BATCH_SIZE,
-                       transform_kwargs=None, next_emb_params=None,
+                       emb_model_device=None, transform_kwargs=None,
+                       next_emb_params=None, batch_size=BATCH_SIZE,
                        log_file=LOG_FILE):
+        """Creates dataset with embedded sequences.
+
+        Args:
+
+        **sentences**: input sentences that will be embedded using
+        pretrained embeddings.
+
+        **emb_type**: one of ('bert'|'glove'|'ft'|'w2v') embedding types.
+
+        **emb_path**: path to the file with embeddings.
+
+        **emb_model_device**: relevant, if `emb_type='bert'`. The device
+        where Bert model will be loaded. By default, model is loaded to CPU.
+
+        **transform_kwargs**: keyword arguments for `.transform` function.
+
+        **next_emb_params**: if you want to use several different embedding
+        models, pass a dictionary with keys `(emb_path, emb_model_device, 
+        transform_kwargs)` or a list of such dictionaries.
+
+        **batch_size**: number of sentences per batch. If not `None`, 
+        overwrites `batch_size` parameter from `transform_kwargs`.
+        By default, batch size is set in defaults to `64`.
+
+        **log_file**: name of the log file to save logs. If not specified,
+        logs are printed to stdout.
+        """
 
         emb_params = \
             [(emb_type, emb_path, emb_model_device, transform_kwargs)]
@@ -629,8 +750,26 @@ class WordEmbeddings:
         return ds
 
     @classmethod
-    def transform(cls, ds, sentences, batch_size=BATCH_SIZE,
-                  transform_kwargs=None, log_file=LOG_FILE):
+    def transform(cls, ds, sentences, transform_kwargs=None,
+                  batch_size=BATCH_SIZE, log_file=LOG_FILE):
+        """Converts *sentences* of tokens to the sequences of the
+        corresponding indices.
+
+        Args:
+
+        **ds**: dataset with embedded sentences.
+
+        **sentences**: input sentences.
+
+        **transform_kwargs**: keyword arguments for `.transform` function.
+
+        **batch_size**: number of sentences per batch. If not `None`, 
+        overwrites `batch_size` parameter from `transform_kwargs`.
+        By default, batch size is set in defaults to `64`.
+
+        **log_file**: name of the log file to save logs. If not specified,
+        logs are printed to stdout.
+        """
         res = False
         config = getattr(ds, CONFIG_ATTR, None)
         if config:
@@ -667,8 +806,25 @@ class WordEmbeddings:
         return res
 
     @classmethod
-    def transform_collate(cls, ds, sentences, batch_size=BATCH_SIZE,
-                          transform_kwargs=None, log_file=LOG_FILE):
+    def transform_collate(cls, ds, sentences, transform_kwargs=None,
+                          batch_size=BATCH_SIZE, log_file=LOG_FILE):
+        """Sequentially makes batches from `sentences`.
+
+        Args:
+
+        **ds**: dataset with embedded sentences.
+
+        **sentences**: input sentences.
+
+        **transform_kwargs**: keyword arguments for `.transform` function.
+
+        **batch_size**: number of sentences per batch. If not `None`, 
+        overwrites `batch_size` parameter from `transform_kwargs`.
+        By default, batch size is set in defaults to `64`.
+
+        **log_file**: name of the log file to save logs. If not specified,
+        logs are printed to stdout.
+        """
         res = False
         config = getattr(ds, CONFIG_ATTR, None)
         if config:
@@ -705,6 +861,16 @@ class WordEmbeddings:
 
     @staticmethod
     def save_dataset(ds, f, config_f=True):
+        """Saves dataset to the specified file.
+
+        Args:
+
+        **ds**: dataset with embedded tokens.
+
+        **f**: filename where the dataset will be saved.
+
+        **config_f**: json config file.
+        """
         if config_f is True and isinstance(f, str):
             pref, suff = os.path.splitext(f)
             config_f = pref + CONFIG_EXT
@@ -724,6 +890,14 @@ class WordEmbeddings:
 
     @classmethod
     def load_dataset(cls, f, config_f=True):
+        """Loads previously saved dataset with embedded tokens.
+
+        Args:
+
+        **f**: filename where the dataset will be loaded from.
+
+        **config_f**: json config file.
+        """
         ds = WordDataset.load(f)  # sic!
 
         if config_f is True:
@@ -751,6 +925,14 @@ class WordEmbeddings:
 
     @classmethod
     def apply_config(cls, ds, config):
+        """Apply config file to the dataset.
+
+        Args:
+
+        **ds**: input dataset.
+
+        **config**: config file with model parameters. 
+        """
         if isinstance(config, dict):
             config = [config]
 
