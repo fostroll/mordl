@@ -160,16 +160,6 @@ class FeatsSeparateTagger(BaseTagger):
             kwargs['with_orig'] = False
             kwargs['save_to'] = None
 
-            def clear(corpus):
-                corpus = self._get_corpus(corpus, asis=True,
-                                          log_file=log_file)
-                for sentence in corpus:
-                    for token in sentence[0] \
-                                     if isinstance(sentence, tuple) else \
-                                 sentence:
-                        token[self._field] = OrderedDict()
-                    yield sentence
-
             def process(corpus):
                 corpus = self._get_corpus(corpus, asis=True,
                                           log_file=log_file)
@@ -193,6 +183,13 @@ class FeatsSeparateTagger(BaseTagger):
 
                     res_corpus_ = deepcopy(corpus_) if with_orig else corpus_
 
+                    if remove_excess_feats:
+                        for sentence in res_corpus:
+                            for token in sentence[0] \
+                                             if isinstance(sentence, tuple) else \
+                                         sentence:
+                                token[self._field] = OrderedDict()
+
                     for attrs in self._feats.values():
                         tagger = attrs[1] \
                                      if isinstance(attrs, list) else \
@@ -210,8 +207,6 @@ class FeatsSeparateTagger(BaseTagger):
                         for sentence in res_corpus_:
                             yield sentence
 
-            if remove_excess_feats:
-                corpus = clear(corpus)
             corpus = process(corpus)
             if save_to:
                 self.save_conllu(corpus, save_to, log_file=None)
