@@ -4,7 +4,6 @@
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
-Provides base class for all mordl models.
 """
 import json
 from mordl.defaults import CONFIG_ATTR, LOG_FILE
@@ -70,7 +69,7 @@ class BaseModel(nn.Module):
         **device**: device where the model will be loaded, 
         e.g. `torch.device('cuda:2')`. By default, the model is loaded to CPU.
         
-        **log_file**: name of the file to save logs. If not specified, 
+        **log_file**: name of the log file to save logs. If not specified, 
         logs are printed to stdout.
         """
         need_close = False
@@ -110,7 +109,7 @@ class BaseModel(nn.Module):
         
         **f**: the name of the file where state dictionary will be saved.
         
-        **log_file**: name of the file to save logs. If not specified, 
+        **log_file**: name of the log file to save logs. If not specified, 
         logs are printed to stdout.
         """
     
@@ -129,7 +128,7 @@ class BaseModel(nn.Module):
         
         **f**: the name of the file from where state dictionary will be loaded.
         
-        **log_file**: name of the file to save logs. If not specified, 
+        **log_file**: name of the log file to save logs. If not specified, 
         logs are printed to stdout.
         """
         if log_file:
@@ -149,7 +148,7 @@ class BaseModel(nn.Module):
         
         **f**: the name of the file where the model will be saved.
         
-        **log_file**: name of the file to save logs. If not specified, 
+        **log_file**: name of the log file to save logs. If not specified, 
         logs are printed to stdout.
         """
         if log_file:
@@ -171,7 +170,7 @@ class BaseModel(nn.Module):
         **device**: device where the model will be loaded, 
         e.g. `torch.device('cuda:2')`. By default, the model is loaded to CPU.
         
-        **log_file**: name of log file to save logs. If not specified, 
+        **log_file**: name of the log file to save logs. If not specified, 
         logs are printed to stdout.
         
         """
@@ -209,8 +208,8 @@ class BaseModel(nn.Module):
         return model, criterion, optimizer, scheduler
 
     def adjust_model_for_tune(self, lr=.001, momentum=.9):
-        """Ajusts model for post-train tuning.
-        Optimizer is changed to SGD to tune the model.
+        """Ajusts model for post-train finetuning.
+        Optimizer is changed to SGD to finetune the model.
         
         Args:
         
