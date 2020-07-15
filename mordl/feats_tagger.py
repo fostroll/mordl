@@ -181,15 +181,26 @@ class FeatsSeparateTagger(BaseTagger):
                     if not corpus_:
                         break
 
-                    res_corpus_ = deepcopy(corpus_) if with_orig else corpus_
-
                     if remove_excess_feats:
-                        for sentence in res_corpus_:
+                        for sentence in corpus_:
                             for token in sentence[0] \
                                              if isinstance(sentence,
                                                            tuple) else \
                                          sentence:
-                                token[self._field] = OrderedDict()
+                                token[self._field] = \
+                                    OrderedDict((x, y)
+                                        for x, y in token[self._field]
+                                            if x in self._feats.values())
+
+                    res_corpus_ = deepcopy(corpus_) if with_orig else corpus_
+
+                    #if remove_excess_feats:
+                    #    for sentence in res_corpus_:
+                    #        for token in sentence[0] \
+                    #                         if isinstance(sentence,
+                    #                                       tuple) else \
+                    #                     sentence:
+                    #            token[self._field] = OrderedDict()
 
                     for attrs in self._feats.values():
                         tagger = attrs[1] \
