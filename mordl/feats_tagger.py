@@ -190,7 +190,7 @@ class FeatsSeparateTagger(BaseTagger):
                                 token[self._field] = \
                                     OrderedDict((x, y)
                                         for x, y in token[self._field].items()
-                                            if x in self._feats.values())
+                                            if x in self._feats.keys())
 
                     res_corpus_ = deepcopy(corpus_) if with_orig else corpus_
 
