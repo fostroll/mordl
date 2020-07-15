@@ -33,7 +33,7 @@ class BaseModel(nn.Module):
     
     Args:
     
-    **f**: the name of the file where config will be saved.
+    **f**: name of the file where config will be saved.
     
     **log_file**: name of the log file to save logs. If not specified, 
     logs are printed to stdout.
@@ -57,7 +57,7 @@ class BaseModel(nn.Module):
     @classmethod
     def create_from_config(cls, f, state_dict_f=None, device=None,
                            log_file=LOG_FILE):
-        """Creates model from a previouly saved config file and model's state dictionary.
+        """Creates model from a previouly saved model's state dictionary.
         
         Args:
         
