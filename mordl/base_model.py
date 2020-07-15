@@ -4,6 +4,7 @@
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
+Provides a base class for all MorDL models.
 """
 import json
 from mordl.defaults import CONFIG_ATTR, LOG_FILE
@@ -12,32 +13,29 @@ import torch.nn as nn
 
 
 class BaseModel(nn.Module):
-
     """
-    Base class for mordl models.
-    
+    A base class for MorDL models.
+
     Args:
-    
-    **\*args**: any mordl model args.
-    
-    **\*\*kwargs**: any mordl model keyword args.
-    
-    """
 
+    **\*args**: any mordl model args.
+
+    **\*\*kwargs**: any mordl model keyword args.
+    """
     def __init__(self, *args, **kwargs):
         super().__init__()
         setattr(self, CONFIG_ATTR, (args, kwargs))
 
     def save_config(self, f, log_file=LOG_FILE):
-    """Saves config in the specified file.
-    
-    Args:
-    
-    **f**: name of the file where config will be saved.
-    
-    **log_file**: name of the log file to save logs. If not specified, 
-    logs are printed to stdout.
-    """
+        """Saves config in the specified file.
+
+        Args:
+
+        **f**: name of the file where config will be saved.
+
+        **log_file**: name of the log file to save logs. If not specified,
+        logs are printed to stdout.
+        """
         config = list(getattr(self, CONFIG_ATTR, []))
         device = next(self.parameters()).device
         if device:
@@ -57,19 +55,20 @@ class BaseModel(nn.Module):
     @classmethod
     def create_from_config(cls, f, state_dict_f=None, device=None,
                            log_file=LOG_FILE):
-        """Creates model from a previouly saved model's state dictionary.
-        
+        """Creates model with parameters and state dictionary previouly saved
+        in the specified files.
+
         Args:
-        
-        **f**: the name of the file from where config will be loaded.
-        
-        **state_dict_f**: name of the state dictionary file 
+
+        **f**: the name of the file where config will be loaded from.
+
+        **state_dict_f**: name of the state dictionary file
         of the previously saved PyTorch model.
-        
-        **device**: device where the model will be loaded, 
-        e.g. `torch.device('cuda:2')`. By default, the model is loaded to CPU.
-        
-        **log_file**: name of the log file to save logs. If not specified, 
+
+        **device**: device where the model will be loaded,
+        e.g. `'cuda:2'`. By default, the model is loaded to CPU.
+
+        **log_file**: name of the log file to save logs. If not specified,
         logs are printed to stdout.
         """
         need_close = False
@@ -102,17 +101,16 @@ class BaseModel(nn.Module):
         return model
 
     def save_state_dict(self, f, log_file=LOG_FILE):
-        """Saves Pytorch model's state dictionary to a file to further use 
+        """Saves PyTorch model's state dictionary to a file to further use
         for model inference.
-        
+
         Args:
-        
+
         **f**: the name of the file where state dictionary will be saved.
-        
-        **log_file**: name of the log file to save logs. If not specified, 
+
+        **log_file**: name of the log file to save logs. If not specified,
         logs are printed to stdout.
         """
-    
         if log_file:
             print('Saving state_dict...', end=' ', file=log_file)
             log_file.flush()
@@ -121,14 +119,15 @@ class BaseModel(nn.Module):
             print('done.', file=log_file)
 
     def load_state_dict(self, f, log_file=LOG_FILE):
-        """
-        Loads previously saved Pytorch model's state dictionary for inference.
-        
+        """Loads previously saved PyTorch model's state dictionary for
+        inference.
+
         Args:
-        
-        **f**: the name of the file from where state dictionary will be loaded.
-        
-        **log_file**: name of the log file to save logs. If not specified, 
+
+        **f**: the name of the file from where state dictionary will be
+        loaded.
+
+        **log_file**: name of the log file to save logs. If not specified,
         logs are printed to stdout.
         """
         if log_file:
@@ -141,14 +140,13 @@ class BaseModel(nn.Module):
             print('done.', file=log_file)
 
     def save(self, f, log_file=LOG_FILE):
-        """Saves full model (state dict, optimizer state, epochs, score, etc) 
-        with the possibility to resume model training.
-        
+        """Saves full model configuration to the single file.
+
         Args:
-        
+
         **f**: the name of the file where the model will be saved.
-        
-        **log_file**: name of the log file to save logs. If not specified, 
+
+        **log_file**: name of the log file to save logs. If not specified,
         logs are printed to stdout.
         """
         if log_file:
@@ -160,21 +158,18 @@ class BaseModel(nn.Module):
 
     @staticmethod
     def load(f, device=None, log_file=LOG_FILE):
-        """Loads previously saved full PyTorch model with the possibility 
-        to resume training.
-        
+        """Loads previously saved model configuration.
+
         Args:
-        
+
         **f**: the name of the file from where the model will be loaded.
-        
-        **device**: device where the model will be loaded, 
+
+        **device**: device where the model will be loaded,
         e.g. `torch.device('cuda:2')`. By default, the model is loaded to CPU.
-        
-        **log_file**: name of the log file to save logs. If not specified, 
+
+        **log_file**: name of the log file to save logs. If not specified,
         logs are printed to stdout.
-        
         """
-    
         if log_file:
             print('Loading model...', end=' ', file=log_file)
             log_file.flush()
@@ -188,19 +183,18 @@ class BaseModel(nn.Module):
     def create_model_for_train(cls, *args, lr=.0001, **kwargs):
         """Creates model, criterion, optimizer and scheduler for training.
         Adam optimizer is used to train the model.
-        
+
         Args:
-        
+
         **cls**: classification model.
-        
+
         **\*args**: args for the classification model.
-        
+
         **lr**: learning rate for Adam optimizer.
-        
-        **\*\*kwargs**: keyword args for the classification model.
-        
+
+        **\*\*kwargs**: keyword args for the corresponding model's class
+        constructor.
         """
-    
         model = cls(*args, **kwargs)
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(params=model.parameters(), lr=lr)
@@ -208,15 +202,14 @@ class BaseModel(nn.Module):
         return model, criterion, optimizer, scheduler
 
     def adjust_model_for_tune(self, lr=.001, momentum=.9):
-        """Ajusts model for post-train finetuning.
-        Optimizer is changed to SGD to finetune the model.
-        
+        """Ajusts model for post-train finetuning. Optimizer is changed to
+        SGD to finetune the model.
+
         Args:
-        
+
         **lr**: learning rate for the SGD optimizer. Default `lr=.001`
-        
+
         **momentum**: momentum factor for the optimizer. Defaultm `momentum=.9`
-        
         """
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(self.parameters(), lr=lr, momentum=momentum)
