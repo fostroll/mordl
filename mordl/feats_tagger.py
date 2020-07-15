@@ -185,7 +185,7 @@ class FeatsSeparateTagger(BaseTagger):
 
                     if remove_excess_feats:
                         for sentence in res_corpus_:
-                            for token in sentence[0]
+                            for token in sentence[0] \
                                              if isinstance(sentence,
                                                            tuple) else \
                                          sentence:
