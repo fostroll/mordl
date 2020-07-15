@@ -212,6 +212,7 @@ class BaseModel(nn.Module):
         **momentum**: momentum factor for the optimizer. Defaultm `momentum=.9`
         """
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.SGD(self.parameters(), lr=lr, momentum=momentum)
+        optimizer = torch.optim.SGD(self.parameters(),
+                                    lr=lr, momentum=momentum)
         scheduler = None
         return criterion, optimizer, scheduler
