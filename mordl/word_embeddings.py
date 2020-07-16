@@ -4,6 +4,8 @@
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
+Provides a class for loading and applying pretrained embeddings to
+input sentences and creating datasets and collated dataloaders.
 """
 from copy import deepcopy
 from corpuscula.corpus_utils import get_root_dir
