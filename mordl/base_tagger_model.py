@@ -43,7 +43,8 @@ class BaseTaggerModel(BaseModel):
     `cnn_kernels=[1, 2, 3, 4, 5, 6]`.
 
     **tag_emb_params** (`dict` | `list([dict])`): dictionary with tagger
-    embedding parameters or a list of such dictionaries.
+    embedding parameters with keys `(dim, num, pad_idx)` or a list of such
+    dictionaries.
 
     **emb_out_dim** (`int`): output embedding dimensionality. Default
     `emb_out_dim=512`.
