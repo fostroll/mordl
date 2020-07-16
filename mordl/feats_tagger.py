@@ -7,6 +7,7 @@
 """
 from copy import deepcopy
 from collections import OrderedDict
+from difflib import get_close_matches
 import itertools
 import json
 from junky import clear_tqdm, get_func_params
@@ -99,7 +100,9 @@ class FeatsJointTagger(BaseTagger):
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
         args, kwargs = get_func_params(FeatsJointTagger.train, locals())
         key_vals = set(x[self._field] for x in self._train_corpus for x in x)
-        [None if x[self._field] in key_vals else x.update({self._field: ''})
+        [None if x[self._field] in key_vals else
+         x.update({self._field: get_close_matches(x[self._field],
+                                                  key_vals, n=1)[0]})
              for x in self._test_corpus for x in x]
         return super().train(self._field, 'UPOS', FeatTaggerModel, 'upos',
                              *args, **kwargs)
