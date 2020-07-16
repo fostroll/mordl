@@ -580,8 +580,8 @@ class WordEmbeddings:
 
         **emb_path**: path to the embeddings file.
 
-        **emb_model_device**: relevant for `emb_type='bert'`. The device where
-        the BERT model will be loaded to.
+        **emb_model_device**: relevant with `emb_type='bert'`. The device
+        where the BERT model will be loaded to.
 
         Returns the loaded embeddings model.
         """
@@ -656,7 +656,7 @@ class WordEmbeddings:
 
         **emb_path**: path to the file with embeddings.
 
-        **emb_model_device**: relevant, if `emb_type='bert'`. The device
+        **emb_model_device**: relevant with `emb_type='bert'`. The device
         where Bert model will be loaded. By default, model is loaded to CPU.
 
         **transform_kwargs**: keyword arguments for `.transform` function.

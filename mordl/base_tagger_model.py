@@ -4,7 +4,7 @@
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
-Provides a base tagger model for all MorDL taggers.
+Provides a base model for MorDL taggers.
 """
 from collections.abc import Iterable
 from junky import CharEmbeddingRNN, CharEmbeddingCNN, Masking, get_func_params
@@ -17,7 +17,8 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
 class BaseTaggerModel(BaseModel):
-    """Base tagger model for MorDL taggers.
+    """
+    A base model for MorDL taggers.
 
     Args:
 
@@ -26,53 +27,58 @@ class BaseTaggerModel(BaseModel):
     **labels_pad_idx** (`int`): index of padding element in the label
     vocabulary.
 
-    **vec_emb_dim** (`int`): embedding vector space dimensionality.
+    **vec_emb_dim** (`int`): word-level embedding vector space dimensionality.
+     If `None`, the layer is skipped.
 
-    **alphabet_size** (`int`): length of character vocabulary.
+    **alphabet_size** (`int`): length of character vocabulary. Relevant with
+    not `None` **rnn_emb_dim** or **cnn_emb_dim**.
 
     **char_pad_idx** (`int`): index of padding element in the character
-    vocabulary.
+    vocabulary. Relevant with not `None` **rnn_emb_dim** or **cnn_emb_dim**.
 
-    **rnn_emb_dim** (`int`): character RNN (LSTM) embedding dimensionality.
-    If `None`, the layer is skipped.
+    **rnn_emb_dim** (`int`): character RNN (LSTM) embedding dimensionality. If
+    `None`, the layer is skipped.
 
     **cnn_emb_dim** (`int`): character CNN embedding dimensionality. If
     `None`, the layer is skipped.
 
     **cnn_kernels** (`list([int])`): CNN kernel sizes. By default,
-    `cnn_kernels=[1, 2, 3, 4, 5, 6]`.
+    `cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with not `None`
+    **cnn_emb_dim**.
 
-    **tag_emb_params** (`dict` | `list([dict])`): dictionary with tagger
-    embedding parameters with keys `(dim, num, pad_idx)` or a list of such
-    dictionaries.
+    **tag_emb_params** (`dict({'dim': int, 'num': int, 'pad_idx': int})` |
+    `list([dict])`): params of the embedding layers for additional
+    `junky.dataset.TokenDataset` outputs. If `None`, the layers are not
+    created.
 
     **emb_out_dim** (`int`): output embedding dimensionality. Default
     `emb_out_dim=512`.
 
-    **lstm_hidden_dim** (`int`): LSTM hidden size. Default
+    **lstm_hidden_dim** (`int`): Bidirectional LSTM hidden size. Default
     `lstm_hidden_dim=256`.
 
-    **lstm_layers**  (`int`): number of LSTM layers. Default `lstm_layers=1`.
+    **lstm_layers** (`int`): number of Bidirectional LSTM layers. Default
+    `lstm_layers=1`.
 
-    **lstm_do**  (`float`): dropout between LSTM layers. Only relevant, if
-    `lstm_layers > 1`.
+    **lstm_do** (`float`): dropout between LSTM layers. Only relevant, if
+    `lstm_layers` > `1`.
 
     **bn1** (`bool`): whether batch normalization layer should be applied
     after the embedding layer. Default `bn1=True`.
 
-    **do1**  (`float`): dropout rate after the first batch normalization
+    **do1** (`float`): dropout rate after the first batch normalization
     layer `bn1`. Default `do1=.2`.
 
-    **bn2**  (`bool`): whether batch normalization layer should be applied
+    **bn2** (`bool`): whether batch normalization layer should be applied
     after the linear layer before LSTM layer. Default `bn2=True`.
 
-    **do2**  (`float`): dropout rate after the second batch normalization
+    **do2** (`float`): dropout rate after the second batch normalization
     layer `bn2`. Default `do2=.5`.
 
-    **bn3**  (`bool`): whether batch normalization layer should be applied
+    **bn3** (`bool`): whether batch normalization layer should be applied
     after the LSTM layer. Default `bn3=True`.
 
-    **do3**  (`float`): dropout rate after the third batch normalization
+    **do3** (`float`): dropout rate after the third batch normalization
     layer `bn3`. Default `do3=.4`.
     """
     def __init__(self, labels_num, labels_pad_idx=None, vec_emb_dim=None,

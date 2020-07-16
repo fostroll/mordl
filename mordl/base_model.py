@@ -4,7 +4,7 @@
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
-Provides a base class for all MorDL models.
+Provides a base class for MorDL models.
 """
 import json
 from mordl.defaults import CONFIG_ATTR, LOG_FILE
