@@ -4,7 +4,7 @@
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
-Provides a base tagger model inherited from `morra.base_parser.BaseParser`.
+Provides a base class for specialized morphological taggers.
 """
 from corpuscula.corpus_utils import _AbstractCorpus
 from copy import deepcopy
@@ -24,8 +24,9 @@ from typing import Iterator
 
 class BaseTagger(BaseParser):
     """
-    Base tagger model inherited from `morra.base_parser.BaseParser`.
+    A base class for the project's taggers.
     """
+
     def __err_hideattr(self, name):
         raise AttributeError("'{}' object has no attribute '{}'"
                                  .format(self.__class__.__name__, name))
@@ -53,14 +54,17 @@ class BaseTagger(BaseParser):
         
         Args:
 
-        **corpus**: train corpus.
+        **corpus**: a name of the file in *CoNLL-U* format or list/iterator of
+        sentences in *Parsed CoNLL-U*.
 
-        **append** (`bool`): whether to append new corpus to the current
-        corpus.
+        **append** (`bool`): whether to add **corpus** to the already loaded
+        one(s).
 
-        **test**: test corpus.
+        **test** (`float`): if not `None`, **corpus*** will be shuffled and
+        specified part of it stored as test corpus.
 
-        **seed** (`int`): random seed.
+        **seed** (`int`): init value for the random number generator. Used
+        only if test is not `None`.
         """
         args, kwargs = junky.get_func_params(BaseTagger.load_train_corpus,
                                              locals())
@@ -80,15 +84,15 @@ class BaseTagger(BaseParser):
                     for s in corpus)
 
     @staticmethod
-    def _get_filenames(model_name):
-        if isinstance(model_name, tuple):
-            model_fn, model_config_fn, ds_fn, ds_config_fn = model_name
+    def _get_filenames(name):
+        if isinstance(name, tuple):
+            model_fn, model_config_fn, ds_fn, ds_config_fn = name
         else:
-            if model_name.endswith('.pt'):
-                model_name = model.name[:-3]
+            if name.endswith('.pt'):
+                name = name[:-3]
             model_fn, model_config_fn, ds_fn, ds_config_fn = \
-                model_name + '.pt', model_name + CONFIG_EXT, \
-                model_name + '_ds.pt', model_name + '_ds' + CONFIG_EXT
+                name + '.pt', name + CONFIG_EXT, \
+                name + '_ds.pt', name + '_ds' + CONFIG_EXT
         return model_fn, model_config_fn, ds_fn, ds_config_fn
 
     @staticmethod
@@ -194,10 +198,10 @@ class BaseTagger(BaseParser):
                 batch_.append(res_)
             yield batch_
 
-    def _save_dataset(self, model_name, ds=None):
+    def _save_dataset(self, name, ds=None):
         if ds is None:
             ds = self._ds
-        ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
+        ds_fn, ds_config_fn = self._get_filenames(name)[2:4]
         config = {}
         for name in ds.list():
             ds_ = ds.get_dataset(name)
@@ -208,9 +212,9 @@ class BaseTagger(BaseParser):
             print(json.dumps(config, sort_keys=True, indent=4), file=f)
         ds.save(ds_fn, with_data=False)
 
-    def _load_dataset(self, model_name, device=None, for_self=True,
+    def _load_dataset(self, name, device=None, for_self=True,
                       log_file=LOG_FILE):
-        ds_fn, ds_config_fn = self._get_filenames(model_name)[2:4]
+        ds_fn, ds_config_fn = self._get_filenames(name)[2:4]
         if log_file:
             print('Loading dataset...', end=' ', file=log_file)
             log_file.flush()
@@ -227,42 +231,47 @@ class BaseTagger(BaseParser):
             self._ds = ds
         return ds
 
-    def save(self, model_name, log_file=LOG_FILE):
-        """Saves tagger model and dataset.
+    def save(self, name, log_file=LOG_FILE):
+        """Saves the internal state of the tagger.
 
         Args:
 
-        **model_name**: name of the model to save.
+        **name**: a name to save with.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
-        """
+
+        The method creates 4 files for a tagger: two for its model (config and
+        state dict) and two for the dataset (config and the internal state).
+        All file names started with **name** and their endings are:
+        `.config.json` and `.pt` for the model; `_ds.config.json` and `_ds.pt`
+        for the dataset."""
         assert self._ds, "ERROR: The tagger doesn't have a dataset to save"
         assert self._model, "ERROR: The tagger doesn't have a model to save"
-        self._save_dataset(model_name)
-        model_fn, model_config_fn = cls._get_filenames(model_name)[:2]
+        self._save_dataset(name)
+        model_fn, model_config_fn = cls._get_filenames(name)[:2]
         self._model.save_config(model_config_fn, log_file=log_file)
         self._model.save_state_dict(model_fn, log_file=log_file)
 
-    def load(self, model_class, model_name, device=None, dataset_device=None,
+    def load(self, model_class, name, device=None, dataset_device=None,
              log_file=LOG_FILE):
-        """Loads tagger's saved model and dataset.
+        """Loads tagger's internal state saved by it's `.save()` method.
 
         Args:
 
         **model_class**: model class object.
 
-        **model_name** (`str`): name of the previously saved model.
+        **name** (`str`): name of the internal state previously saved.
 
-        **device**: device for the loaded model. Default device is CPU.
+        **device**: a device for the loading model if you want to override it's
+        previously saved value.
 
-        **dataset_device**: device for the loaded dataset. Default device is
-        CPU.
+        **dataset_device**: a device for the loading dataset if you want to
+        overrride it's previously saved value.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
         """
-        self._load_dataset(model_name, device=dataset_device,
-                           log_file=log_file)
-        model_fn, model_config_fn = self._get_filenames(model_name)[:2]
+        self._load_dataset(name, device=dataset_device, log_file=log_file)
+        model_fn, model_config_fn = self._get_filenames(name)[:2]
         self._model = model_class.create_from_config(
             model_config_fn, state_dict_f=model_fn, device=device,
             log_file=log_file

@@ -74,7 +74,7 @@ class FeatsJointTagger(BaseTagger):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
-    def evaluate(self, gold, test=None, feat=None, label=None,
+    def evaluate(self, gold, test=None, feats=None, label=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
         assert feats or not label, \
