@@ -4,6 +4,7 @@
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
+Provides a base tagger model inherited from `morra.base_parser.BaseParser`.
 """
 from corpuscula.corpus_utils import _AbstractCorpus
 from copy import deepcopy
@@ -22,7 +23,9 @@ from typing import Iterator
 
 
 class BaseTagger(BaseParser):
-    """"""
+    """
+    Base tagger model inherited from `morra.base_parser.BaseParser`.
+    """
     def __err_hideattr(self, name):
         raise AttributeError("'{}' object has no attribute '{}'"
                                  .format(self.__class__.__name__, name))
@@ -46,6 +49,19 @@ class BaseTagger(BaseParser):
         self._ds = None
 
     def load_train_corpus(self, corpus, append=False, test=None, seed=None):
+        """Loads the train corpus.
+        
+        Args:
+
+        **corpus**: train corpus.
+
+        **append** (`bool`): whether to append new corpus to the current
+        corpus.
+
+        **test**: test corpus.
+
+        **seed** (`int`): random seed.
+        """
         args, kwargs = junky.get_func_params(BaseTagger.load_train_corpus,
                                              locals())
         super().load_train_corpus(*args, parse=False, **kwargs)
@@ -212,6 +228,14 @@ class BaseTagger(BaseParser):
         return ds
 
     def save(self, model_name, log_file=LOG_FILE):
+        """Saves tagger model and dataset.
+
+        Args:
+
+        **model_name**: name of the model to save.
+
+        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        """
         assert self._ds, "ERROR: The tagger doesn't have a dataset to save"
         assert self._model, "ERROR: The tagger doesn't have a model to save"
         self._save_dataset(model_name)
@@ -221,6 +245,21 @@ class BaseTagger(BaseParser):
 
     def load(self, model_class, model_name, device=None, dataset_device=None,
              log_file=LOG_FILE):
+        """Loads tagger's saved model and dataset.
+
+        Args:
+
+        **model_class**: model class object.
+
+        **model_name** (`str`): name of the previously saved model.
+
+        **device**: device for the loaded model. Default device is CPU.
+
+        **dataset_device**: device for the loaded dataset. Default device is
+        CPU.
+
+        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        """
         self._load_dataset(model_name, device=dataset_device,
                            log_file=log_file)
         model_fn, model_config_fn = self._get_filenames(model_name)[:2]
@@ -232,6 +271,49 @@ class BaseTagger(BaseParser):
     def predict(self, field, add_fields, corpus, with_orig=False,
                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
                 save_to=None, log_file=LOG_FILE):
+        """Predicts tags in the specified fields for the corpus.
+
+        Args:
+
+        **field** (`str`): the field name which needs to be predicted. Can
+        contain up to 3 elements, separated by a colon `:` in the format
+        (`'field:subfield:None_replacement'`). Examples: `'UPOS'` - predict
+        UPOS field; `'FEATS:Animacy'` - predict Animacy subfield of the FEATS
+        field; `'FEATS:Animacy:_'` - predict Animacy subfield of the FEATS
+        field, and if '_' (`None`) is predicted, leave the subfield empty.
+
+        **add_fields** (`None|str|list([str])`): any auxiliary fields to use
+        with the `FORM` field for predictions. If `None`, only `FORM` field is
+        used for predictions. To use additional fields for predicitons, pass a
+        field name (e.g. `'UPOS'`) or a list of field names (e.g. `['UPOS',
+        'LEMMA']`). These fields are included in the dataset.
+
+        **corpus**: input corpus which will be used for feature extraction and
+        predictions.
+
+        **with_orig** (`bool`): if `True`, instead of only a sequence with
+        predicted labels, returns a sequence of tuples where the first element
+        is a sentence with predicted labels and the seconf element is an
+        original sentence labels. `with_orig` can be `True` only if `save_to`
+        is `None`. Default `with_orig=False`.
+
+        **batch_size** (`int`): number of sentences per batch. Default
+        `batch_size=64`.
+
+        **split** (`int`): number of lines in each split. Allows to split a
+        large dataset into several parts. Default `split=None`, i.e. process
+        full dataset without splits.
+
+        **clone_ds** (`bool`): if `True`, the dataset is cloned and
+        transformed. If `False`, `transform_collate` is used without cloning
+        the dataset.
+
+        **save_to**: directory where the predictions will be saved.
+
+        **log_file**: a stream for info messages. Default is `sys.stdout`.
+
+        Returns corpus with tag predictions in the specified field.
+        """
         assert self._ds is not None, \
                "ERROR: The tagger doesn't have a dataset. Call the train() " \
                'method first'
@@ -245,6 +327,12 @@ class BaseTagger(BaseParser):
             field += ':_'
 
         def process(corpus):
+            """Process input corpus and get target field predictions.
+
+            Args:
+
+            **corpus**: corpus for feature extraction and prediction.
+            """
             corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
             device = next(self._model.parameters()).device or junky.CPU
 
@@ -322,7 +410,45 @@ class BaseTagger(BaseParser):
     def evaluate(self, field, gold, test=None, feats=None, label=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
+        """Evaluate predicitons on the development test set.
 
+        Args:
+
+        **field** (`str`): the field with predictions to be evaluated. Can
+        contain up to 2 elements, separated by a colon `:` in the format
+        (`'field:subfield'`). Examples: `'UPOS'` - evaluate UPOS field;
+        `'FEATS:Animacy'` - evaluate Animacy subfield of the FEATS field.
+
+        **gold** (`tuple(<sentences> <labels>)`): corpus with actual target
+        tags.
+
+        **test** (`tuple(<sentences> <labels>)`): corpus with predicted target
+        tags. If `None`, predictions will be created on-the-fly based on the
+        `gold` corpus.
+
+        **feats** (`str|list([str])`): one or several subfields of the
+        key-value type fields like `FEATS` or `MISC` to be evaluated.
+
+        **label** (`str`): specific label of the target field to be evaluated,
+        e.g. `field='UPOS'`, `label='VERB'` or `field='FEATS:Animacy'`,
+        `label='Inan'`. Note that to evaluate key-value type fields like
+        `FEATS` or `MISC`
+
+        **batch_size** (`int`): number of sentences per batch. Default
+        `batch_size=64`.
+
+        **split** (`int`): number of lines in each split. Allows to split a
+        large dataset into several parts. Default `split=None`, i.e. process
+        full dataset without splits.
+
+        **clone_ds** (`bool`): if `True`, the dataset is cloned and 
+        transformed. If `False`, `transform_collate` is used without cloning
+        the dataset.
+
+        **log_file**: a stream for info messages. Default is `sys.stdout`.
+
+        Prints metrics and returns evaluation accuracy.
+        """
         if isinstance(feats, str):
             feats = [feats]
         gold = self._get_corpus(gold, log_file=log_file)
@@ -341,6 +467,8 @@ class BaseTagger(BaseParser):
             print('Evaluating ' + header, file=log_file)
 
         def compare(gold_label, test_label, n, c, nt, ct, ca, ce, cr):
+            """Compares gold labels with test predictions.
+            """
             n += 1
             if (label and (gold_label == label
                         or test_label == label)) \
@@ -449,6 +577,80 @@ class BaseTagger(BaseParser):
               word_emb_path=None, word_emb_tune_params=None,
               word_transform_kwargs=None, word_next_emb_params=None,
               seed=None, log_file=LOG_FILE, **model_kwargs):
+        """Train the tagger model. All positional argumets are advised to be
+        modified by developers only, if expanding functionality is needed.
+        
+        Args:
+        
+        **field** (`str`): the field name which needs to be predicted. Can
+        contain up to 3 elements, separated by a colon `:` in the format
+        (`'field:subfield:None_replacement'`). Examples: `'UPOS'` - predict
+        UPOS field; `'FEATS:Animacy'` - predict Animacy subfield of the FEATS
+        field; `'FEATS:Animacy:_'` - predict Animacy subfield of the FEATS
+        field, and if '_' (`None`) is predicted, leave the subfield empty.
+
+        **add_fields** (`None|str|list([str])`): any auxiliary fields to use
+        with the `FORM` field for predictions. If `None`, only `FORM` field is
+        used for predictions. To use additional fields for predicitons, pass a
+        field name (e.g. `'UPOS'`) or a list of field names (e.g. `['UPOS',
+        'LEMMA']`). These fields are included in the dataset.
+
+        **model_class**: model class object.
+
+        **tag_emb_names** (`str|list([str])`): model parameter prefixes, which
+        refer to the fields in `add_fields` argument.
+
+        **model_name** (`str`): save name of the trained model.
+
+        **device**: device for the model. Default device is CPU.
+
+        **epochs** (`int`): number of train epochs. If `None`, train until
+        `bad_epochs` is met, but not less than `min_epochs`.
+
+        **min_epochs** (`int`): minimum number of training epochs.
+
+        **bad_epochs** (`int`): maximum allowed number of bad epochs in a row.
+        Default `bad_epochs=5`.
+
+        **batch_size** (`int`): number of sentences per batch. Default
+        `batch_size=32` for training.
+
+        **control_metric** (`str`): metric to control training. Default
+        `control_metric='accuracy'`.
+
+        **max_grad_norm** (`float`): gradient clipping parameter, used with
+        `torch.nn.utils.clip_grad_norm_`.
+
+        **tags_to_remove** (`list|dict{str:list}`): tags that will be removed
+        from the corpus in [tag_name] or {field_name: [tag_name]} format. This
+        argument can be used to remove some unfrequent tags from the corpus.
+
+        **word_emb_type**: one of ('bert'|'glove'|'ft'|'w2v') embedding types.
+
+        **word_emb_model_device**: device where the word embeddings are
+        stored.
+
+        **word_emb_path** (`str`): path to word embeddings file.
+
+        **word_emb_tune_params**: parameters for word embeddings finetuning.
+        For now, only BERT embeddings finetuning is supported with 
+        `mordl.WordEmbeddings.bert_tune()`. 
+
+        **word_transform_kwargs**: keyword arguments for `.transform()`
+        function.
+
+        **word_next_emb_params**: if you want to use several different
+        embedding models, pass a dictionary with keys `(emb_path,
+        emb_model_device, transform_kwargs)` or a list of such dictionaries.
+
+        **seed** (`int`): random seed.
+
+        **log_file**: a stream for info messages. Default is `sys.stdout`.
+
+        **model_kwargs**: keyword arguments for the model.
+        
+        Returns train result: best epoch and best training score.
+        """
 
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
@@ -483,6 +685,8 @@ class BaseTagger(BaseParser):
         # 2. Tune embeddings
         def tune_word_emb(emb_type, emb_path, emb_model_device=None,
                           emb_tune_params=None):
+            """Finetunes word embeddings.
+            """
             if emb_tune_params is True:
                 emb_tune_params = {}
             elif isinstance(emb_tune_params, str):
@@ -596,6 +800,8 @@ class BaseTagger(BaseParser):
         if log_file:
             print('\nMODEL TRAINING', file=log_file)
         def best_model_backup_method(model, model_score):
+            """Saves model's state dictionary.
+            """
             if log_file:
                 print('new maximum score {:.8f}'.format(model_score),
                       file=log_file)
