@@ -77,10 +77,11 @@ class FeatsJointTagger(BaseTagger):
     def evaluate(self, gold, test=None, feats=None, label=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
-        assert feats or not label, \
+        assert not label or feats, \
             'ERROR: To evaluate the exact label you must specify its ' \
             'feat, too'
-        assert isinstance(feats, str) or len(feats) == 1 or not label, \
+        assert not label or not feats \
+                         or isinstance(feats, str) or len(feats) == 1, \
             'ERROR: To evaluate the exact label you must specify its own ' \
             'feat only'
         args, kwargs = get_func_params(FeatsJointTagger.evaluate, locals())
@@ -236,10 +237,11 @@ class FeatsSeparateTagger(BaseTagger):
     def evaluate(self, gold, test=None, feats=None, label=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
-        assert feats or not label, \
+        assert not label or feats, \
             'ERROR: To evaluate the exact label you must specify its ' \
             'feat, too'
-        assert isinstance(feats, str) or len(feats) == 1 or not label, \
+        assert not label or not feats \
+                         or isinstance(feats, str) or len(feats) == 1, \
             'ERROR: To evaluate the exact label you must specify its own ' \
             'feat only'
         args, kwargs = get_func_params(FeatsSeparateTagger.evaluate, locals())
