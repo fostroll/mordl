@@ -77,14 +77,17 @@ class FeatsJointTagger(BaseTagger):
     def evaluate(self, gold, test=None, feat=None, label=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
-        assert feat or not label, \
-            "ERROR: To evaluate the exact label you must specify it's " \
+        assert feats or not label, \
+            'ERROR: To evaluate the exact label you must specify its ' \
             'feat, too'
+        assert isinstance(feats, str) or len(feats) == 1 or not label, \
+            'ERROR: To evaluate the exact label you must specify its own ' \
+            'feat only'
         args, kwargs = get_func_params(FeatsJointTagger.evaluate, locals())
-        del kwargs['feat']
         field = self._orig_field
-        if feat:
-            field += ':' + feat
+        if label:
+            del kwargs['feats']
+            field += ':' + (feats if isinstance(feats, str) else feats[0])
         return super().evaluate(field, *args, **kwargs)
 
     def train(self, model_name,
@@ -230,17 +233,24 @@ class FeatsSeparateTagger(BaseTagger):
 
         return corpus
 
-    def evaluate(self, gold, test=None, feat=None, label=None,
+    def evaluate(self, gold, test=None, feats=None, label=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
-        assert feat or not label, \
-            "ERROR: To evaluate the exact label you must specify it's " \
+        assert feats or not label, \
+            'ERROR: To evaluate the exact label you must specify its ' \
             'feat, too'
+        assert isinstance(feats, str) or len(feats) == 1 or not label, \
+            'ERROR: To evaluate the exact label you must specify its own ' \
+            'feat only'
         args, kwargs = get_func_params(FeatsSeparateTagger.evaluate, locals())
-        del kwargs['feat']
-        field = self._field
-        if feat:
-            field += ':' + feat
+        field = self._orig_field
+        if label:
+            del kwargs['feats']
+            field += ':' + (feats if isinstance(feats, str) else feats[0])
+        else:
+            kwargs['feats'] = \
+                sorted([x for x in self._feats.keys()
+                              if x not in feats or feats is None])
         return super().evaluate(field, *args, **kwargs)
 
     def train(self, model_name, feats=None,
