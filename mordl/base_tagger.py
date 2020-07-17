@@ -498,7 +498,7 @@ class BaseTagger(BaseParser):
                 c += 1
             return n, c, nt, ct, ca, ce, cr
 
-        n = c = nt = ct = ca = ce = cr = ntok = ctok = 0
+        n = c = nt = ct = ca = ce = cr = ntok = ctok = ntokt = ctokt = 0
         i = -1
         for i, sentences in enumerate(corpora):
             for gold_token, test_token in zip(*sentences):
@@ -515,7 +515,8 @@ class BaseTagger(BaseParser):
                         assert not label, \
                             'ERROR: To evaluate exact label of dict field, ' \
                             "add feat name to field param as '<field:feat>'"
-                        if True or gold_label or test_label:  # TODO:delete
+                        ntok += 1
+                        if gold_label or test_label:
                             ctok_ = 1
                             for feat in feats if feats else set(
                                 [*gold_label.keys(), *test_label.keys()]
@@ -529,8 +530,11 @@ class BaseTagger(BaseParser):
                                     ctok_ = 0
                                 else:
                                     c = c_
-                            ntok += 1
+                            ntokt += 1
                             ctok += ctok_
+                            ctokt += ctok_
+                        else:
+                            ctok += 1
                     elif not (isgold or istest):
                         n, c, nt, ct, ca, ce, cr = \
                             compare(gold_label, test_label,
@@ -566,16 +570,21 @@ class BaseTagger(BaseParser):
                            if cr != nt - ct else
                        ''), file=log_file)
                 print(sp + 'Accuracy: {}{}'
-                               .format('{} / '.format(ctok / ntok
-                                                          if ntok > 0 else
+                               .format('{} / '.format(ctokt / ntokt
+                                                          if ntokt > 0 else
                                                       1.)
                                            if ntok else
                                        '',
                                        ct / nt if nt > 0 else 1.),
                       file=log_file)
-                if nt != n:
-                    print('[Total accuracy: {}]'
-                              .format(c / n if n > 0 else 1.), file=log_file)
+                if nt != n or ntokt != ntok:
+                    print('[Total accuracy: {}{}]'
+                              .format('{} / '.format(ctok / ntok
+                                                         if ntok > 0 else
+                                                     1.)
+                                          if ntok else
+                                      '',
+                                      c / n if n > 0 else 1.), file=log_file)
         return ct / nt if nt > 0 else 1.
 
     def train(self, field, add_fields, model_class, tag_emb_names, model_name,
