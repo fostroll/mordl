@@ -11,6 +11,7 @@ import sys
 
 BATCH_SIZE = 64
 TRAIN_BATCH_SIZE = 32
+NONE_TAG = '_'
 CONFIG_ATTR = '_mordl_config'
 CONFIG_EXT = '.config.json'
 LOG_FILE = sys.stdout

@@ -654,16 +654,23 @@ class WordEmbeddings:
 
         **emb_type**: one of ('bert'|'glove'|'ft'|'w2v') embedding types.
 
-        **emb_path**: path to the file with embeddings.
+        **emb_path** (`str`): path to word embeddings storage.
 
-        **emb_model_device**: relevant with `emb_type='bert'`. The device
-        where Bert model will be loaded. By default, model is loaded to CPU.
+        **emb_model_device**: the torch device where the model of word
+        embeddings are placed. Relevant only with embedding types, models of
+        which use devices (currently, only 'bert').
 
-        **transform_kwargs**: keyword arguments for `.transform` function.
+        **transform_kwargs** (`dict`): keyword arguments for `.transform()`
+        method of the dataset created for sentences to word embeddings
+        conversion. See the `.transform()` method of
+        `junky.datasets.BertDataset` for the the description of the
+        parameters.
 
         **next_emb_params**: if you want to use several different embedding
-        models, pass a dictionary with keys `(emb_path, emb_model_device, 
-        transform_kwargs)` or a list of such dictionaries.
+        models at once, pass parameters of the additional model as a
+        dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
+        or a list of such dictionaries if you need more than one additional
+        models.
 
         **batch_size**: number of sentences per batch. If not `None`, 
         overwrites `batch_size` parameter from `transform_kwargs`.

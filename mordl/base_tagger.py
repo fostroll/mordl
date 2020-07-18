@@ -16,7 +16,7 @@ from junky.dataset import CharDataset, DummyDataset, FrameDataset, \
 from mordl import WordEmbeddings
 from morra.base_parser import BaseParser
 from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE, \
-                           TRAIN_BATCH_SIZE
+                           NONE_TAG, TRAIN_BATCH_SIZE
 import sys
 import torch
 from typing import Iterator
@@ -63,8 +63,8 @@ class BaseTagger(BaseParser):
         **test** (`float`): if not `None`, **corpus*** will be shuffled and
         specified part of it stored as test corpus.
 
-        **seed** (`int`): init value for the random number generator. Used
-        only if test is not `None`.
+        **seed** (`int`): init value for the random number generator if you
+        need reproducibility. Used only if test is not `None`.
         """
         args, kwargs = junky.get_func_params(BaseTagger.load_train_corpus,
                                              locals())
@@ -336,12 +336,7 @@ class BaseTagger(BaseParser):
             field += ':_'
 
         def process(corpus):
-            """Process input corpus and get target field predictions.
 
-            Args:
-
-            **corpus**: corpus for feature extraction and prediction.
-            """
             corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
             device = next(self._model.parameters()).device or junky.CPU
 
@@ -476,8 +471,6 @@ class BaseTagger(BaseParser):
             print('Evaluating ' + header, file=log_file)
 
         def compare(gold_label, test_label, n, c, nt, ct, ca, ce, cr):
-            """Compares gold labels with test predictions.
-            """
             n += 1
             if (label and (gold_label == label
                         or test_label == label)) \
@@ -587,96 +580,138 @@ class BaseTagger(BaseParser):
                                       c / n if n > 0 else 1.), file=log_file)
         return ct / nt if nt > 0 else 1.
 
-    def train(self, field, add_fields, model_class, tag_emb_names, model_name,
+    def train(self, field, add_fields, model_class, tag_emb_names, save_as,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
               max_grad_norm=None, tags_to_remove=None,
-              word_emb_type='bert', word_emb_model_device=None,
-              word_emb_path=None, word_emb_tune_params=None,
+              word_emb_type='bert', word_emb_path=None,
+              word_emb_model_device=None, word_emb_tune_params=None,
               word_transform_kwargs=None, word_next_emb_params=None,
               seed=None, log_file=LOG_FILE, **model_kwargs):
-        """Train the tagger model. All positional argumets are advised to be
-        modified by developers only, if expanding functionality is needed.
+        """Creates and trains the tagger model.
+
+        We assume all positional argumets but **save_as** are for internal use
+        only and should be hide in descendant classes.
         
         Args:
         
-        **field** (`str`): the field name which needs to be predicted. Can
-        contain up to 3 elements, separated by a colon `:` in the format
-        (`'field:subfield:None_replacement'`). Examples: `'UPOS'` - predict
-        UPOS field; `'FEATS:Animacy'` - predict Animacy subfield of the FEATS
-        field; `'FEATS:Animacy:_'` - predict Animacy subfield of the FEATS
-        field, and if '_' (`None`) is predicted, leave the subfield empty.
+        **field** (`str`): the name of the field which needs to be predicted
+        by the training tagger. May contain up to 3 elements, separated by a
+        colon (`:`). Format is:
+        `'<field name>:<feat name>:<replacement for None>'`. The replacement
+        is used during the training time as a filler for a fields without a
+        value for that we could predict them, too. In the *CoNLL-U* format the
+        replacer is `'_'` sign, so we use it, too, as a default replacement.
+        You'll hardly have a reason to change it. Examples:<br/>
+        `'UPOS'` - predict the *UPOS* field;<br/>
+        `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS*
+        field;<br/>
+        `'FEATS:Animacy:_O'` - likewise the above but if feat value is
+        `None`, it will be replaced by `'_O'` during training;<br/>
+        `'XPOS::_O'` - predict the *XPOS* field and use `'_O'` as replacement
+        for `None`.<br/>
 
         **add_fields** (`None|str|list([str])`): any auxiliary fields to use
-        with the `FORM` field for predictions. If `None`, only `FORM` field is
+        with the *FORM* field for predictions. If `None`, only *FORM* field is
         used for predictions. To use additional fields for predicitons, pass a
         field name (e.g. `'UPOS'`) or a list of field names (e.g. `['UPOS',
         'LEMMA']`). These fields are included in the dataset.
 
-        **model_class**: model class object.
+        **model_class**: a class of the model using for prediction. Must be
+        descendant of `BaseTaggerModel` class.
 
-        **tag_emb_names** (`str|list([str])`): model parameter prefixes, which
-        refer to the fields in `add_fields` argument.
+        **tag_emb_names** (`str|list([str])`): prefixes of the model args,
+        using instead of `tag_emb_params` `dict` of the `BaseTaggerModel`
+        class. Each name refers to the corresponding field in the
+        **add_fields** arg. You have to look into sources of the descendant
+        classess included to the project if you really want to make sense of
+        it.
 
-        **model_name** (`str`): save name of the trained model.
+        **save_as** (`str`): the name of the tagger using for save. There 4
+        files will be created after training: two for tagger's model (config
+        and state dict) and two for the dataset (config and the internal
+        state). All file names are used **save_as** as prefix and their
+        endings are: `.config.json` and `.pt` for the model; `_ds.config.json`
+        and `_ds.pt` for the dataset.
 
-        **device**: device for the model. Default device is CPU.
+        **device**: device for the model. E.g.: 'cuda:0'.
 
-        **epochs** (`int`): number of train epochs. If `None`, train until
-        `bad_epochs` is met, but not less than `min_epochs`.
+        **epochs** (`int`): number of epochs to train. If `None`, train until
+        `bad_epochs` is met, but no less than `min_epochs`.
 
         **min_epochs** (`int`): minimum number of training epochs.
 
-        **bad_epochs** (`int`): maximum allowed number of bad epochs in a row.
+        **bad_epochs** (`int`): maximum allowed number of bad epochs (epochs
+        when selected **control_metric** is became not better) in a row.
         Default `bad_epochs=5`.
 
-        **batch_size** (`int`): number of sentences per batch. Default
-        `batch_size=32` for training.
+        **batch_size** (`int`): number of sentences per batch. For training,
+        default `batch_size=32`.
 
         **control_metric** (`str`): metric to control training. Default
-        `control_metric='accuracy'`.
+        `control_metric='accuracy'`. Any that is supported by the
+        `junky.train()` method. In the moment it is: 'accuracy', 'f1' and
+        'loss'. Default `control_metric=accuracy`.
 
         **max_grad_norm** (`float`): gradient clipping parameter, used with
-        `torch.nn.utils.clip_grad_norm_`.
+        `torch.nn.utils.clip_grad_norm_()`.
 
-        **tags_to_remove** (`list|dict{str:list}`): tags that will be removed
-        from the corpus in [tag_name] or {field_name: [tag_name]} format. This
-        argument can be used to remove some unfrequent tags from the corpus.
+        **tags_to_remove** (`list([str])|dict({str: list([str])})`): tags,
+        tokens with those must be removed from the corpus. May be a `list` of
+        tag names or a `dict` of `{<feat name>: [<feat value>, ...]}`. This
+        argument may be used, for example, to remove some unfrequent tags from
+        the corpus. Note, that we remove the tokens from the train corpus as a
+        whole, not just replace those tags to `None`.
 
-        **word_emb_type**: one of ('bert'|'glove'|'ft'|'w2v') embedding types.
+        **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding
+        types.
 
-        **word_emb_model_device**: device where the word embeddings are
-        stored.
+        **word_emb_path** (`str`): path to word embeddings storage.
 
-        **word_emb_path** (`str`): path to word embeddings file.
+        **word_emb_model_device**: the torch device where the model of word
+        embeddings are placed. Relevant only with embedding types, models of
+        which use devices (currently, only 'bert').
 
         **word_emb_tune_params**: parameters for word embeddings finetuning.
         For now, only BERT embeddings finetuning is supported with 
-        `mordl.WordEmbeddings.bert_tune()`. 
+        `mordl.WordEmbeddings.bert_tune()`. So, **word_emb_tune_params** is a
+        `dict` of keyword args for this method. You can replace any except
+        `test_data`.
 
-        **word_transform_kwargs**: keyword arguments for `.transform()`
-        function.
+        **word_transform_kwargs** (`dict`): keyword arguments for
+        `.transform()` method of the dataset created for sentences to word
+        embeddings conversion. See the `.transform()` method of
+        `junky.datasets.BertDataset` for the the description of the
+        parameters.
 
         **word_next_emb_params**: if you want to use several different
-        embedding models, pass a dictionary with keys `(emb_path,
-        emb_model_device, transform_kwargs)` or a list of such dictionaries.
+        embedding models at once, pass parameters of the additional model as a
+        dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
+        or a list of such dictionaries if you need more than one additional
+        models.
 
-        **seed** (`int`): random seed.
+        **seed** (`int`): init value for the random number generator if you
+        need reproducibility.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        **model_kwargs**: keyword arguments for the model.
+        **model_kwargs**: keyword arguments for the model creating. Will be
+        passed as is to the **model_class** constructor.
         
-        Returns train result: best epoch and best training score.
+        Returns the train statistics.
         """
-
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
         if isinstance(tag_emb_names, str):
             tag_emb_names = [tag_emb_names]
 
-        if field.count(':') == 1:
-            field += ':_'
+        num_colons = field.count(':')
+        if num_colons == 0:
+            field += '::' + NONE_TAG
+        elif num_colons == 1:
+            field += ':' + NONE_TAG
+        elif num_colons == 2 and field.endswith(':'):
+            field += NONE_TAG
         header = ':'.join(field.split(':')[:2])
         bert_header = header.lower().replace(':', '-') + '_'
         fields = [] if add_fields is None else \
@@ -688,7 +723,7 @@ class BaseTagger(BaseParser):
             print('=== {} TAGGER TRAINING PIPELINE ==='.format(header),
                   file=log_file)
 
-        model_fn, model_config_fn = self._get_filenames(model_name)[:2]
+        model_fn, model_config_fn = self._get_filenames(save_as)[:2]
 
         # 1. Prepare corpora
         train = self._prepare_corpus(
@@ -703,8 +738,6 @@ class BaseTagger(BaseParser):
         # 2. Tune embeddings
         def tune_word_emb(emb_type, emb_path, emb_model_device=None,
                           emb_tune_params=None):
-            """Finetunes word embeddings.
-            """
             if emb_tune_params is True:
                 emb_tune_params = {}
             elif isinstance(emb_tune_params, str):
@@ -776,7 +809,7 @@ class BaseTagger(BaseParser):
                     or model_kwargs.get('cnn_emb_dim'),
             tags=train[1:-1], labels=train[-1], for_self=False,
             log_file=sys.stderr)
-        self._save_dataset(model_name, ds=ds_train)
+        self._save_dataset(save_as, ds=ds_train)
         if test:
             ds_test = ds_train.clone(with_data=False)
             self._transform(test[0], tags=test[1:-1], labels=test[-1],
@@ -818,8 +851,6 @@ class BaseTagger(BaseParser):
         if log_file:
             print('\nMODEL TRAINING', file=log_file)
         def best_model_backup_method(model, model_score):
-            """Saves model's state dictionary.
-            """
             if log_file:
                 print('new maximum score {:.8f}'.format(model_score),
                       file=log_file)
@@ -864,7 +895,7 @@ class BaseTagger(BaseParser):
             print('\n=== {} TAGGER TRAINING HAS FINISHED ===\n'
                       .format(header), file=log_file)
             print(("Use the `.load('{}')` method to start working "
-                   'with the {} tagger.').format(model_name, header),
+                   'with the {} tagger.').format(save_as, header),
                       file=log_file)
 
         return res

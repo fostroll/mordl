@@ -18,8 +18,7 @@ class UposTagger(BaseTagger):
         super().__init__()
         self._field = field
 
-    def load(self, model_name, device=None, dataset_device=None,
-             log_file=LOG_FILE):
+    def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):
         args, kwargs = get_func_params(UposTagger.load, locals())
         super().load(UposTaggerModel, *args, **kwargs)
 
@@ -33,7 +32,7 @@ class UposTagger(BaseTagger):
         args, kwargs = get_func_params(UposTagger.evaluate, locals())
         return super().evaluate(self._field, *args, **kwargs)
 
-    def train(self, model_name,
+    def train(self, save_as,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
               max_grad_norm=None, tags_to_remove=None,

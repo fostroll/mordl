@@ -20,8 +20,7 @@ class FeatTagger(BaseTagger):
             feat = 'FEATS:' + feat
         self._feat = feat
 
-    def load(self, model_name, device=None, dataset_device=None,
-             log_file=LOG_FILE):
+    def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):
         args, kwargs = get_func_params(FeatTagger.load, locals())
         super().load(FeatTaggerModel, *args, **kwargs)
 
@@ -35,7 +34,7 @@ class FeatTagger(BaseTagger):
         args, kwargs = get_func_params(FeatTagger.evaluate, locals())
         return super().evaluate(self._feat, *args, **kwargs)
 
-    def train(self, model_name,
+    def train(self, save_as,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
               max_grad_norm=None, tags_to_remove=None,

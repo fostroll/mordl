@@ -28,7 +28,7 @@ class BaseTaggerModel(BaseModel):
     vocabulary.
 
     **vec_emb_dim** (`int`): word-level embedding vector space dimensionality.
-     If `None`, the layer is skipped.
+    If `None`, the layer is skipped.
 
     **alphabet_size** (`int`): length of character vocabulary. Relevant with
     not `None` **rnn_emb_dim** or **cnn_emb_dim**.

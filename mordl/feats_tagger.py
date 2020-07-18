@@ -40,8 +40,7 @@ class FeatsJointTagger(BaseTagger):
                                     for y in sorted(x[self._orig_field]))})
              for x in self._test_corpus for x in x]
 
-    def load(self, model_name, device=None, dataset_device=None,
-             log_file=LOG_FILE):
+    def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):
         args, kwargs = get_func_params(FeatsJointTagger.load, locals())
         super().load(FeatTaggerModel, *args, **kwargs)
 
@@ -91,7 +90,7 @@ class FeatsJointTagger(BaseTagger):
             field += ':' + (feats if isinstance(feats, str) else feats[0])
         return super().evaluate(field, *args, **kwargs)
 
-    def train(self, model_name,
+    def train(self, save_as,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
               max_grad_norm=None, tags_to_remove=None,
@@ -121,30 +120,30 @@ class FeatsSeparateTagger(BaseTagger):
         self._field = field
         self._feats = {}
 
-    def save(self, model_name, log_file=LOG_FILE):
-        if not model_name.endswith(CONFIG_EXT):
-            model_name += CONFIG_EXT
-        with open(model_name, 'wt', encoding='utf-8') as f:
+    def save(self, name, log_file=LOG_FILE):
+        if not name.endswith(CONFIG_EXT):
+            name += CONFIG_EXT
+        with open(name, 'wt', encoding='utf-8') as f:
             print(json.dumps({x: y[0] if isinstance(y, dict) else y
                                   for x, y in self._feats.items()},
                              sort_keys=True, indent=4), file=f)
         if log_file:
             print('Config saved', file=log_file)
 
-    def load(self, model_name, log_file=LOG_FILE):
-        if not model_name.endswith(CONFIG_EXT):
-            model_name += CONFIG_EXT
-        with open(model_name, 'rt', encoding='utf-8') as f:
+    def load(self, name, log_file=LOG_FILE):
+        if not name.endswith(CONFIG_EXT):
+            name += CONFIG_EXT
+        with open(name, 'rt', encoding='utf-8') as f:
             self._feats = json.loads(f.read())
         if log_file:
             print('### Loading {} tagger:'.format(self._field), file=log_file)
         for feat in sorted(self._feats):
             if log_file:
                 print('\n--- {}:'.format(feat), file=log_file)
-            model_name_ = self._feats[feat]
+            name_ = self._feats[feat]
             tagger = FeatTagger(feat)
-            tagger.load(model_name_)
-            self._feats[feat] = [model_name, tagger]
+            tagger.load(name_)
+            self._feats[feat] = [name, tagger]
         if log_file:
             print('\n{} tagger have been loaded ###'.format(self._field),
                   file=log_file)
@@ -255,7 +254,7 @@ class FeatsSeparateTagger(BaseTagger):
                               if x not in feats or feats is None])
         return super().evaluate(field, *args, **kwargs)
 
-    def train(self, model_name, feats=None,
+    def train(self, save_as, feats=None,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
               max_grad_norm=None, tags_to_remove=None,
@@ -292,8 +291,8 @@ class FeatsSeparateTagger(BaseTagger):
                 print(file=log_file)
                 clear_tqdm()
 
-            model_name_ = '{}-{}'.format(model_name, feat.lower())
-            self._feats[feat] = model_name_
+            save_as_ = '{}-{}'.format(save_as, feat.lower())
+            self._feats[feat] = save_as_
 
             tagger = FeatTagger(self._field + ':' + feat)
             tagger._train_corpus, tagger._test_corpus = \
@@ -302,11 +301,11 @@ class FeatsSeparateTagger(BaseTagger):
                 kwargs['word_emb_path'] = \
                     '{}-{}_{}'.format(self._field.lower(), feat.lower(),
                                       word_emb_path_suffix)
-            res[feat] = tagger.train(model_name_, **kwargs)
+            res[feat] = tagger.train(save_as_, **kwargs)
 
             del tagger
 
-        self.save(model_name, log_file=log_file)
+        self.save(save_as, log_file=log_file)
         if log_file:
             print('\n###### {} TAGGER TRAINING HAS FINISHED ######\n'
                       .format(self._field), file=log_file)
@@ -315,7 +314,7 @@ class FeatsSeparateTagger(BaseTagger):
                    'to be able load all the models jointly. You can find '
                    'the separate models\' list in the "{}" config file. '
                    "Then, use the `.load('{}')` method to start working "
-                   'with the {} tagger.').format(self._field, model_name,
-                                                 model_name, self._field),
+                   'with the {} tagger.').format(self._field, save_as,
+                                                 save_as, self._field),
                       file=log_file)
         return res
