@@ -110,7 +110,7 @@ class FeatTagger(BaseTagger):
         Prints metrics and returns evaluation accuracy.
         """
         args, kwargs = get_func_params(FeatTagger.evaluate, locals())
-        return super().evaluate(self._feat, 'UPOS', *args, **kwargs)
+        return super().evaluate(self._feat, *args, **kwargs)
 
     def train(self, save_as,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
