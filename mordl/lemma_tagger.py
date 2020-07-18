@@ -149,24 +149,22 @@ class LemmaTagger(BaseTagger):
             log_file.flush()
 
         ops = []
-        for rep in [True, False]:
-            for cop in [True, False]:
-                ops_ = []
-                ops.append(ops_)
-                for sent in self._train_corpus:
-                    for tok in sent:
-                        form, affixes = tok['FORM'], tok[self._field]
-                        if affixes != (None,):
-                            f_p, f_s, l_p, l_s = affixes
-                            ops_p = self._get_editops(f_p, l_p,
-                                                      allow_replace=rep,
-                                                      allow_copy=cop)
-                            ops_s = self._get_editops(f_s, l_s,
-                                                      allow_replace=rep,
-                                                      allow_copy=cop)
-                            ops_.append((ops_p, ops_s))
-                        else:
-                            ops_.append((None,))
+        get_editops_kwargs = [{'allow_replace': x, 'allow_copy': y}
+                                  for x in [True, False]
+                                  for y in [True, False]]
+        for kwargs in get_editops_kwargs:
+            ops_ = []
+            ops.append(ops_)
+            for sent in self._train_corpus:
+                for tok in sent:
+                    form, affixes = tok['FORM'], tok[self._field]
+                    if affixes != (None,):
+                        f_p, f_s, l_p, l_s = affixes
+                        ops_p = self._get_editops(f_p, l_p, **kwargs)
+                        ops_s = self._get_editops(f_s, l_s, **kwargs)
+                        ops_.append((ops_p, ops_s))
+                    else:
+                        ops_.append((None,))
 
         if log_file:
             print('done. Lengths: [', end='', file=log_file)
@@ -184,6 +182,18 @@ class LemmaTagger(BaseTagger):
             print('], min = {}'.format(idx), file=log_file)
             print('stage 2 of 2...', end=' ', file=log_file)
             log_file.flush()
+
+        kwargs = get_editops_kwargs[idx]
+        for sent in self._test_corpus:
+            for tok in sent:
+                form, affixes = tok['FORM'], tok[self._field]
+                if affixes != (None,):
+                    f_p, f_s, l_p, l_s = affixes
+                    ops_p = self._get_editops(f_p, l_p, **kwargs)
+                    ops_s = self._get_editops(f_s, l_s, **kwargs)
+                    tok[self._field] = ops_p, ops_s
+                else:
+                    tok[self._field] = None,
 
         ops = iter(ops[idx])
         for sent in self._train_corpus:
