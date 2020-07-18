@@ -71,13 +71,13 @@ class LemmaTagger(BaseTagger):
     def load_train_corpus(self, *args, **kwargs):
         super().load_train_corpus(*args, **kwargs)
         [x.update({self._field:
-                       find_affixes(x['FORM'], x[self._orig_field])})
+                       self._find_affixes(x['FORM'], x[self._orig_field])})
              for x in self._train_corpus for x in x]
 
     def load_test_corpus(self, *args, **kwargs):
         super().load_test_corpus(*args, **kwargs)
         [x.update({self._field:
-                       self.find_affixes(x['FORM'], x[self._orig_field])})
+                       self._find_affixes(x['FORM'], x[self._orig_field])})
              for x in self._test_corpus for x in x]
 
     def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):
