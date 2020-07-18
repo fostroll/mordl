@@ -27,7 +27,7 @@ class LemmaTagger(BaseTagger):
             a = find_affixes(form, lemma, lower=True)
             res = a[0], a[2], a[3], a[5]
         else:
-            res = (None)
+            res = None,
         return res
 
     @staticmethod
@@ -100,7 +100,7 @@ class LemmaTagger(BaseTagger):
                     token[self._orig_field] = \
                         self._apply_editops(x['FORM'],
                                             token[self._orig_field]) \
-                            if token[self._orig_field] != (None) else None
+                            if token[self._orig_field] != (None,) else None
                 yield sentence
 
         corpus = process(
