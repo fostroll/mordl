@@ -708,7 +708,7 @@ class BaseTagger(BaseParser):
         if isinstance(tag_emb_names, str):
             tag_emb_names = [tag_emb_names]
 
-        field = self._normalize_field_name(field)
+        field = self._normalize_field_names(field)
         header = field.split(':')[:2]
         if len(header) == 2 and not header[1]:
             header = header[:1]
