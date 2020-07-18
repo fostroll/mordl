@@ -157,8 +157,7 @@ class LemmaTagger(BaseTagger):
                     for tok in sent:
                         form, affixes = tok['FORM'], tok[self._field]
                         if affixes:
-                            f_p, f_s, l_p, l_s = self._find_affixes(form,
-                                                                    lemma)
+                            f_p, f_s, l_p, l_s = affixes
                             ops_p = self._get_editops(f_p, l_p,
                                                       allow_replace=rep,
                                                       allow_copy=cop)
