@@ -281,17 +281,18 @@ class BaseTagger(BaseParser):
     @staticmethod
     def _normalize_field_names(names):
         res, tostr = [], False
-        if isinstance(names, str):
-            names, tostr = [names], True
-        for name in names:
-            num_colons = name.count(':')
-            if num_colons == 0:
-                name += '::' + NONE_TAG
-            elif num_colons == 1:
-                name += ':' + NONE_TAG
-            elif num_colons == 2 and name.endswith(':'):
-                name += NONE_TAG
-            res.append(name)
+        if names:
+            if isinstance(names, str):
+                names, tostr = [names], True
+            for name in names:
+                num_colons = name.count(':')
+                if num_colons == 0:
+                    name += '::' + NONE_TAG
+                elif num_colons == 1:
+                    name += ':' + NONE_TAG
+                elif num_colons == 2 and name.endswith(':'):
+                    name += NONE_TAG
+                res.append(name)
         return res[0] if tostr else res
 
     def predict(self, field, add_fields, corpus, with_orig=False,
