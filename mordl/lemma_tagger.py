@@ -169,18 +169,19 @@ class LemmaTagger(BaseTagger):
                             ops_.append((None,))
 
         if log_file:
-            print('done. Lengths: [{}, {}, {}, {}]'
-                      .format(*[len(x) for x in ops]),
-                  end='', file=log_file)
+            print('done. Lengths: [', end='', file=log_file)
             log_file.flush()
         num, idx, key_vals = len(self._train_corpus), -1, None
         for idx_, ops_ in enumerate(ops):
             key_vals_ = set(ops_)
-            num_ = len(key_vals)
+            num_ = len(key_vals_)
+            if log_file:
+                print('{}{}'.format(', ' if idx_ else '', num_),
+                      end='', file=log_file)
             if num_ < num:
                 num, idx, key_vals = num_, idx_, key_vals_
         if log_file:
-            print(', min = {}'.format(idx), file=log_file)
+            print('], min = {}'.format(idx), file=log_file)
             print('stage 2 of 2...', end=' ', file=log_file)
             log_file.flush()
 
