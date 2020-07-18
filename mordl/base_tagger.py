@@ -460,12 +460,15 @@ class BaseTagger(BaseParser):
                   self.predict(gold, with_orig=True,
                                batch_size=batch_size, split=split,
                                clone_ds=clone_ds, log_file=log_file)
-        field_ = field.split(':')
-        field = field_[0]
-        name = field_[1] if len(field_) > 1 else None
-        header = ':'.join(field_[:2])
+        self._normalize_field_names(field)
+        header = field.split(':')[:2]
+        if len(header) == 2 and not header[1]:
+            header = header[:1]
+        field = header[0]
+        name = header[1] if len(header) == 2 None
+        header = ':'.join(header)
         if label:
-            header += '::' + label
+            header += '==' + label
         if log_file:
             print('Evaluating ' + header, file=log_file)
 
@@ -706,7 +709,7 @@ class BaseTagger(BaseParser):
             tag_emb_names = [tag_emb_names]
 
         field = self._normalize_field_name(field)
-        header = field.split(':')[:2])
+        header = field.split(':')[:2]
         if len(header) == 2 and not header[1]:
             header = header[:1]
         header = ':'.join(header)
