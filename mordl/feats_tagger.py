@@ -305,13 +305,16 @@ class FeatsJointTagger(BaseTagger):
 
         Returns the train statistics.
         """
+        assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
+
         args, kwargs = get_func_params(FeatsJointTagger.train, locals())
+
         key_vals = set(x[self._field] for x in self._train_corpus for x in x)
         [None if x[self._field] in key_vals else
          x.update({self._field: [*get_close_matches(x[self._field],
-                                                    key_vals, n=1),
-                                 ''][0]})
+                                                    key_vals, n=1), ''][0]})
              for x in self._test_corpus for x in x]
+
         return super().train(self._field, 'UPOS', FeatTaggerModel, 'upos',
                              *args, **kwargs)
 
@@ -685,11 +688,11 @@ class FeatsSeparateTagger(BaseTagger):
 
         Returns the train statistics.
         """
+        assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
+
         args, kwargs = get_func_params(FeatsSeparateTagger.train, locals())
         del kwargs['feats']
         del kwargs['word_emb_path_suffix']
-
-        assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
         if log_file:
             print('###### {} TAGGER TRAINING PIPELINE ######'
