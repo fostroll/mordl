@@ -23,8 +23,12 @@ class LemmaTagger(BaseTagger):
 
     @staticmethod
     def _find_affixes(form, lemma):
-        a = find_affixes(form, lemma, lower=True)
-        return a[0], a[2], a[3], a[5]
+        if form and lemma:
+            a = find_affixes(form, lemma, lower=True)
+            res = a[0], a[2], a[3], a[5]
+        else:
+            res = (None)
+        return res
 
     @staticmethod
     def _get_editops(str_from, str_to, allow_replace=True, allow_copy=True):
@@ -151,10 +155,8 @@ class LemmaTagger(BaseTagger):
                 ops.append(ops_)
                 for sent in self._train_corpus:
                     for tok in sent:
-                        form, lemma = tok['FORM'], tok[self._orig_feat]
-                        if not (form and lemma):
-                            ops_.append((None,))
-                        else:
+                        form, affixes = tok['FORM'], tok[self._feat]
+                        if affixes:
                             f_p, f_s, l_p, l_s = self._find_affixes(form,
                                                                     lemma)
                             ops_p = self._get_editops(f_p, l_p,
@@ -164,6 +166,8 @@ class LemmaTagger(BaseTagger):
                                                       allow_replace=rep,
                                                       allow_copy=cop)
                             ops_.append((ops_p, ops_s))
+                        else:
+                            ops_.append((None,))
 
         if log_file:
             print('done.', file=log_file)
