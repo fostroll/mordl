@@ -244,7 +244,8 @@ class BaseTagger(BaseParser):
         state dict) and two for the dataset (config and the internal state).
         All file names started with **name** and their endings are:
         `.config.json` and `.pt` for the model; `_ds.config.json` and `_ds.pt`
-        for the dataset."""
+        for the dataset.
+        """
         assert self._ds, "ERROR: The tagger doesn't have a dataset to save"
         assert self._model, "ERROR: The tagger doesn't have a model to save"
         self._save_dataset(name)
@@ -254,7 +255,7 @@ class BaseTagger(BaseParser):
 
     def load(self, model_class, name, device=None, dataset_device=None,
              log_file=LOG_FILE):
-        """Loads tagger's internal state saved by it's `.save()` method.
+        """Loads tagger's internal state saved by its `.save()` method.
 
         Args:
 
@@ -262,11 +263,11 @@ class BaseTagger(BaseParser):
 
         **name** (`str`): name of the internal state previously saved.
 
-        **device**: a device for the loading model if you want to override it's
+        **device**: a device for the loading model if you want to override its
         previously saved value.
 
         **dataset_device**: a device for the loading dataset if you want to
-        overrride it's previously saved value.
+        overrride its previously saved value.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
         """
@@ -308,9 +309,9 @@ class BaseTagger(BaseParser):
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
-        is a sentence with predicted labels and the seconf element is an
-        original sentence labels. `with_orig` can be `True` only if `save_to`
-        is `None`. Default `with_orig=False`.
+        is a sentence with predicted labels and the second element is original
+        sentence labels. `with_orig` can be `True` only if `save_to` is
+        `None`. Default `with_orig=False`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
@@ -436,7 +437,7 @@ class BaseTagger(BaseParser):
         **label** (`str`): specific label of the target field to be evaluated,
         e.g. `field='UPOS'`, `label='VERB'` or `field='FEATS:Animacy'`,
         `label='Inan'`. Note that to evaluate key-value type fields like
-        `FEATS` or `MISC`
+        `FEATS` or `MISC`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
@@ -621,7 +622,7 @@ class BaseTagger(BaseParser):
         'LEMMA']`). These fields are included in the dataset. The format of
         each element of **add_fields** is equal to the **field** format.
 
-        **model_class**: a class of the model using for prediction. Must be
+        **model_class**: a class of the model used for prediction. Must be
         descendant of `BaseTaggerModel` class.
 
         **tag_emb_names** (`str|list([str])`): prefixes of the model args,
@@ -692,7 +693,7 @@ class BaseTagger(BaseParser):
         embedding models at once, pass parameters of the additional model as a
         dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
         or a list of such dictionaries if you need more than one additional
-        models.
+        model.
 
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.
