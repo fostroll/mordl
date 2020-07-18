@@ -155,7 +155,7 @@ class LemmaTagger(BaseTagger):
                 ops.append(ops_)
                 for sent in self._train_corpus:
                     for tok in sent:
-                        form, affixes = tok['FORM'], tok[self._feat]
+                        form, affixes = tok['FORM'], tok[self._field]
                         if affixes:
                             f_p, f_s, l_p, l_s = self._find_affixes(form,
                                                                     lemma)
