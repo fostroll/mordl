@@ -152,7 +152,7 @@ class LemmaTagger(BaseTagger):
         get_editops_kwargs = [{'allow_replace': x, 'allow_copy': y}
                                   for x in [True, False]
                                   for y in [True, False]]
-        for kwargs in get_editops_kwargs:
+        for kwargs_ in get_editops_kwargs:
             ops_ = []
             ops.append(ops_)
             for sent in self._train_corpus:
@@ -160,8 +160,8 @@ class LemmaTagger(BaseTagger):
                     form, affixes = tok['FORM'], tok[self._field]
                     if affixes != (None,):
                         f_p, f_s, l_p, l_s = affixes
-                        ops_p = self._get_editops(f_p, l_p, **kwargs)
-                        ops_s = self._get_editops(f_s, l_s, **kwargs)
+                        ops_p = self._get_editops(f_p, l_p, **kwargs_)
+                        ops_s = self._get_editops(f_s, l_s, **kwargs_)
                         ops_.append((ops_p, ops_s))
                     else:
                         ops_.append((None,))
