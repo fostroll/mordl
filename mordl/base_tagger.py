@@ -277,6 +277,7 @@ class BaseTagger(BaseParser):
             log_file=log_file
         )
 
+    @staticmethod
     def _normalize_field_names(names):
         res, tostr = [], False
         if isinstance(names, str):
