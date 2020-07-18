@@ -42,12 +42,16 @@ class LemmaTagger(BaseTagger):
                     res.append(('r', idx_dst, ch_src))
                 elif op in ['insert', 'replace']:
                     op_prev, idx_prev, ch_prev = res[-1] if res else [0] * 3
-                    if allow_copy and idx_prev \
-                                  and str_to[idx_prev - 1] == ch_src \
-                                  and (op_prev == 'c' or idx_prev != idx_dst):
-                        res.append(('c', idx_dst, None))
-                    else:
-                        res.append(('i', idx_dst, str_to[idx_src]))
+                    try:
+                        if allow_copy and idx_prev \
+                                      and str_to[idx_prev - 1] == ch_src \
+                                      and (op_prev == 'c' or idx_prev != idx_dst):
+                            res.append(('c', idx_dst, None))
+                        else:
+                            res.append(('i', idx_dst, str_to[idx_src]))
+                    except IndexError e:
+                        print(str_from, str_to, allow_replace, allow_copy)
+                        raise e
                     if op == 'replace':
                         res.append(('d', idx_dst, None))
                 else:
