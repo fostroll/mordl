@@ -183,14 +183,14 @@ class LemmaTagger(BaseTagger):
             print('stage 2 of 2...', end=' ', file=log_file)
             log_file.flush()
 
-        kwargs = get_editops_kwargs[idx]
+        kwargs_ = get_editops_kwargs[idx]
         for sent in self._test_corpus:
             for tok in sent:
                 form, affixes = tok['FORM'], tok[self._field]
                 if affixes != (None,):
                     f_p, f_s, l_p, l_s = affixes
-                    ops_p = self._get_editops(f_p, l_p, **kwargs)
-                    ops_s = self._get_editops(f_s, l_s, **kwargs)
+                    ops_p = self._get_editops(f_p, l_p, **kwargs_)
+                    ops_s = self._get_editops(f_s, l_s, **kwargs_)
                     tok[self._field] = ops_p, ops_s
                 else:
                     tok[self._field] = None,
