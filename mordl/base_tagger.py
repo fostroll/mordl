@@ -465,7 +465,7 @@ class BaseTagger(BaseParser):
         if len(header) == 2 and not header[1]:
             header = header[:1]
         field = header[0]
-        name = header[1] if len(header) == 2 None
+        name = header[1] if len(header) == 2 else None
         header = ':'.join(header)
         if label:
             header += '==' + label
