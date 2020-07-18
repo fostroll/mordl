@@ -30,7 +30,7 @@ class UposTagger(BaseTagger):
     def evaluate(self, gold, test=None, label=None, batch_size=BATCH_SIZE,
                  split=None, clone_ds=False, log_file=LOG_FILE):
         args, kwargs = get_func_params(UposTagger.evaluate, locals())
-        return super().evaluate(self._field, *args, **kwargs)
+        return super().evaluate(self._field, None, *args, **kwargs)
 
     def train(self, save_as,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,

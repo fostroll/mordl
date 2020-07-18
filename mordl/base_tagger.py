@@ -277,6 +277,21 @@ class BaseTagger(BaseParser):
             log_file=log_file
         )
 
+    def _normalize_field_names(names):
+        res, tostr = [], False
+        if isinstance(names, str):
+            names, tostr = [names], True
+        for name in names:
+            num_colons = name.count(':')
+            if num_colons == 0:
+                name += '::' + NONE_TAG
+            elif num_colons == 1:
+                name += ':' + NONE_TAG
+            elif num_colons == 2 and name.endswith(':'):
+                name += NONE_TAG
+            res.append(name)
+        return res[0] if tostr else res
+
     def predict(self, field, add_fields, corpus, with_orig=False,
                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
                 save_to=None, log_file=LOG_FILE):
@@ -284,18 +299,8 @@ class BaseTagger(BaseParser):
 
         Args:
 
-        **field** (`str`): the field name which needs to be predicted. Can
-        contain up to 3 elements, separated by a colon `:` in the format
-        (`'field:subfield:None_replacement'`). Examples: `'UPOS'` - predict
-        UPOS field; `'FEATS:Animacy'` - predict Animacy subfield of the FEATS
-        field; `'FEATS:Animacy:_'` - predict Animacy subfield of the FEATS
-        field, and if '_' (`None`) is predicted, leave the subfield empty.
-
-        **add_fields** (`None|str|list([str])`): any auxiliary fields to use
-        with the `FORM` field for predictions. If `None`, only `FORM` field is
-        used for predictions. To use additional fields for predicitons, pass a
-        field name (e.g. `'UPOS'`) or a list of field names (e.g. `['UPOS',
-        'LEMMA']`). These fields are included in the dataset.
+        **field** and **add_field** must be the same that were used in the
+        `.train()` method.
 
         **corpus**: input corpus which will be used for feature extraction and
         predictions.
@@ -332,8 +337,8 @@ class BaseTagger(BaseParser):
         assert not with_orig or save_to is None, \
                'ERROR: `with_orig` can be True only if save_to is None'
 
-        if field.count(':') == 1:
-            field += ':_'
+        field = self._normalize_field_names(field)
+        add_fields = self._normalize_field_names(add_fields)
 
         def process(corpus):
 
@@ -418,13 +423,7 @@ class BaseTagger(BaseParser):
 
         Args:
 
-        **field** (`str`): the field with predictions to be evaluated. Can
-        contain up to 2 elements, separated by a colon `:` in the format
-        (`'field:subfield'`). Examples: `'UPOS'` - evaluate UPOS field;
-        `'FEATS:Animacy'` - evaluate Animacy subfield of the FEATS field.
-
-        **gold** (`tuple(<sentences> <labels>)`): corpus with actual target
-        tags.
+        **field** must be the same that was used in the `.train()` method.
 
         **test** (`tuple(<sentences> <labels>)`): corpus with predicted target
         tags. If `None`, predictions will be created on-the-fly based on the
@@ -615,7 +614,8 @@ class BaseTagger(BaseParser):
         with the *FORM* field for predictions. If `None`, only *FORM* field is
         used for predictions. To use additional fields for predicitons, pass a
         field name (e.g. `'UPOS'`) or a list of field names (e.g. `['UPOS',
-        'LEMMA']`). These fields are included in the dataset.
+        'LEMMA']`). These fields are included in the dataset. The format of
+        each element of **add_fields** is equal to the **field** format.
 
         **model_class**: a class of the model using for prediction. Must be
         descendant of `BaseTaggerModel` class.
@@ -705,18 +705,17 @@ class BaseTagger(BaseParser):
         if isinstance(tag_emb_names, str):
             tag_emb_names = [tag_emb_names]
 
-        num_colons = field.count(':')
-        if num_colons == 0:
-            field += '::' + NONE_TAG
-        elif num_colons == 1:
-            field += ':' + NONE_TAG
-        elif num_colons == 2 and field.endswith(':'):
-            field += NONE_TAG
-        header = ':'.join(field.split(':')[:2])
+        field = self._normalize_field_name(field)
+        header = field.split(':')[:2])
+        if len(header) == 2 and not header[1]:
+            header = header[:1]
+        header = ':'.join(header)
         bert_header = header.lower().replace(':', '-') + '_'
-        fields = [] if add_fields is None else \
-                       [add_fields] if isinstance(add_fields, str) else \
-                       add_fields
+        fields = self._normalize_field_names(
+            [] if add_fields is None else \
+            [add_fields] if isinstance(add_fields, str) else \
+            add_fields
+        )
         fields.append(field)
 
         if log_file:

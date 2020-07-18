@@ -47,7 +47,7 @@ setup(
     keywords='natural-language-processing nlp morphology',
 
     packages=find_packages(exclude=['doc', 'examples', 'scripts', 'tests']),
-    install_requires=['corpuscula>=1.0.25', 'gensim', 'junky>=0.2.8',
+    install_requires=['corpuscula>=1.0.25', 'gensim', 'junky>=0.2.9',
     'morra>=1.0.6', 'numpy', 'sklearn', 'torch>=1.2.0',
     'transformers>=2.5.1'],
     include_package_data=True,
