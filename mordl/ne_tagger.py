@@ -13,6 +13,5 @@ class NeTagger(FeatTagger):
     """
     Named entity tagger class.
     """
-
     def __init__(self):
         super().__init__('MISC:NE')

@@ -51,7 +51,7 @@ class BaseTagger(BaseParser):
 
     def load_train_corpus(self, corpus, append=False, test=None, seed=None):
         """Loads the train corpus.
-        
+
         Args:
 
         **corpus**: a name of the file in *CoNLL-U* format or list/iterator of
@@ -447,7 +447,7 @@ class BaseTagger(BaseParser):
         large dataset into several parts. Default `split=None`, i.e. process
         full dataset without splits.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and 
+        **clone_ds** (`bool`): if `True`, the dataset is cloned and
         transformed. If `False`, `transform_collate` is used without cloning
         the dataset.
 
@@ -597,9 +597,9 @@ class BaseTagger(BaseParser):
 
         We assume all positional argumets but **save_as** are for internal use
         only and should be hide in descendant classes.
-        
+
         Args:
-        
+
         **field** (`str`): the name of the field which needs to be predicted
         by the training tagger. May contain up to 3 elements, separated by a
         colon (`:`). Format is:
@@ -611,10 +611,10 @@ class BaseTagger(BaseParser):
         `'UPOS'` - predict the *UPOS* field;<br/>
         `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS*
         field;<br/>
-        `'FEATS:Animacy:_O'` - likewise the above but if feat value is
+        `'FEATS:Animacy:_O'` - likewise the above, but if feat value is
         `None`, it will be replaced by `'_O'` during training;<br/>
         `'XPOS::_O'` - predict the *XPOS* field and use `'_O'` as replacement
-        for `None`.<br/>
+        for `None`.
 
         **add_fields** (`None|str|list([str])`): any auxiliary fields to use
         with the *FORM* field for predictions. If `None`, only *FORM* field is
@@ -654,10 +654,9 @@ class BaseTagger(BaseParser):
         **batch_size** (`int`): number of sentences per batch. For training,
         default `batch_size=32`.
 
-        **control_metric** (`str`): metric to control training. Default
-        `control_metric='accuracy'`. Any that is supported by the
-        `junky.train()` method. In the moment it is: 'accuracy', 'f1' and
-        'loss'. Default `control_metric=accuracy`.
+        **control_metric** (`str`): metric to control training. Any that is
+        supported by the `junky.train()` method. In the moment it is:
+        'accuracy', 'f1' and 'loss'. Default `control_metric=accuracy`.
 
         **max_grad_norm** (`float`): gradient clipping parameter, used with
         `torch.nn.utils.clip_grad_norm_()`.
@@ -665,7 +664,7 @@ class BaseTagger(BaseParser):
         **tags_to_remove** (`list([str])|dict({str: list([str])})`): tags,
         tokens with those must be removed from the corpus. May be a `list` of
         tag names or a `dict` of `{<feat name>: [<feat value>, ...]}`. This
-        argument may be used, for example, to remove some unfrequent tags from
+        argument may be used, for example, to remove some infrequent tags from
         the corpus. Note, that we remove the tokens from the train corpus as a
         whole, not just replace those tags to `None`.
 
@@ -679,7 +678,7 @@ class BaseTagger(BaseParser):
         which use devices (currently, only 'bert').
 
         **word_emb_tune_params**: parameters for word embeddings finetuning.
-        For now, only BERT embeddings finetuning is supported with 
+        For now, only BERT embeddings finetuning is supported with
         `mordl.WordEmbeddings.bert_tune()`. So, **word_emb_tune_params** is a
         `dict` of keyword args for this method. You can replace any except
         `test_data`.
@@ -703,7 +702,7 @@ class BaseTagger(BaseParser):
 
         **model_kwargs**: keyword arguments for the model creating. Will be
         passed as is to the **model_class** constructor.
-        
+
         Returns the train statistics.
         """
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'

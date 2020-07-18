@@ -153,7 +153,7 @@ class FeatsJointTagger(BaseTagger):
         large dataset into several parts. Default `split=None`, i.e. process
         full dataset without splits.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and 
+        **clone_ds** (`bool`): if `True`, the dataset is cloned and
         transformed. If `False`, `transform_collate` is used without cloning
         the dataset.
 
@@ -190,7 +190,7 @@ class FeatsJointTagger(BaseTagger):
 
         We assume all positional argumets but **save_as** are for internal use
         only and should be hidden in descendant classes.
-        
+
         Args:
 
         **save_as** (`str`): the name of the tagger using for save. There 4
@@ -214,10 +214,9 @@ class FeatsJointTagger(BaseTagger):
         **batch_size** (`int`): number of sentences per batch. For training,
         default `batch_size=32`.
 
-        **control_metric** (`str`): metric to control training. Default
-        `control_metric='accuracy'`. Any that is supported by the
-        `junky.train()` method. In the moment it is: 'accuracy', 'f1' and
-        'loss'. Default `control_metric=accuracy`.
+        **control_metric** (`str`): metric to control training. Any that is
+        supported by the `junky.train()` method. In the moment it is:
+        'accuracy', 'f1' and 'loss'. Default `control_metric=accuracy`.
 
         **max_grad_norm** (`float`): gradient clipping parameter, used with
         `torch.nn.utils.clip_grad_norm_()`.
@@ -225,7 +224,7 @@ class FeatsJointTagger(BaseTagger):
         **tags_to_remove** (`list([str])|dict({str: list([str])})`): tags,
         tokens with those must be removed from the corpus. May be a `list` of
         tag names or a `dict` of `{<feat name>: [<feat value>, ...]}`. This
-        argument may be used, for example, to remove some unfrequent tags from
+        argument may be used, for example, to remove some infrequent tags from
         the corpus. Note, that we remove the tokens from the train corpus as a
         whole, not just replace those tags to `None`.
 
@@ -239,7 +238,7 @@ class FeatsJointTagger(BaseTagger):
         which use devices (currently, only 'bert').
 
         **word_emb_tune_params**: parameters for word embeddings finetuning.
-        For now, only BERT embeddings finetuning is supported with 
+        For now, only BERT embeddings finetuning is supported with
         `mordl.WordEmbeddings.bert_tune()`. So, **word_emb_tune_params** is a
         `dict` of keyword args for this method. You can replace any except
         `test_data`.
@@ -255,7 +254,7 @@ class FeatsJointTagger(BaseTagger):
         dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
         or a list of such dictionaries if you need more than one additional
         model.
-        
+
         **rnn_emb_dim** (`int`): character RNN (LSTM) embedding
         dimensionality. If `None`, the layer is skipped.
 
@@ -386,9 +385,9 @@ class FeatsSeparateTagger(BaseTagger):
 
         **corpus**: input corpus which will be used for feature extraction and
         predictions.
-        
+
         **feats** (`str|list([str)`): exact features to be predicted.
-        
+
         **remove_excess_feats** (`bool`): if `True`, removes unused feats from
         the corpus. Default `remove_excess_feats=True`.
 
@@ -525,7 +524,7 @@ class FeatsSeparateTagger(BaseTagger):
         large dataset into several parts. Default `split=None`, i.e. process
         full dataset without splits.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and 
+        **clone_ds** (`bool`): if `True`, the dataset is cloned and
         transformed. If `False`, `transform_collate` is used without cloning
         the dataset.
 
@@ -566,7 +565,7 @@ class FeatsSeparateTagger(BaseTagger):
 
         We assume all positional argumets but **save_as** are for internal use
         only and should be hidden in descendant classes.
-        
+
         Args:
 
         **save_as** (`str`): the name of the tagger using for save. There 4
@@ -593,10 +592,9 @@ class FeatsSeparateTagger(BaseTagger):
         **batch_size** (`int`): number of sentences per batch. For training,
         default `batch_size=32`.
 
-        **control_metric** (`str`): metric to control training. Default
-        `control_metric='accuracy'`. Any that is supported by the
-        `junky.train()` method. In the moment it is: 'accuracy', 'f1' and
-        'loss'. Default `control_metric=accuracy`.
+        **control_metric** (`str`): metric to control training. Any that is
+        supported by the `junky.train()` method. In the moment it is:
+        'accuracy', 'f1' and 'loss'. Default `control_metric=accuracy`.
 
         **max_grad_norm** (`float`): gradient clipping parameter, used with
         `torch.nn.utils.clip_grad_norm_()`.
@@ -604,7 +602,7 @@ class FeatsSeparateTagger(BaseTagger):
         **tags_to_remove** (`list([str])|dict({str: list([str])})`): tags,
         tokens with those must be removed from the corpus. May be a `list` of
         tag names or a `dict` of `{<feat name>: [<feat value>, ...]}`. This
-        argument may be used, for example, to remove some unfrequent tags from
+        argument may be used, for example, to remove some infrequent tags from
         the corpus. Note, that we remove the tokens from the train corpus as a
         whole, not just replace those tags to `None`.
 
@@ -616,11 +614,11 @@ class FeatsSeparateTagger(BaseTagger):
         which use devices (currently, only 'bert').
 
         **word_emb_path_suffix** (`str`): path suffix to word embeddings
-        storage, from full embedding name in the format 
+        storage, from full embedding name in the format
         `'<feat>_<word_emb_path_suffix>'`.
 
         **word_emb_tune_params**: parameters for word embeddings finetuning.
-        For now, only BERT embeddings finetuning is supported with 
+        For now, only BERT embeddings finetuning is supported with
         `mordl.WordEmbeddings.bert_tune()`. So, **word_emb_tune_params** is a
         `dict` of keyword args for this method. You can replace any except
         `test_data`.
@@ -636,7 +634,7 @@ class FeatsSeparateTagger(BaseTagger):
         dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
         or a list of such dictionaries if you need more than one additional
         model.
-        
+
         **rnn_emb_dim** (`int`): character RNN (LSTM) embedding
         dimensionality. If `None`, the layer is skipped.
 
@@ -686,7 +684,7 @@ class FeatsSeparateTagger(BaseTagger):
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
         Returns the train statistics.
-        """     
+        """
         args, kwargs = get_func_params(FeatsSeparateTagger.train, locals())
         del kwargs['feats']
         del kwargs['word_emb_path_suffix']
