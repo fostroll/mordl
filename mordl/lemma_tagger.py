@@ -252,12 +252,14 @@ class LemmaTagger(BaseTagger):
 
         [x.update({self._field_a:
                        self._find_affixes(x['FORM'], x[self._orig_field]),
-                   self._field_c: x['LEMMA'] and x['LEMMA'].istitle()})
+                   self._field_c:
+                       str(bool(x['LEMMA'] and x['LEMMA'].istitle()))})
              for x in self._train_corpus for x in x]
 
         [x.update({self._field_a:
                        self._find_affixes(x['FORM'], x[self._orig_field]),
-                   self._field_c: x['LEMMA'] and x['LEMMA'].istitle()})
+                   self._field_c:
+                       str(bool(x['LEMMA'] and x['LEMMA'].istitle()))})
              for x in self._test_corpus for x in x]
 
         if log_file:
