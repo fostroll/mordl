@@ -6,7 +6,7 @@
 """
 """
 from Levenshtein import editops
-from corpuscula.utils import find_affixes
+from difflib import SequenceMatcher
 from junky import get_func_params
 from mordl.base_tagger import BaseTagger
 from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
@@ -27,9 +27,31 @@ class LemmaTagger(BaseTagger):
         self._field_s = field + 's'
 
     @staticmethod
+    def find_affixes(wform, lemma, lower=False):
+        """Find the longest common part of the given *wform* and *lemma*.
+
+        :param lower: if True then return values will be always in lower case
+        :return: prefix, common part, suffix/flexion of the *wform*;
+                 prefix, common part, suffix/flexion of the *lemma*
+        :rtype: str, str, str, str, str, str
+        """
+        if lower:
+            lex = wform = wform.lower()
+            lem = lemma = lemma.lower()
+        else:
+            lex = wform.lower()
+            lem = lemma.lower()
+        #lex = lex.replace('¸', 'å')
+        #lem = lem.replace('¸', 'å')
+        a, b, size = SequenceMatcher(None, lex, lem, False) \
+                         .find_longest_match(0, len(lex), 0, len(lem))
+        return wform[:a], wform[a:a + size], wform[a + size:], \
+               lemma[:b], lemma[b:b + size], lemma[b + size:]
+
+    @staticmethod
     def _find_affixes(form, lemma):
         if form and lemma:
-            a = find_affixes(form, lemma, lower=True)
+            a = self.find_affixes(form, lemma, lower=True)
             res = a[0], a[2], a[3], a[5]
         else:
             res = None,
@@ -92,7 +114,7 @@ class LemmaTagger(BaseTagger):
                             self._apply_editops(str_from, ops_t[0])
                         ), ops_t[1])
                     ))
-                    if res:
+                    if str_from_:
                         str_from = str_from_
                     if ops_t[2]:
                         str_from = str_from.capitalize()
