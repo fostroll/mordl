@@ -41,8 +41,6 @@ class LemmaTagger(BaseTagger):
         else:
             lex = wform.lower()
             lem = lemma.lower()
-        #lex = lex.replace('¸', 'å')
-        #lem = lem.replace('¸', 'å')
         a, b, size = SequenceMatcher(None, lex, lem, False) \
                          .find_longest_match(0, len(lex), 0, len(lem))
         return wform[:a], wform[a:a + size], wform[a + size:], \
