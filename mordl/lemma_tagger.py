@@ -259,7 +259,7 @@ class LemmaTagger(BaseTagger):
                 isfirst = True
                 for tok in sent:
                     form, lemma, upos = \
-                        tok['FORM'], tok['UPOS'], tok[orig_field]
+                        tok['FORM'], tok[orig_field], tok['UPOS']
                     tok[field_a] = self._find_affixes(form, lemma)
                     tok[field_c] = str(bool(lemma and lemma.istitle()))
                     if isfirst and form and '-' not in tok['ID']:
