@@ -203,7 +203,8 @@ class LemmaTagger(BaseTagger):
         '''
 
         if log_file:
-            head_ = 'done. Lengths: ['
+            print('done.', file=log_file)
+            head_ = 'Lengths: ['
             print(head_, end='', file=log_file)
         num, idx, key_vals = len(self._train_corpus), -1, None
         for idx_, (ops_, kwargs_) in enumerate(zip(ops, get_editops_kwargs)):
