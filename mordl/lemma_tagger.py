@@ -98,8 +98,8 @@ class LemmaTagger(BaseTagger):
                     sentence_ = sentence_[0]
                 for token in sentence_:
                     token[self._orig_field] = \
-                        apply_editops(token['FORM'], token[self._field]) \
-                            if token[self._field] != (None,) else None
+                        apply_editops(token['FORM'], token[self._orig_field]) \
+                            if token[self._orig_field] != (None,) else None
                 yield sentence
 
         corpus = process(
@@ -169,14 +169,15 @@ class LemmaTagger(BaseTagger):
             ops.append(ops_)
             for sent in self._train_corpus:
                 for tok in sent:
-                    form, affixes = tok['FORM'], tok[self._field]
+                    lemma, affixes = tok[self._orig_field], tok[self._field]
                     if affixes != (None,):
                         f_p, f_s, l_p, l_s = affixes
                         ops_p = self._get_editops(f_p, l_p, **kwargs_)
                         ops_s = self._get_editops(''.join(reversed(f_s)),
                                                   ''.join(reversed(l_s)),
                                                   **kwargs_)
-                        ops_.append((ops_p, ops_s))
+                        ops_c = bool(lemma and lemma.istitle())
+                        ops_.append((ops_p, ops_s, ops_c))
                     else:
                         ops_.append((None,))
 
@@ -194,20 +195,39 @@ class LemmaTagger(BaseTagger):
                 num, idx, key_vals = num_, idx_, key_vals_
         if log_file:
             print('], min = {}'.format(idx), file=log_file)
-            print('stage 3 of 3...', end=' ', file=log_file)
+            print('stage 3 of 3...', file=log_file)
+
+        '''
+        if log_file:
+            print('Lengths: [', end='', file=log_file)
+        num, idx, key_vals = len(self._train_corpus), -1, None
+        for idx_, ops_ in enumerate(ops):
+            key_vals_ = set(ops_)
+            num_ = len(key_vals_)
+            if log_file:
+                print('{}{}'.format(',\n          ' if idx_ else '', num_),
+                      end='', file=log_file)
+            if num_ < num:
+                num, idx, key_vals = num_, idx_, key_vals_
+        if log_file:
+            print(']', file=log_file)
+            print('min = {}'.format(get_editops_kwargs[idx]), file=log_file)
+            print('...', end=' ', file=log_file)
             log_file.flush()
+        '''
 
         kwargs_ = get_editops_kwargs[idx]
         for sent in self._test_corpus:
             for tok in sent:
-                form, affixes = tok['FORM'], tok[self._field]
+                lemma, affixes = tok[self._orig_field], tok[self._field]
                 if affixes != (None,):
                     f_p, f_s, l_p, l_s = affixes
                     ops_p = self._get_editops(f_p, l_p, **kwargs_)
                     ops_s = self._get_editops(''.join(reversed(f_s)),
                                               ''.join(reversed(l_s)),
                                               **kwargs_)
-                    tok[self._field] = ops_p, ops_s
+                    ops_c = bool(lemma and lemma.istitle())
+                    tok[self._field] = ops_p, ops_s, ops_c
                 else:
                     tok[self._field] = None,
 
