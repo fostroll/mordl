@@ -16,15 +16,15 @@ from mordl.feat_tagger_model import FeatTaggerModel
 class LemmaTagger(BaseTagger):
     """"""
 
-    def __init__(self, field='LEMMA', work_field=None, work_field_a=None,
-                 work_field_c=None, work_field_p=None, work_field_s=None):
+    def __init__(self, field='LEMMA', work_field=None):
         super().__init__()
         self._orig_field = field
         self._field = work_field if work_field else field + 'd'
-        self._field_a = work_field_a if work_field_a else field + 'a'
-        self._field_c = work_field_c if work_field_c else field + 'c'
-        self._field_p = work_field_p if work_field_p else field + 'p'
-        self._field_s = work_field_s if work_field_s else field + 's'
+        self._field_a = field + 'a'
+        self._field_u = field + 'u'
+        self._field_c = field + 'c'
+        self._field_p = field + 'p'
+        self._field_s = field + 's'
 
     @staticmethod
     def _find_affixes(form, lemma):
@@ -250,25 +250,32 @@ class LemmaTagger(BaseTagger):
                   end=' ', file=log_file)
             log_file.flush()
 
-        [x.update({self._field_a:
-                       self._find_affixes(x['FORM'], x[self._orig_field]),
-                   self._field_c:
-                       str(bool(x['LEMMA'] and x['LEMMA'].istitle()))})
-             for x in self._train_corpus for x in x]
+        orig_field, field_a, field_u, field_c, field_p, field_s = \
+            self._orig_field, self._field_a, self._field_u, \
+            self._field_c, self._field_p, self._field_s
 
-        [x.update({self._field_a:
-                       self._find_affixes(x['FORM'], x[self._orig_field]),
-                   self._field_c:
-                       str(bool(x['LEMMA'] and x['LEMMA'].istitle()))})
-             for x in self._test_corpus for x in x]
+        for corp in (self._train_corpus, self._test_corpus):
+            for sent in corp:
+                isfirst = True
+                for tok in sent:
+                    form, lemma, upos = \
+                        tok['FORM'], tok['UPOS'], tok[orig_field]
+                    tok[field_a] = self._find_affixes(form, lemma)
+                    tok[field_c] = str(bool(lemma and lemma.istitle()))
+                    if isfirst and form and '-' not in tok['ID']:
+                        isfirst = False
+                        tok[field_u] = upos + '-first'
+                    else:
+                        tok[field_u] = upos
 
         if log_file:
             print('done.', file=log_file)
             print('\n############ CAPITALIZATION ############\n',
                   file=log_file)
 
-        res.append(super().train(self._field_c, 'UPOS', FeatTaggerModel,
-                                 'upos', *args, **kwargs))
+        kwargs['model_name'] = model_name + 'c'
+        res.append(super().train(field_c, field_u, FeatTaggerModel, 'upos',
+                                 *args, **kwargs))
 
         if log_file:
             print('\n############### PREFIXES ###############\n',
@@ -284,7 +291,7 @@ class LemmaTagger(BaseTagger):
             ops.append(ops_)
             for sent in self._train_corpus:
                 for tok in sent:
-                    form, affixes = tok['FORM'], tok[self._field_a]
+                    form, affixes = tok['FORM'], tok[field_a]
                     if affixes != (None,):
                         f_, _, l_, _ = affixes
                         ops_.append(self._get_editops(f_, l_, **kwargs_))
@@ -311,15 +318,15 @@ class LemmaTagger(BaseTagger):
         kwargs_ = get_editops_kwargs[idx]
         for sent in self._test_corpus:
             for tok in sent:
-                form, affixes = tok['FORM'], tok[self._field_a]
+                form, affixes = tok['FORM'], tok[field_a]
                 if affixes != (None,):
                     f_, _, l_, _ = affixes
                     ops_ = self._get_editops(f_, l_, **kwargs_)
-                    tok[self._field_p] = ops_ if ops_ in key_vals else ()
+                    tok[field_p] = ops_ if ops_ in key_vals else ()
                 else:
-                    tok[self._field_p] = ()
+                    tok[field_p] = ()
 
-        [x.update({self._field_p: next(ops)})
+        [x.update({field_p: next(ops)})
              for x in self._train_corpus for x in x]
 
 
@@ -327,8 +334,9 @@ class LemmaTagger(BaseTagger):
         if log_file:
             print('done.\n', file=log_file)
 
-        res.append(super().train(self._field_p, 'UPOS', FeatTaggerModel,
-                                 'upos', *args, **kwargs))
+        kwargs['model_name'] = model_name + 'p'
+        res.append(super().train(field_p, field_u, FeatTaggerModel, 'upos',
+                                 *args, **kwargs))
 
         if log_file:
             print('\n############### SUFFIXES ###############\n',
@@ -344,7 +352,7 @@ class LemmaTagger(BaseTagger):
             ops.append(ops_)
             for sent in self._train_corpus:
                 for tok in sent:
-                    form, affixes = tok['FORM'], tok[self._field_a]
+                    form, affixes = tok['FORM'], tok[field_a]
                     if affixes != (None,):
                         f_, _, l_, _ = affixes
                         ops_.append(self._get_editops(''.join(reversed(f_)),
@@ -373,22 +381,23 @@ class LemmaTagger(BaseTagger):
         kwargs_ = get_editops_kwargs[idx]
         for sent in self._test_corpus:
             for tok in sent:
-                form, affixes = tok['FORM'], tok[self._field_a]
+                form, affixes = tok['FORM'], tok[field_a]
                 if affixes != (None,):
                     f_, _, l_, _ = affixes
                     ops_ = self._get_editops(''.join(reversed(f_)),
                                               ''.join(reversed(l_)),
                                               **kwargs_)
-                    tok[self._field_s] = ops_ if ops_ in key_vals else ()
+                    tok[field_s] = ops_ if ops_ in key_vals else ()
                 else:
-                    tok[self._field_s] = ()
+                    tok[field_s] = ()
 
-        [x.update({self._field_s: next(ops)})
+        [x.update({field_s: next(ops)})
              for x in self._train_corpus for x in x]
 
         del ops
         if log_file:
             print('done.\n', file=log_file)
 
-        res.append(super().train(self._field_s, 'UPOS', FeatTaggerModel,
-                                 'upos', *args, **kwargs))
+        kwargs['model_name'] = model_name + 's'
+        res.append(super().train(field_s, field_u, FeatTaggerModel, 'upos',
+                                 *args, **kwargs))
