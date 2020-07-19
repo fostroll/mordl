@@ -85,14 +85,19 @@ class LemmaTagger(BaseTagger):
         kwargs['save_to'] = None
 
         def apply_editops(str_from, ops_t):
-            try:
-                str_from = ''.join(reversed(
-                    self._apply_editops(reversed(
-                        self._apply_editops(str_from, ops_t[0])
-                    ), ops_t[1])
-                )) if ops_t not in [None, (None,)] else None
-            except IndexError:
-                pass
+            if ops_t not in [None, (None,)]:
+                try:
+                    str_from_ = ''.join(reversed(
+                        self._apply_editops(reversed(
+                            self._apply_editops(str_from, ops_t[0])
+                        ), ops_t[1])
+                    ))
+                    if res:
+                        str_from = str_from_
+                    if ops_t[2]:
+                        str_from = str_from.capitalize()
+                except IndexError:
+                    pass
             return str_from
 
         def process(corpus):
