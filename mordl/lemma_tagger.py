@@ -111,7 +111,7 @@ class LemmaTagger(BaseTagger):
                 try:
                     str_from_ = ''.join(reversed(
                         self._apply_editops(reversed(
-                            self._apply_editops(str_from, ops_t[0])
+                            self._apply_editops(str_from.lower(), ops_t[0])
                         ), ops_t[1])
                     ))
                     if str_from_:
