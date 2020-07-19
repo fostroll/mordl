@@ -184,6 +184,7 @@ class LemmaTagger(BaseTagger):
                     else:
                         ops_.append((None,))
 
+        '''
         if log_file:
             print('done. Lengths: [', end='', file=log_file)
             log_file.flush()
@@ -199,8 +200,8 @@ class LemmaTagger(BaseTagger):
         if log_file:
             print('], min = {}'.format(idx), file=log_file)
             print('stage 3 of 3...', file=log_file)
-
         '''
+
         if log_file:
             print('Lengths: [', end='', file=log_file)
         num, idx, key_vals = len(self._train_corpus), -1, None
@@ -217,7 +218,6 @@ class LemmaTagger(BaseTagger):
             print('min = {}'.format(get_editops_kwargs[idx]), file=log_file)
             print('...', end=' ', file=log_file)
             log_file.flush()
-        '''
 
         kwargs_ = get_editops_kwargs[idx]
         for sent in self._test_corpus:
