@@ -273,7 +273,7 @@ class LemmaTagger(BaseTagger):
             print('\n############ CAPITALIZATION ############\n',
                   file=log_file)
 
-        kwargs['save_as'] = save_as + 'c'
+        args[0] = save_as + 'c'
         res.append(super().train(field_c, field_u, FeatTaggerModel, 'upos',
                                  *args, **kwargs))
 
@@ -334,7 +334,7 @@ class LemmaTagger(BaseTagger):
         if log_file:
             print('done.\n', file=log_file)
 
-        kwargs['save_as'] = save_as + 'p'
+        args[0] = save_as + 'p'
         res.append(super().train(field_p, field_u, FeatTaggerModel, 'upos',
                                  *args, **kwargs))
 
@@ -398,6 +398,6 @@ class LemmaTagger(BaseTagger):
         if log_file:
             print('done.\n', file=log_file)
 
-        kwargs['save_as'] = save_as + 's'
+        args[0] = save_as + 's'
         res.append(super().train(field_s, field_u, FeatTaggerModel, 'upos',
                                  *args, **kwargs))
