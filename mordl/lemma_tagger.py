@@ -98,7 +98,7 @@ class LemmaTagger(BaseTagger):
                     sentence_ = sentence_[0]
                 for token in sentence_:
                     token[self._orig_field] = \
-                        self._apply_editops(x['FORM'],
+                        self._apply_editops(token['FORM'],
                                             token[self._orig_field]) \
                             if token[self._orig_field] != (None,) else None
                 yield sentence
