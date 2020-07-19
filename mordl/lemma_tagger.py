@@ -91,6 +91,10 @@ class LemmaTagger(BaseTagger):
         args, kwargs = get_func_params(LemmaTagger.predict, locals())
         kwargs['save_to'] = None
 
+        def apply_editops(str_from, ops_t):
+            str_from = self._apply_editops(str_from, ops_t[0])
+            return reversed(self._apply_editops(reversed(str_from), ops_t[1]))
+
         def process(corpus):
             for sentence in corpus:
                 sentence_ = sentence[0] if with_orig else sentence
@@ -99,8 +103,8 @@ class LemmaTagger(BaseTagger):
                 for token in sentence_:
                     token[self._orig_field] = \
                         self._apply_editops(token['FORM'],
-                                            token[self._orig_field]) \
-                            if token[self._orig_field] != (None,) else None
+                                            token[self._field]) \
+                            if token[self._field] != (None,) else None
                 yield sentence
 
         corpus = process(
@@ -161,7 +165,8 @@ class LemmaTagger(BaseTagger):
                     if affixes != (None,):
                         f_p, f_s, l_p, l_s = affixes
                         ops_p = self._get_editops(f_p, l_p, **kwargs_)
-                        ops_s = self._get_editops(f_s, l_s, **kwargs_)
+                        ops_s = self._get_editops(reversed(f_s),
+                                                  reversed(l_s), **kwargs_)
                         ops_.append((ops_p, ops_s))
                     else:
                         ops_.append((None,))
@@ -190,7 +195,8 @@ class LemmaTagger(BaseTagger):
                 if affixes != (None,):
                     f_p, f_s, l_p, l_s = affixes
                     ops_p = self._get_editops(f_p, l_p, **kwargs_)
-                    ops_s = self._get_editops(f_s, l_s, **kwargs_)
+                    ops_s = self._get_editops(reversed(f_s),
+                                              reversed(l_s), **kwargs_)
                     tok[self._field] = ops_p, ops_s
                 else:
                     tok[self._field] = None,
