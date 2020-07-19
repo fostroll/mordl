@@ -89,7 +89,7 @@ class LemmaTagger(BaseTagger):
                     self._apply_editops(reversed(
                         self._apply_editops(str_from, ops_t[0])
                     ), ops_t[1])
-                )) if token[self._field] != (None,) else None
+                )) if ops_t != (None,) else None
 
         def process(corpus):
             for sentence in corpus:
@@ -98,8 +98,7 @@ class LemmaTagger(BaseTagger):
                     sentence_ = sentence_[0]
                 for token in sentence_:
                     token[self._orig_field] = \
-                        apply_editops(token['FORM'], token[self._orig_field]) \
-                            if token[self._orig_field] != (None,) else None
+                        apply_editops(token['FORM'], token[self._orig_field])
                 yield sentence
 
         corpus = process(
