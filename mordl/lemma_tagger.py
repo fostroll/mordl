@@ -16,10 +16,15 @@ from mordl.feat_tagger_model import FeatTaggerModel
 class LemmaTagger(BaseTagger):
     """"""
 
-    def __init__(self, field='LEMMA', work_field=None):
+    def __init__(self, field='LEMMA', work_field=None, work_field_a=None,
+                 work_field_c=None, work_field_p=None, work_field_s=None):
         super().__init__()
         self._orig_field = field
         self._field = work_field if work_field else field + 'd'
+        self._field_a = work_field_a if work_field_a else field + 'a'
+        self._field_c = work_field_c if work_field_c else field + 'c'
+        self._field_p = work_field_p if work_field_p else field + 'p'
+        self._field_s = work_field_s if work_field_s else field + 's'
 
     @staticmethod
     def _find_affixes(form, lemma):
@@ -67,18 +72,6 @@ class LemmaTagger(BaseTagger):
             elif op == 'c':
                 str_from.insert(idx, str_from[idx - 1])
         return ''.join(str_from)
-
-    def load_train_corpus(self, *args, **kwargs):
-        super().load_train_corpus(*args, **kwargs)
-        [x.update({self._field:
-                       self._find_affixes(x['FORM'], x[self._orig_field])})
-             for x in self._train_corpus for x in x]
-
-    def load_test_corpus(self, *args, **kwargs):
-        super().load_test_corpus(*args, **kwargs)
-        [x.update({self._field:
-                       self._find_affixes(x['FORM'], x[self._orig_field])})
-             for x in self._test_corpus for x in x]
 
     def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):
         args, kwargs = get_func_params(LemmaTagger.load, locals())
@@ -154,6 +147,19 @@ class LemmaTagger(BaseTagger):
             print('stage 1 of 3...', end=' ', file=log_file)
             log_file.flush()
 
+        [x.update({self._field:
+                       self._find_affixes(x['FORM'], x[self._orig_field])})
+             for x in self._train_corpus for x in x]
+
+        [x.update({self._field:
+                       self._find_affixes(x['FORM'], x[self._orig_field])})
+             for x in self._test_corpus for x in x]
+
+        if log_file:
+            print('done.' file=log_file)
+            print('stage 2 of 3...', end=' ', file=log_file)
+            log_file.flush()
+
         ops = []
         get_editops_kwargs = [{'allow_replace': x, 'allow_copy': y}
                                   for x in [True, False]
@@ -188,7 +194,7 @@ class LemmaTagger(BaseTagger):
                 num, idx, key_vals = num_, idx_, key_vals_
         if log_file:
             print('], min = {}'.format(idx), file=log_file)
-            print('stage 2 of 2...', end=' ', file=log_file)
+            print('stage 3 of 3...', end=' ', file=log_file)
             log_file.flush()
 
         kwargs_ = get_editops_kwargs[idx]
@@ -221,3 +227,166 @@ class LemmaTagger(BaseTagger):
 
         return super().train(self._field, 'UPOS', FeatTaggerModel, 'upos',
                              *args, **kwargs)
+
+    def train2(self, save_as,
+              device=None, epochs=None, min_epochs=0, bad_epochs=5,
+              batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
+              max_grad_norm=None, tags_to_remove=None,
+              word_emb_type='bert', word_emb_model_device=None,
+              word_emb_path=None, word_emb_tune_params=None,
+              word_transform_kwargs=None, word_next_emb_params=None,
+              rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
+              upos_emb_dim=None, emb_out_dim=512, lstm_hidden_dim=256,
+              lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
+              bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
+        assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
+
+        args, kwargs = get_func_params(LemmaTagger.train, locals())
+
+        res = []
+
+        if log_file:
+            print('Preliminary trainset preparation...',
+                  end=' ', file=log_file)
+            log_file.flush()
+
+        [x.update({self._field_a:
+                       self._find_affixes(x['FORM'], x[self._orig_field]),
+                   self._field_c: x['LEMMA'] and x['LEMMA'].istitle()})
+             for x in self._train_corpus for x in x]
+
+        [x.update({self._field_a:
+                       self._find_affixes(x['FORM'], x[self._orig_field]),
+                   self._field_c: x['LEMMA'] and x['LEMMA'].istitle()})
+             for x in self._test_corpus for x in x]
+
+        if log_file:
+            print('done.' file=log_file)
+            print('\n############ CAPITALIZATION ############\n',
+                  file=log_file)
+
+        res.append(super().train(self._field_c, 'UPOS', FeatTaggerModel,
+                                 'upos', *args, **kwargs))
+
+        if log_file:
+            print('\n############### PREFIXES ###############\n'
+                  file=log_file)
+            print('Preprocessing...', file=log_file)
+
+        ops = []
+        get_editops_kwargs = [{'allow_replace': x, 'allow_copy': y}
+                                  for x in [True, False]
+                                  for y in [True, False]]
+        for kwargs_ in get_editops_kwargs:
+            ops_ = []
+            ops.append(ops_)
+            for sent in self._train_corpus:
+                for tok in sent:
+                    form, affixes = tok['FORM'], tok[self._field_a]
+                    if affixes != (None,):
+                        f_, _, l_, _ = affixes
+                        ops_.append(self._get_editops(f_, l_, **kwargs_))
+                    else:
+                        ops_.append(())
+
+        if log_file:
+            print('Lengths: [', end='', file=log_file)
+        num, idx, key_vals = len(self._train_corpus), -1, None
+        for idx_, ops_ in enumerate(ops):
+            key_vals_ = set(ops_)
+            num_ = len(key_vals_)
+            if log_file:
+                print('{}{}'.format(',\n          ' if idx_ else '', num_),
+                      end='', file=log_file)
+            if num_ < num:
+                num, idx, key_vals = num_, idx_, key_vals_
+        if log_file:
+            print(']', file=log_file)
+            print('min = {}'.format(get_editops_kwargs[idx]), file=log_file)
+            print('...', end=' ', file=log_file)
+            log_file.flush()
+
+        kwargs_ = get_editops_kwargs[idx]
+        for sent in self._test_corpus:
+            for tok in sent:
+                form, affixes = tok['FORM'], tok[self._field_a]
+                if affixes != (None,):
+                    f_, _, l_, _ = affixes
+                    ops_ = self._get_editops(f_, l_, **kwargs_)
+                    tok[self._field_p] = ops_ if ops_ in key_vals else ()
+                else:
+                    tok[self._field_p] = ()
+
+        [x.update({self._field_p: = next(ops)})
+             for x in self._train_corpus for x in x]
+
+
+        del ops
+        if log_file:
+            print('done.\n', file=log_file)
+
+        res.append(super().train(self._field_p, 'UPOS', FeatTaggerModel,
+                                 'upos', *args, **kwargs))
+
+        if log_file:
+            print('\n############### SUFFIXES ###############\n'
+                  file=log_file)
+            print('Preprocessing...', file=log_file)
+
+        ops = []
+        get_editops_kwargs = [{'allow_replace': x, 'allow_copy': y}
+                                  for x in [True, False]
+                                  for y in [True, False]]
+        for kwargs_ in get_editops_kwargs:
+            ops_ = []
+            ops.append(ops_)
+            for sent in self._train_corpus:
+                for tok in sent:
+                    form, affixes = tok['FORM'], tok[self._field_a]
+                    if affixes != (None,):
+                        f_, _, l_, _ = affixes
+                        ops_.append(self._get_editops(''.join(reversed(f_)),
+                                                      ''.join(reversed(l_)),
+                                                      **kwargs_))
+                    else:
+                        ops_.append(())
+
+        if log_file:
+            print('Lengths: [', end='', file=log_file)
+        num, idx, key_vals = len(self._train_corpus), -1, None
+        for idx_, ops_ in enumerate(ops):
+            key_vals_ = set(ops_)
+            num_ = len(key_vals_)
+            if log_file:
+                print('{}{}'.format(',\n          ' if idx_ else '', num_),
+                      end='', file=log_file)
+            if num_ < num:
+                num, idx, key_vals = num_, idx_, key_vals_
+        if log_file:
+            print(']', file=log_file)
+            print('min = {}'.format(get_editops_kwargs[idx]), file=log_file)
+            print('...', end=' ', file=log_file)
+            log_file.flush()
+
+        kwargs_ = get_editops_kwargs[idx]
+        for sent in self._test_corpus:
+            for tok in sent:
+                form, affixes = tok['FORM'], tok[self._field_a]
+                if affixes != (None,):
+                    f_, _, l_, _ = affixes
+                    ops_ = self._get_editops(''.join(reversed(f_)),
+                                              ''.join(reversed(l_)),
+                                              **kwargs_)
+                    tok[self._field_s] = ops_ if ops_ in key_vals else ()
+                else:
+                    tok[self._field_s] = ()
+
+        [x.update({self._field_s: = next(ops)})
+             for x in self._train_corpus for x in x]
+
+        del ops
+        if log_file:
+            print('done.\n', file=log_file)
+
+        res.append(super().train(self._field_s, 'UPOS', FeatTaggerModel,
+                                 'upos', *args, **kwargs))
