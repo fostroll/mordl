@@ -89,7 +89,7 @@ class LemmaTagger(BaseTagger):
                 self._apply_editops(reversed(
                     self._apply_editops(str_from, ops_t[0])
                 ), ops_t[1])
-            )) if ops_t != (None,) else None
+            )) if ops_t not in [None, (None,)] else None
 
         def process(corpus):
             for sentence in corpus:
