@@ -156,7 +156,7 @@ class LemmaTagger(BaseTagger):
              for x in self._test_corpus for x in x]
 
         if log_file:
-            print('done.' file=log_file)
+            print('done.', file=log_file)
             print('stage 2 of 3...', end=' ', file=log_file)
             log_file.flush()
 
@@ -261,7 +261,7 @@ class LemmaTagger(BaseTagger):
              for x in self._test_corpus for x in x]
 
         if log_file:
-            print('done.' file=log_file)
+            print('done.', file=log_file)
             print('\n############ CAPITALIZATION ############\n',
                   file=log_file)
 
@@ -269,7 +269,7 @@ class LemmaTagger(BaseTagger):
                                  'upos', *args, **kwargs))
 
         if log_file:
-            print('\n############### PREFIXES ###############\n'
+            print('\n############### PREFIXES ###############\n',
                   file=log_file)
             print('Preprocessing...', file=log_file)
 
@@ -317,7 +317,7 @@ class LemmaTagger(BaseTagger):
                 else:
                     tok[self._field_p] = ()
 
-        [x.update({self._field_p: = next(ops)})
+        [x.update({self._field_p: next(ops)})
              for x in self._train_corpus for x in x]
 
 
@@ -329,7 +329,7 @@ class LemmaTagger(BaseTagger):
                                  'upos', *args, **kwargs))
 
         if log_file:
-            print('\n############### SUFFIXES ###############\n'
+            print('\n############### SUFFIXES ###############\n',
                   file=log_file)
             print('Preprocessing...', file=log_file)
 
@@ -381,7 +381,7 @@ class LemmaTagger(BaseTagger):
                 else:
                     tok[self._field_s] = ()
 
-        [x.update({self._field_s: = next(ops)})
+        [x.update({self._field_s: next(ops)})
              for x in self._train_corpus for x in x]
 
         del ops
