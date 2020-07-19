@@ -46,10 +46,10 @@ class LemmaTagger(BaseTagger):
         return wform[:a], wform[a:a + size], wform[a + size:], \
                lemma[:b], lemma[b:b + size], lemma[b + size:]
 
-    @staticmethod
-    def _find_affixes(form, lemma):
+    @classmethod
+    def _find_affixes(cls, form, lemma):
         if form and lemma:
-            a = self.find_affixes(form, lemma, lower=True)
+            a = cls.find_affixes(form, lemma, lower=True)
             res = a[0], a[2], a[3], a[5]
         else:
             res = None,
