@@ -33,7 +33,7 @@ _DEFAULT_BERT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
     aggregate_hiddens_op='cat', aggregate_subtokens_op='max',
     to=junky.CPU, loglevel=1
 )
-_MAX_BAD_EPOCHS = 1
+_MAX_BAD_EPOCHS = 0
 
 
 class WordEmbeddings:
@@ -539,7 +539,7 @@ class WordEmbeddings:
                         bad_epochs += 1
                         if log_file:
                             print('BAD EPOCHS:', bad_epochs, file=log_file)
-                        if bad_epochs >= _MAX_BAD_EPOCHS:
+                        if _MAX_BAD_EPOCHS and bad_epochs >= _MAX_BAD_EPOCHS:
                             if log_file:
                                 print('Maximum bad epochs exceeded. '
                                       'Process was stopped', file=log_file)
