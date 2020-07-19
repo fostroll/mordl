@@ -292,9 +292,12 @@ class LemmaTagger(BaseTagger):
             print('done.', file=log_file)
             print('\n############ CAPITALIZATION ############\n',
                   file=log_file)
-
+        kwargs['word_emb_tune_params'] = None
+        kwargs['word_emb_path'] = 'lemmac_bert-base-multilingual-cased_len512_ep3_bat8_seed42'
         res.append(super().train(field_c, field_u, FeatTaggerModel, 'upos',
                                  save_as + 'c', **kwargs))
+        kwargs['word_emb_path'] = None
+        kwargs['word_emb_tune_params'] = word_emb_tune_params
 
         if log_file:
             print('\n############### PREFIXES ###############\n',
