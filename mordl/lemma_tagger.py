@@ -25,16 +25,17 @@ class LemmaTagger(BaseTagger):
         super().__init__()
         self._cdict = CorpusDict()
         self._orig_field = field
-        self._field = work_field if work_field else field + 'd'
+        self._field = work_field if work_field else field + 'd' 
 
     @staticmethod
     def find_affixes(form, lemma, lower=False):
-        """Find the longest common part of the given *form* and *lemma*.
+        """Find the longest common part of the given **form** and **lemma**.
 
-        :param lower: if True then return values will be always in lower case
-        :return: prefix, common part, suffix/flexion of the *form*;
-                 prefix, common part, suffix/flexion of the *lemma*
-        :rtype: str, str, str, str, str, str
+        :param lower: if `True` then return values will be always in lower
+                      case
+        :return: prefix, common part, suffix/flexion of **form**;
+                 prefix, common part, suffix/flexion of **lemma**
+        :rtype: `str`, `str`, `str`, `str`, `str`, `str`
         """
         if lower:
             lex = form = form.lower()
@@ -46,6 +47,31 @@ class LemmaTagger(BaseTagger):
                          .find_longest_match(0, len(lex), 0, len(lem))
         return form[:a], form[a:a + size], form[a + size:], \
                lemma[:b], lemma[b:b + size], lemma[b + size:]
+
+    @staticmethod
+    def _transform_upos(corpus):
+        for sent in corpus:
+            if isinstance(sent, tuple):
+                sent = sent[0]
+            isfirst = True
+            for tok in sent:
+                upos = tok['UPOS']
+                if isfirst and tok['FORM'] and '-' in tok['ID'] \
+                           and not tok['UPOS'].endswith('-first'):
+                   tok['UPOS'] += '-first'
+                   isfirst = False
+
+    @staticmethod
+    def _restore_upos(corpus, with_orig=False):
+        def restore_upos(sentence):
+            if isinstance(sent, tuple):
+                sent = sent[0]
+            for tok in sent:
+                upos = tok['UPOS']
+                if upos.endswith('-first'):
+                    tok['UPOS'] = upos[:-6]
+        [restore_upos(x) for x in corpus for x in (sent if with_orig else
+                                                   [sent])]
 
     @classmethod
     def _find_affixes(cls, form, lemma):
@@ -158,9 +184,11 @@ class LemmaTagger(BaseTagger):
                         isfirst = False
                 yield sentence
 
+        self._transfrorm_upos(corpus)
         corpus = process(
             super().predict(self._orig_field, 'UPOS', *args, **kwargs)
         )
+        self._restore_upos(corpus)
         if save_to:
             self.save_conllu(corpus, save_to, log_file=None)
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
@@ -214,6 +242,9 @@ class LemmaTagger(BaseTagger):
                        self._find_affixes(x['FORM'], x[self._orig_field])})
              for x in self._test_corpus for x in x]
 
+        self._transform_upos(self._train_corpus)
+        self._transform_upos(self._test_corpus)
+
         if log_file:
             print('done.', file=log_file)
             print('stage 2 of 3...', end=' ', file=log_file)
@@ -247,24 +278,6 @@ class LemmaTagger(BaseTagger):
                         ops_.append((ops_p, ops_s, ops_c))
                     else:
                         ops_.append((None,))
-
-        '''
-        if log_file:
-            print('done. Lengths: [', end='', file=log_file)
-            log_file.flush()
-        num, idx, key_vals = len(self._train_corpus), -1, None
-        for idx_, ops_ in enumerate(ops):
-            key_vals_ = set(ops_)
-            num_ = len(key_vals_)
-            if log_file:
-                print('{}{}'.format(', ' if idx_ else '', num_),
-                      end='', file=log_file)
-            if num_ < num:
-                num, idx, key_vals = num_, idx_, key_vals_
-        if log_file:
-            print('], min = {}'.format(idx), file=log_file)
-            print('stage 3 of 3...', file=log_file)
-        '''
 
         if log_file:
             print('done.', file=log_file)
