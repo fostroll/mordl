@@ -106,7 +106,7 @@ class LemmaTagger(BaseTagger):
 
         def apply_editops(str_from, ops_t):
             if str_from and ops_t not in [None, (None,)]:
-                if str_from.istitle() or not str_from.islower():
+                if str_from.islower() or str_from.istitle():
                     try:
                         str_from_ = ''.join(reversed(
                             self._apply_editops(reversed(
