@@ -18,6 +18,56 @@ _OP_C_TITLE = 'title'
 _OP_C_LOWER = 'lower'
 
 
+from corpuscula.items import Items
+from pymorphy2 import MorphAnalyzer
+names_db = os.environ.get('NAMES_DB') or 'names.pickle'
+_names = Items(restore_from=names_db)
+ma_parse = MorphAnalyzer().parse
+MA_POS = {'ADJ'  : ['ADJF', 'COMP'],  # 112 (107, 3)
+          'ADP'  : ['PREP'],          # 4
+          'ADV'  : ['ADVB'],          # 18
+          'AUX'  : ['VERB'],          # 1
+          'CCONJ': ['CONJ'],          # 1
+          'DET'  : ['NPRO'],          # 0-
+          'INTJ' : ['INTJ'],          # 1
+          'NOUN' : ['NOUN'],          # 408
+          'NUM'  : ['NUMR'],          # 5
+          'PART' : ['PRCL'],          # 1
+          'PRON' : ['NPRO'],          # 30
+          'PROPN': ['NOUN'],          # -
+          'PUNCT': None,
+          'SCONJ': ['CONJ'],          # 0-
+          'SYM'  : None,
+          'VERB' : ['VERB', 'INFN', 'PRTF', 'PRTS', 'GRND'],  # -
+          'X'    : None}
+def guess_lemma(guess, coef, wform, upos, isfirst, cdict):
+    if coef == 0 and upos in [
+        'ADJ', 'ADP', 'ADV', 'AUX', 'CCONJ',
+        'INTJ', 'NOUN', 'NUM', 'PART', 'PRON'
+    ]:
+        ma_tags = MA_POS[pos]
+        if ma_tags:
+            ma_guess = ma_parse(wform)
+            for guess_ in ma_guess:
+                ma_tag = guess_.tag
+                if ma_tag.POS in ma_tags:
+                    guess = guess_.normal_form
+                    coef = .9
+                    break
+    elif upos in ['PROPN']:
+        if coef == 0:
+            if _names.item_isknown(wform, 'patronym'):
+                guess, coef = wform, 1.
+            elif _names.item_isknown(wform, 'name'):
+                guess, coef = wform, 1.
+            else:
+                guess_, coef = cdict.predict_lemma(wform, 'NOUN',
+                                                   isfirst=isfirst)
+                if coef > 0:
+                    guess = guess_
+    return guess, coef
+
+
 class LemmaTagger(BaseTagger):
     """"""
 
@@ -116,6 +166,8 @@ class LemmaTagger(BaseTagger):
             if str_from and ops_t not in [None, (None,)]:
                 str_from_, coef = \
                     cdict.predict_lemma(str_from, upos, isfirst=isfirst)
+                str_from_, coef = guess_lemma(str_from_, coef, str_from, upos,
+                                              isfirst, cdict)
                 if coef >= .9:
                     str_from = str_from_
                 else:
