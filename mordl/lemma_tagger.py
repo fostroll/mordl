@@ -109,9 +109,11 @@ class LemmaTagger(BaseTagger):
 
         def apply_editops(str_from, upos, ops_t, isfirst):
             if str_from and ops_t not in [None, (None,)]:
-                guess, coef = \
+                str_from_, coef = \
                     self._cdict.predict_lemma(str_from, pos, isfirst=isfirst)
-                if coef < .9:
+                if coef >= .9:
+                    str_from = str_from_
+                else:
                     try:
                         ops_p, ops_s, ops_c = ops_t
                         str_from_ = ''.join(reversed(
