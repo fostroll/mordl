@@ -275,7 +275,15 @@ class LemmaTagger(BaseTagger):
                     ops_s = self.get_editops(''.join(reversed(f_s)),
                                              ''.join(reversed(l_s)),
                                              **kwargs_)
-                    ops_c = bool(lemma and lemma.istitle())
+                    if lemma:
+                        if lemma.istitle():
+                            ops_c = _OP_C_TITLE
+                        elif lemma.islower():
+                            ops_c = _OP_C_LOWER
+                        else:
+                            ops_c = _OP_C_ASIS
+                    else:
+                        ops_c = _OP_C_ASIS
                     tok[self._field] = ops_p, ops_s, ops_c
                 else:
                     tok[self._field] = None,
