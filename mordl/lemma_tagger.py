@@ -4,6 +4,7 @@
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
+best: 0.9893406927283775 / 0.9896104117481611
 """
 from Levenshtein import editops
 from corpuscula import CorpusDict
@@ -373,14 +374,14 @@ class LemmaTaggerF(BaseTagger):
 
     @staticmethod
     def _transform_upos(corpus):
-        tags = tagger._cdict.get_tags_freq()
+        tags = self._cdict.get_tags_freq()
         if tags:
             thresh = tags[0][1] / 5
             tags = [x[0] for x in tags if x[1] > thresh]
         rel_feats = {}
         for tag in tags:
             feats_ = rel_feats[tag] = set
-            tag_feats = tagger._cdict.get_feats_freq(tag)
+            tag_feats = self._cdict.get_feats_freq(tag)
             if tag_feats:
                 thresh = tag_feats[0][1] / 5
                 [feats_.add(x[0]) for x in tag_feats if x[1] > thresh]
