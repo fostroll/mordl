@@ -111,22 +111,21 @@ class LemmaTagger(BaseTagger):
 
         def apply_editops(str_from, ops_t):
             if str_from and ops_t not in [None, (None,)]:
-#                if str_from.islower() or str_from.istitle():
-                    try:
-                        ops_p, ops_s, ops_c = ops_t
-                        str_from_ = ''.join(reversed(
-                            self.apply_editops(reversed(
-                                self.apply_editops(str_from, ops_p)
-                            ), ops_s)
-                        ))
-                        if str_from_:
-                            str_from = str_from_
-                    except IndexError:
-                        pass
-                    if ops_c == _OP_C_LOWER:
-                        str_from = str_from.lower()
-                    elif ops_c == _OP_C_TITLE:
-                        str_from = str_from.capitalize()
+                try:
+                    ops_p, ops_s, ops_c = ops_t
+                    str_from_ = ''.join(reversed(
+                        self.apply_editops(reversed(
+                            self.apply_editops(str_from, ops_p)
+                        ), ops_s)
+                    ))
+                    if str_from_:
+                        str_from = str_from_
+                except IndexError:
+                    pass
+                if ops_c == _OP_C_LOWER:
+                    str_from = str_from.lower()
+                elif ops_c == _OP_C_TITLE:
+                    str_from = str_from.title()
             return str_from
 
         def process(corpus):
