@@ -98,7 +98,7 @@ class LemmaTagger(BaseTagger):
     def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):
         args, kwargs = get_func_params(LemmaTagger.load, locals())
         super().load(FeatTaggerModel, *args, **kwargs)
-        self._cdict.restore_from(name + '.cdict.pickle')
+        self._cdict.restore_from(name + '.cdict.pickle', log_file=log_file)
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
@@ -107,23 +107,26 @@ class LemmaTagger(BaseTagger):
         args, kwargs = get_func_params(LemmaTagger.predict, locals())
         kwargs['save_to'] = None
 
-        def apply_editops(str_from, ops_t):
+        def apply_editops(str_from, upos, ops_t, isfirst):
             if str_from and ops_t not in [None, (None,)]:
-                try:
-                    ops_p, ops_s, ops_c = ops_t
-                    str_from_ = ''.join(reversed(
-                        self.apply_editops(reversed(
-                            self.apply_editops(str_from, ops_p)
-                        ), ops_s)
-                    ))
-                    if str_from_:
-                        str_from = str_from_
-                except IndexError:
-                    pass
-                if ops_c == _OP_C_LOWER:
-                    str_from = str_from.lower()
-                elif ops_c == _OP_C_TITLE:
-                    str_from = str_from.title()
+                guess, coef = cdict.predict_lemma(str_from, pos,
+                                                  isfirst=isfirst)
+                if coef < .9:
+                    try:
+                        ops_p, ops_s, ops_c = ops_t
+                        str_from_ = ''.join(reversed(
+                            self.apply_editops(reversed(
+                                self.apply_editops(str_from, ops_p)
+                            ), ops_s)
+                        ))
+                        if str_from_:
+                            str_from = str_from_
+                    except IndexError:
+                        pass
+                    if ops_c == _OP_C_LOWER:
+                        str_from = str_from.lower()
+                    elif ops_c == _OP_C_TITLE:
+                        str_from = str_from.title()
             return str_from
 
         def process(corpus):
@@ -131,9 +134,15 @@ class LemmaTagger(BaseTagger):
                 sentence_ = sentence[0] if with_orig else sentence
                 if isinstance(sentence_, tuple):
                     sentence_ = sentence_[0]
+                isfirst = True
                 for token in sentence_:
-                    token[self._orig_field] = \
-                        apply_editops(token['FORM'], token[self._orig_field])
+                    id_, form = token['ID'], token['FORM']
+                    if token and '-' not in id_:
+                        token[self._orig_field] = \
+                            apply_editops(form, token['UPOS'],
+                                          token[self._orig_field],
+                                          isfirst=isfirst)
+                        isfirst = False
                 yield sentence
 
         corpus = process(
