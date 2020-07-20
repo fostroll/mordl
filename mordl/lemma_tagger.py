@@ -185,7 +185,7 @@ class LemmaTagger(BaseTagger):
                         isfirst = False
                 yield sentence
 
-        self._transfrorm_upos(corpus)
+        self._transform_upos(corpus)
         corpus = process(
             super().predict(self._orig_field, 'UPOS', *args, **kwargs)
         )
@@ -388,7 +388,7 @@ class LemmaTaggerF(BaseTagger):
         for sent in corpus:
             if isinstance(sent, tuple):
                 sent = sent[0]
-            isfirst = True
+# del            isfirst = True
             for tok in sent:
                 upos = tok['UPOS']
                 if upos:
@@ -400,9 +400,9 @@ class LemmaTaggerF(BaseTagger):
                             for feat, val in sorted(feats.items()):
                                 if feat in rel_feats_:
                                     upos += ' ' + feat + ':' + val
-                    if isfirst and tok['FORM'] and '-' not in tok['ID']:
-                       upos += ' first'
-                       isfirst = False
+# del                    if isfirst and tok['FORM'] and '-' not in tok['ID']:
+# del                       upos += ' first'
+# del                       isfirst = False
                     tok['UPOS'] = upos
 
     @staticmethod
@@ -412,8 +412,6 @@ class LemmaTaggerF(BaseTagger):
                 sent = sent[0]
             for tok in sent:
                 upos = tok['UPOS']
-                #if upos and upos.endswith(' first'):
-                #    tok['UPOS'] = upos[:-6]
                 if upos:
                     tok['UPOS'] = upos.split(' ')[0]
         [restore_upos(x) for x in corpus for x in (sent if with_orig else
@@ -530,7 +528,7 @@ class LemmaTaggerF(BaseTagger):
                         isfirst = False
                 yield sentence
 
-        self._transfrorm_upos(corpus)
+        self._transform_upos(corpus)
         corpus = process(
             super().predict(self._orig_field, 'UPOS', *args, **kwargs)
         )
