@@ -57,9 +57,9 @@ class LemmaTagger(BaseTagger):
             isfirst = True
             for tok in sent:
                 upos = tok['UPOS']
-                if isfirst and tok['FORM'] and '-' in tok['ID'] \
-                           and not tok['UPOS'].endswith('-first'):
-                   tok['UPOS'] += '-first'
+                if isfirst and tok['FORM'] and '-' not in tok['ID'] \
+                           and not tok['UPOS'].endswith(' first'):
+                   tok['UPOS'] += ' first'
                    isfirst = False
 
     @staticmethod
@@ -69,7 +69,7 @@ class LemmaTagger(BaseTagger):
                 sent = sent[0]
             for tok in sent:
                 upos = tok['UPOS']
-                if upos.endswith('-first'):
+                if upos.endswith(' first'):
                     tok['UPOS'] = upos[:-6]
         [restore_upos(x) for x in corpus for x in (sent if with_orig else
                                                    [sent])]
@@ -391,17 +391,19 @@ class LemmaTaggerF(BaseTagger):
             isfirst = True
             for tok in sent:
                 upos = tok['UPOS']
-                if upos and ' ' not in upos:
+                if upos:
+                    upos = upos.split(' ')[0]
                     feats = tok['FEATS']
                     if feats:
                         rel_feats_ = rel_feats.get(upos)
                         if rel_feats_:
                             for feat, val in sorted(feats.items()):
-                                if feat in rel_feats:
-                                    tok['UPOS'] += ' ' + feat + ':' + val
-                    if isfirst and tok['FORM'] and '-' in tok['ID']:
-                       tok['UPOS'] += ' first'
+                                if feat in rel_feats_:
+                                    upos += ' ' + feat + ':' + val
+                    if isfirst and tok['FORM'] and '-' not in tok['ID']:
+                       upos += ' first'
                        isfirst = False
+                    tok['UPOS'] = upos
 
     @staticmethod
     def _restore_upos(corpus, with_orig=False):
