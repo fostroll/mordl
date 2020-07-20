@@ -53,7 +53,7 @@ class LemmaTagger(BaseTagger):
     @classmethod
     def _find_affixes(cls, form, lemma):
         if form and lemma:
-            a = cls.find_affixes(form, lemma, lower=True)
+            a = cls.find_affixes(form, lemma)
             res = a[0], a[2], a[3], a[5]
         else:
             res = None,
@@ -123,9 +123,9 @@ class LemmaTagger(BaseTagger):
                             str_from = str_from_
                     except IndexError:
                         pass
-                    if ops_c == _OPS_C_LOWER:
+                    if ops_c == _OP_C_LOWER:
                         str_from = str_from.lower()
-                    elif ops_c == _OPS_C_TITLE:
+                    elif ops_c == _OP_C_TITLE:
                         str_from = str_from.capitalize()
             return str_from
 
