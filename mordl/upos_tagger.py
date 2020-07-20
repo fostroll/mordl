@@ -32,7 +32,7 @@ class UposTagger(BaseTagger):
         previously saved value.
 
         **dataset_device**: a device for the loading dataset if you want to
-        overrride its previously saved value.
+        override its previously saved value.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
         """
@@ -129,7 +129,7 @@ class UposTagger(BaseTagger):
         **save_as** (`str`): the name of the tagger using for save. There 4
         files will be created after training: two for tagger's model (config
         and state dict) and two for the dataset (config and the internal
-        state). All file names are used **save_as** as prefix and their
+        state). All created file names use **save_as** as prefix while their
         endings are: `.config.json` and `.pt` for the model; `_ds.config.json`
         and `_ds.pt` for the dataset.
 
