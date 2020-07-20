@@ -12,6 +12,10 @@ from mordl.base_tagger import BaseTagger
 from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.feat_tagger_model import FeatTaggerModel
 
+_OP_C_ASIS = 'asis'
+_OP_C_TITLE = 'title'
+_OP_C_LOWER = 'lower'
+
 
 class LemmaTagger(BaseTagger):
     """"""
@@ -56,7 +60,7 @@ class LemmaTagger(BaseTagger):
         return res
 
     @staticmethod
-    def _get_editops(str_from, str_to, allow_replace=True, allow_copy=True):
+    def get_editops(str_from, str_to, allow_replace=True, allow_copy=True):
         res = []
         for op, idx_dst, idx_src in editops(str_from, str_to):
             if op == 'delete':
@@ -76,11 +80,12 @@ class LemmaTagger(BaseTagger):
                     if op == 'replace':
                         res.append(('d', idx_dst, None))
                 else:
-                    raise ValueError("Unexpected operation code '{}'".format(op))
+                    raise ValueError("Unexpected operation code '{}'"
+                                         .format(op))
         return tuple(res)
 
     @staticmethod
-    def _apply_editops(str_from, ops):
+    def apply_editops(str_from, ops):
         str_from = list(str_from)
         for op, idx, ch in reversed(ops):
             if op == 'd':
@@ -106,20 +111,22 @@ class LemmaTagger(BaseTagger):
 
         def apply_editops(str_from, ops_t):
             if str_from and ops_t not in [None, (None,)]:
-                if str_from.islower() or str_from.istitle():
+#                if str_from.islower() or str_from.istitle():
                     try:
+                        ops_p, ops_s, ops_c = ops_t
                         str_from_ = ''.join(reversed(
-                            self._apply_editops(reversed(
-                                self._apply_editops(str_from.lower(),
-                                                    ops_t[0])
-                            ), ops_t[1])
+                            self.apply_editops(reversed(
+                                self.apply_editops(str_from, ops_p)
+                            ), ops_s)
                         ))
                         if str_from_:
                             str_from = str_from_
-                        if ops_t[2]:
-                            str_from = str_from.capitalize()
                     except IndexError:
                         pass
+                    if ops_c == _OPS_C_LOWER:
+                        str_from = str_from.lower()
+                    elif ops_c == _OPS_C_TITLE:
+                        str_from = str_from.capitalize()
             return str_from
 
         def process(corpus):
@@ -202,11 +209,19 @@ class LemmaTagger(BaseTagger):
                     lemma, affixes = tok[self._orig_field], tok[self._field]
                     if affixes != (None,):
                         f_p, f_s, l_p, l_s = affixes
-                        ops_p = self._get_editops(f_p, l_p, **kwargs_)
-                        ops_s = self._get_editops(''.join(reversed(f_s)),
-                                                  ''.join(reversed(l_s)),
-                                                  **kwargs_)
-                        ops_c = bool(lemma and lemma.istitle())
+                        ops_p = self.get_editops(f_p, l_p, **kwargs_)
+                        ops_s = self.get_editops(''.join(reversed(f_s)),
+                                                 ''.join(reversed(l_s)),
+                                                 **kwargs_)
+                        if lemma:
+                            if lemma.istitle():
+                                ops_c = _OP_C_TITLE
+                            elif lemma.islower():
+                                ops_c = _OP_C_LOWER
+                            else:
+                                ops_c = _OP_C_ASIS
+                        else:
+                            ops_c = _OP_C_ASIS
                         ops_.append((ops_p, ops_s, ops_c))
                     else:
                         ops_.append((None,))
@@ -256,10 +271,10 @@ class LemmaTagger(BaseTagger):
                 lemma, affixes = tok[self._orig_field], tok[self._field]
                 if affixes != (None,):
                     f_p, f_s, l_p, l_s = affixes
-                    ops_p = self._get_editops(f_p, l_p, **kwargs_)
-                    ops_s = self._get_editops(''.join(reversed(f_s)),
-                                              ''.join(reversed(l_s)),
-                                              **kwargs_)
+                    ops_p = self.get_editops(f_p, l_p, **kwargs_)
+                    ops_s = self.get_editops(''.join(reversed(f_s)),
+                                             ''.join(reversed(l_s)),
+                                             **kwargs_)
                     ops_c = bool(lemma and lemma.istitle())
                     tok[self._field] = ops_p, ops_s, ops_c
                 else:
@@ -350,7 +365,7 @@ class LemmaTagger(BaseTagger):
                     form, affixes = tok['FORM'], tok[field_a]
                     if affixes != (None,):
                         f_, _, l_, _ = affixes
-                        ops_.append(self._get_editops(f_, l_, **kwargs_))
+                        ops_.append(self.get_editops(f_, l_, **kwargs_))
                     else:
                         ops_.append(())
 
@@ -377,7 +392,7 @@ class LemmaTagger(BaseTagger):
                 form, affixes = tok['FORM'], tok[field_a]
                 if affixes != (None,):
                     f_, _, l_, _ = affixes
-                    ops_ = self._get_editops(f_, l_, **kwargs_)
+                    ops_ = self.get_editops(f_, l_, **kwargs_)
                     tok[field_p] = ops_ if ops_ in key_vals else ()
                 else:
                     tok[field_p] = ()
@@ -410,9 +425,9 @@ class LemmaTagger(BaseTagger):
                     form, affixes = tok['FORM'], tok[field_a]
                     if affixes != (None,):
                         f_, _, l_, _ = affixes
-                        ops_.append(self._get_editops(''.join(reversed(f_)),
-                                                      ''.join(reversed(l_)),
-                                                      **kwargs_))
+                        ops_.append(self.get_editops(''.join(reversed(f_)),
+                                                     ''.join(reversed(l_)),
+                                                     **kwargs_))
                     else:
                         ops_.append(())
 
@@ -439,9 +454,9 @@ class LemmaTagger(BaseTagger):
                 form, affixes = tok['FORM'], tok[field_a]
                 if affixes != (None,):
                     f_, _, l_, _ = affixes
-                    ops_ = self._get_editops(''.join(reversed(f_)),
-                                              ''.join(reversed(l_)),
-                                              **kwargs_)
+                    ops_ = self.get_editops(''.join(reversed(f_)),
+                                            ''.join(reversed(l_)),
+                                            **kwargs_)
                     tok[field_s] = ops_ if ops_ in key_vals else ()
                 else:
                     tok[field_s] = ()
