@@ -107,6 +107,9 @@ class LemmaTagger(BaseTagger):
         args, kwargs = get_func_params(LemmaTagger.predict, locals())
         kwargs['save_to'] = None
 
+        yof = len([x for x in cdict._wforms if 'ё' in x])
+        yol = len([x for x in cdict._lemmata if 'ё' in x])
+        remove_yo = yol / yof < 10
         def apply_editops(str_from, upos, ops_t, isfirst):
             if str_from and ops_t not in [None, (None,)]:
                 cdict = self._cdict
@@ -127,7 +130,8 @@ class LemmaTagger(BaseTagger):
                             if 'ё' in str_from:
                                 if not cdict.lemma_isknown(str_from, upos):
                                     str_from_ = str_from.replace('ё', 'е')
-                                    if cdict.lemma_isknown(str_from_, upos):
+                                    if remove_yo \
+                                    or cdict.lemma_isknown(str_from_, upos):
                                         str_from = str_from_
                     except IndexError:
                         pass
