@@ -391,17 +391,19 @@ class LemmaTaggerF(BaseTagger):
             isfirst = True
             for tok in sent:
                 upos = tok['UPOS']
-                if upos and ' ' not in upos:
+                if upos:
+                    upos = upos.split(' ')[0]
                     feats = tok['FEATS']
                     if feats:
                         rel_feats_ = rel_feats.get(upos)
                         if rel_feats_:
                             for feat, val in sorted(feats.items()):
-                                if feat in rel_feats:
-                                    tok['UPOS'] += ' ' + feat + ':' + val
+                                if feat in rel_feats_:
+                                    upos += ' ' + feat + ':' + val
                     if isfirst and tok['FORM'] and '-' not in tok['ID']:
-                       tok['UPOS'] += ' first'
+                       upos += ' first'
                        isfirst = False
+                    tok['UPOS'] = upos
 
     @staticmethod
     def _restore_upos(corpus, with_orig=False):
