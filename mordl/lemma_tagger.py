@@ -19,6 +19,7 @@ _OP_C_LOWER = 'lower'
 
 
 from corpuscula.items import Items
+import os
 from pymorphy2 import MorphAnalyzer
 names_db = os.environ.get('NAMES_DB') or 'names.pickle'
 _names = Items(restore_from=names_db)
