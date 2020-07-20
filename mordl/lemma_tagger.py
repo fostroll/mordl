@@ -110,7 +110,7 @@ class LemmaTagger(BaseTagger):
         def apply_editops(str_from, upos, ops_t, isfirst):
             if str_from and ops_t not in [None, (None,)]:
                 str_from_, coef = \
-                    self._cdict.predict_lemma(str_from, pos, isfirst=isfirst)
+                    self._cdict.predict_lemma(str_from, upos, isfirst=isfirst)
                 if coef >= .9:
                     str_from = str_from_
                 else:
