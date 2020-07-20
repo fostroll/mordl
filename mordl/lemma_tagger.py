@@ -41,14 +41,14 @@ MA_POS = {'ADJ'  : ['ADJF', 'COMP'],  # 112 (107, 3)
           'SYM'  : None,
           'VERB' : ['VERB', 'INFN', 'PRTF', 'PRTS', 'GRND'],  # -
           'X'    : None}
-def guess_lemma(guess, coef, wform, upos, isfirst, cdict):
+def guess_lemma(guess, coef, form, upos, isfirst, cdict):
     if coef == 0 and upos in [
         'ADJ', 'ADP', 'ADV', 'AUX', 'CCONJ',
         'INTJ', 'NOUN', 'NUM', 'PART', 'PRON'
     ]:
-        ma_tags = MA_POS[pos]
+        ma_tags = MA_POS[upos]
         if ma_tags:
-            ma_guess = ma_parse(wform)
+            ma_guess = ma_parse(form)
             for guess_ in ma_guess:
                 ma_tag = guess_.tag
                 if ma_tag.POS in ma_tags:
@@ -57,12 +57,12 @@ def guess_lemma(guess, coef, wform, upos, isfirst, cdict):
                     break
     elif upos in ['PROPN']:
         if coef == 0:
-            if _names.item_isknown(wform, 'patronym'):
-                guess, coef = wform, 1.
-            elif _names.item_isknown(wform, 'name'):
-                guess, coef = wform, 1.
+            if _names.item_isknown(form, 'patronym'):
+                guess, coef = form, 1.
+            elif _names.item_isknown(form, 'name'):
+                guess, coef = form, 1.
             else:
-                guess_, coef = cdict.predict_lemma(wform, 'NOUN',
+                guess_, coef = cdict.predict_lemma(form, 'NOUN',
                                                    isfirst=isfirst)
                 if coef > 0:
                     guess = guess_
@@ -79,23 +79,23 @@ class LemmaTagger(BaseTagger):
         self._field = work_field if work_field else field + 'd'
 
     @staticmethod
-    def find_affixes(wform, lemma, lower=False):
-        """Find the longest common part of the given *wform* and *lemma*.
+    def find_affixes(form, lemma, lower=False):
+        """Find the longest common part of the given *form* and *lemma*.
 
         :param lower: if True then return values will be always in lower case
-        :return: prefix, common part, suffix/flexion of the *wform*;
+        :return: prefix, common part, suffix/flexion of the *form*;
                  prefix, common part, suffix/flexion of the *lemma*
         :rtype: str, str, str, str, str, str
         """
         if lower:
-            lex = wform = wform.lower()
+            lex = form = form.lower()
             lem = lemma = lemma.lower()
         else:
-            lex = wform.lower()
+            lex = form.lower()
             lem = lemma.lower()
         a, b, size = SequenceMatcher(None, lex, lem, False) \
                          .find_longest_match(0, len(lex), 0, len(lem))
-        return wform[:a], wform[a:a + size], wform[a + size:], \
+        return form[:a], form[a:a + size], form[a + size:], \
                lemma[:b], lemma[b:b + size], lemma[b + size:]
 
     @classmethod
