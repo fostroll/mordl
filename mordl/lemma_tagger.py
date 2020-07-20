@@ -107,12 +107,13 @@ class LemmaTagger(BaseTagger):
         args, kwargs = get_func_params(LemmaTagger.predict, locals())
         kwargs['save_to'] = None
 
+        cdict = self._cdict
         yof = len([x for x in cdict._wforms if 'ё' in x])
         yol = len([x for x in cdict._lemmata if 'ё' in x])
         remove_yo = yol / yof < 10
+
         def apply_editops(str_from, upos, ops_t, isfirst):
             if str_from and ops_t not in [None, (None,)]:
-                cdict = self._cdict
                 str_from_, coef = \
                     cdict.predict_lemma(str_from, upos, isfirst=isfirst)
                 if coef >= .9:
