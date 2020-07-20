@@ -391,7 +391,7 @@ class LemmaTaggerF(BaseTagger):
             isfirst = True
             for tok in sent:
                 upos = tok['UPOS']
-                if ' ' not in upos:
+                if upos and ' ' not in upos:
                     feats = tok['FEATS']
                     if feats:
                         rel_feats_ = rel_feats.get(upos)
@@ -409,10 +409,11 @@ class LemmaTaggerF(BaseTagger):
             if isinstance(sent, tuple):
                 sent = sent[0]
             for tok in sent:
-                #upos = tok['UPOS']
-                #if upos.endswith(' first'):
+                upos = tok['UPOS']
+                #if upos and upos.endswith(' first'):
                 #    tok['UPOS'] = upos[:-6]
-                tok['UPOS'] = tok['UPOS'].split(' ')[0]
+                if upos:
+                    tok['UPOS'] = upos.split(' ')[0]
         [restore_upos(x) for x in corpus for x in (sent if with_orig else
                                                    [sent])]
 
