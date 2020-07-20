@@ -109,8 +109,9 @@ class LemmaTagger(BaseTagger):
 
         def apply_editops(str_from, upos, ops_t, isfirst):
             if str_from and ops_t not in [None, (None,)]:
+                cdict = self._cdict
                 str_from_, coef = \
-                    self._cdict.predict_lemma(str_from, upos, isfirst=isfirst)
+                    cdict.predict_lemma(str_from, upos, isfirst=isfirst)
                 if coef >= .9:
                     str_from = str_from_
                 else:
@@ -123,6 +124,11 @@ class LemmaTagger(BaseTagger):
                         ))
                         if str_from_:
                             str_from = str_from_
+                            if 'ё' in str_from:
+                                if not cdict.lemma_isknown(str_from, upos):
+                                    str_from_ = str_from.replace('ё', 'е')
+                                    if cdict.lemma_isknown(str_from_, upos):
+                                        str_from = str_from_
                     except IndexError:
                         pass
                     if ops_c == _OP_C_LOWER:
