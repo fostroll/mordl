@@ -396,7 +396,7 @@ class LemmaTaggerF(BaseTagger):
                     if feats:
                         rel_feats_ = rel_feats.get(upos)
                         if rel_feats_:
-                            for feat, val in sorted(feats.items())
+                            for feat, val in sorted(feats.items()):
                                 if feat in rel_feats:
                                     tok['UPOS'] += ' ' + feat + ':' + val
                     if isfirst and tok['FORM'] and '-' in tok['ID']:
