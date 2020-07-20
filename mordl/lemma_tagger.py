@@ -379,7 +379,7 @@ class LemmaTaggerF(BaseTagger):
             tags = [x[0] for x in tags if x[1] > thresh]
         rel_feats = {}
         for tag in tags:
-            feats_ = rel_feats[tag] = set
+            feats_ = rel_feats[tag] = set()
             tag_feats = self._cdict.get_feats_freq(tag)
             if tag_feats:
                 thresh = tag_feats[0][1] / 5
