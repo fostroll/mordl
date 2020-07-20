@@ -372,8 +372,7 @@ class LemmaTaggerF(BaseTagger):
         return form[:a], form[a:a + size], form[a + size:], \
                lemma[:b], lemma[b:b + size], lemma[b + size:]
 
-    @staticmethod
-    def _transform_upos(corpus):
+    def _transform_upos(self, corpus):
         tags = self._cdict.get_tags_freq()
         if tags:
             thresh = tags[0][1] / 5
