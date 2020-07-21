@@ -20,20 +20,12 @@ class FeatTagger(BaseTagger):
 
     `feats_clip_coef=0` means "not use feats"
     `feats_clip_coef=None` means "use all feats"
-    relevant only if cdict is specified and field is not from FEATS
     """
-    def __init__(self, field, cdict=None, feats_clip_coef=0,
-                 log_file=LOG_FILE):
+    def __init__(self, field, feats_clip_coef=6):
         super().__init__()
         if field.find(':') == -1:
             field = 'FEATS:' + field
         self._field = field
-        assert not (cdict and field.startswith('FEATS:')), \
-            'ERROR: cdict must be None for FEATS fields'
-        assert cdict or feats_clip_coef == 0, \
-            'ERROR: feats_clip_coef must be zero if cdict is not specified'
-        if cdict:
-            self._load_cdict(cdict, log_file=log_file)
         self._feats_clip_coef = feats_clip_coef
 
     def _transform_upos(self, corpus, key_vals=None):
@@ -107,6 +99,7 @@ class FeatTagger(BaseTagger):
         """
         args, kwargs = get_func_params(FeatTagger.load, locals())
         super().load(FeatTaggerModel, *args, **kwargs)
+        self._load_cdict(name + '.cdict.pickle', log_file=log_file)
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
@@ -333,14 +326,21 @@ class FeatTagger(BaseTagger):
 
         Returns the train statistics.
         """
+        args, kwargs = get_func_params(FeatTagger.train, locals())
+
         if self._feats_clip_coef != 0:
+            [x.update({'LEMMA': x['FORM']})
+                 for x in self._train_corpus for x in x]
+            self._cdict = CorpusDict(corpus=self._train_corpus,
+                                     format='conllu_parsed', log_file=log_file)
+            self._save_cdict(save_as + '.cdict.pickle')
+
             list(self._transform_upos(self._train_corpus))
             key_vals = set(x['UPOS'] for x in self._train_corpus for x in x
                                if x['FORM'] and x['UPOS']
                                             and '-' not in x['ID'])
             list(self._transform_upos(self._test_corpus, key_vals))
 
-        args, kwargs = get_func_params(FeatTagger.train, locals())
         return super().train(self._field, 'UPOS', FeatTaggerModel, 'upos',
                              *args, **kwargs)
 
