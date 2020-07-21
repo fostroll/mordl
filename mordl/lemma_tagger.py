@@ -261,20 +261,18 @@ class LemmaTagger(BaseTagger):
             print('stage 1 of 3...', end=' ', file=log_file)
             log_file.flush()
 
-        def _find_affixes(cls, form, lemma):
+        def find_affixes(form, lemma):
             if form and lemma:
-                a = cls.find_affixes(form, lemma)
+                a = self.find_affixes(form, lemma)
                 res = a[0], a[2], a[3], a[5]
             else:
                 res = None,
             return res, lemma
 
-        [x.update({self._field:
-                       self._find_affixes(x['FORM'], x[self._field])})
+        [x.update({self._field: find_affixes(x['FORM'], x[self._field])})
              for x in self._train_corpus for x in x]
 
-        [x.update({self._field:
-                       self._find_affixes(x['FORM'], x[self._field])})
+        [x.update({self._field: find_affixes(x['FORM'], x[self._field])})
              for x in self._test_corpus for x in x]
 
         list(self._transform_upos(self._train_corpus))
