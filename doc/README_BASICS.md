@@ -2,21 +2,37 @@
 
 ## MorDL Basics
 
-### Initialization
+This chapter gives an overview on MorDL taggers and basic pipeline.
 
-Currently, MorDL has 4 different tagger types (TODO):
-* POS-tagger: `UposTagger()`
-* NER: `NETagger()`
-* Lemmata: `LemmaTagger()`
-* FEATS: `FeatsTagger()`
+### Table of Contents
 
-First of all, we need to create the tagger object. Fot example, the following
-code creates a part-of-speech tagger:
+1. [Initialization](#init)
+2. [Loading Train and Test Data](#data)
+3. [Removing Rare Features](#rare)
+4. [Main Pipeline: Train - Predict - Evaluate](#pipeline)
+5. [Saving and Loading Trained Models](#save)
+6. [Saving and Loading Model's `state_dict`](#state)
+
+### Initialization <a name="init"></a>
+
+Currently, MorDL has 4 different tagger types. Refer to the specific tagger
+documentation for detailed information:
+* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md):
+`UposTagger()`
+* [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md): 
+`NETagger()`
+* [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMATA.md):
+`LemmaTagger()`
+* [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md):
+`FeatTagger()`, `FeatsJointTagger()` and `FeatsSeparateTagger()`
+
+First of all, we need to create the tagger object. For example, to create a
+part-of-speech tagger:
 ```python
 tagger = UposTagger()
 ```
 
-### Loading Train and Test Data
+### Loading Train and Test Data <a name="data"></a>
 
 After the tagger is initialized, we need to load train and test data into it.
 
@@ -50,13 +66,19 @@ Args:
 
 **param append** add corpus to already loaded one(s).
 
-### Removing Rare Features
+### Removing Rare Features <a name="rare"></a>
 
+If needed, you can remove rare features from train and test data. 
+
+**Note** that this method allows you to eliminate the whole feature, not a
+spesific rare label. For example, it will remove the whole `FEATS:Case`
+feature, if it is unfrequent in the corpus, **not** only unfrequent ergative
+`Erg` case leaving all the other cases as is.
 ```python
 tagger.remove_rare_feats(abs_thresh=None, rel_thresh=None,
                          full_rel_thresh=None)
 ```
-Remove feats from train and test corpora, occurence of which in the train
+Removes feats from train and test corpora, occurence of which in the train
 corpus is less then a threshold.
 
 Args:
@@ -70,4 +92,87 @@ count of the train corpus is less than this value
 **full_rel_thresh**: remove features if their frequency with respect to the
 full count of the tokens of the train corpus is less than this value
 
-### TODO
+### Main Pipeline: Train - Predict - Evaluate <a name="pipeline"></a>
+
+Main pipeline consists of 3 steps: training - prediction - evaluation.
+Parameters vary for each different tagger.
+
+To learn more about training, prediction and evaluation steps, refer to the
+corresponding tagger documentation:
+
+* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md)
+* [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
+* [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMATA.md)
+* [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
+
+### Saving and Loading Trained Models <a name="save"></a>
+
+The model is saved during training after each successful epoch, but you can
+save model configuration at any time using `.save()` method. Afterwards, you
+can load the model for inference using `.load()` method. 
+
+```python
+tagger.save(self, name, log_file=LOG_FILE)
+```
+Saves the internal state of the tagger.
+
+Args:
+
+**name**: a name to save with.
+
+**log_file**: a stream for info messages. Default is `sys.stdout`.
+
+The `.save()` method creates 4 files for a tagger: two for its model (config
+and state dict) and two for the dataset (config and the internal state). All
+file names start with **name** and their endings are: `.config.json` and `.pt`
+for the model; `_ds.config.json` and `_ds.pt` for the dataset.
+
+```python
+tagger.load(model_class, name, device=None, dataset_device=None,
+            log_file=LOG_FILE)
+```
+Loads tagger's internal state saved by its `.save()` method. First,
+you need to initialize the model class and then load trained model parameters
+into it.
+
+Args:
+
+**model_class**: model class object.
+
+**name** (`str`): name of the internal state previously saved.
+
+**device**: a device for the loading model if you want to override its
+previously saved value.
+
+**dataset_device**: a device for the loading dataset if you want to
+overrride its previously saved value.
+
+**log_file**: a stream for info messages. Default is `sys.stdout`.
+
+### Saving and Loading Model's `state_dict` <a name="state"></a>
+
+You can save and load only model's `state_dict` using `save_state_dict` and
+`load_state_dict` methods.
+
+```python
+tagger.save_state_dict(f, log_file=LOG_FILE)
+```
+Saves PyTorch model's state dictionary to a file to further use for model
+inference.
+
+Args:
+
+**f** (`str` : `file`): the file where state dictionary will be saved.
+
+**log_file**: a stream for info messages. Default is `sys.stdout`.
+
+```python
+tagger.load_state_dict(f, log_file=LOG_FILE):
+```
+Loads previously saved PyTorch model's state dictionary for inference.
+
+Args:
+
+**f**: a file from where state dictionary will be loaded.
+
+**log_file**: a stream for info messages. Default is `sys.stdout`.
