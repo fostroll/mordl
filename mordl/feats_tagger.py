@@ -24,28 +24,9 @@ class FeatsJointTagger(BaseTagger):
     A class for joint multiple-tag FEAT feature tagging.
     """
 
-    def __init__(self, field='FEATS', work_field=None):
+    def __init__(self, field='FEATS'):
         super().__init__()
-        self._orig_field = field
-        self._field = work_field if work_field else field + 'j'
-
-    def load_train_corpus(self, *args, **kwargs):
-        """Loads the train corpus.
-        """
-        super().load_train_corpus(*args, **kwargs)
-        [x.update({self._field:
-                       '|'.join('='.join((y, x[self._orig_field][y]))
-                                    for y in sorted(x[self._orig_field]))})
-             for x in self._train_corpus for x in x]
-
-    def load_test_corpus(self, *args, **kwargs):
-        """Loads the test corpus.
-        """
-        super().load_test_corpus(*args, **kwargs)
-        [x.update({self._field:
-                       '|'.join('='.join((y, x[self._orig_field][y]))
-                                    for y in sorted(x[self._orig_field]))})
-             for x in self._test_corpus for x in x]
+        self._field = field
 
     def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):
         """Loads tagger's internal state saved by its `.save()` method.
@@ -108,16 +89,16 @@ class FeatsJointTagger(BaseTagger):
                 if isinstance(sentence_, tuple):
                     sentence_ = sentence_[0]
                 for token in sentence_:
-                    token[self._orig_field] = OrderedDict(
+                    token[self._field] = OrderedDict(
                         [(x, y) for x, y in [
                             x.split('=')
-                                for x in token[self._orig_field].split('|')
+                                for x in token[self._field].split('|')
                         ]]
-                    ) if token[self._orig_field] else OrderedDict()
+                    ) if token[self._field] else OrderedDict()
                 yield sentence
 
         corpus = process(
-            super().predict(self._orig_field, 'UPOS', *args, **kwargs)
+            super().predict(self._field, 'UPOS', *args, **kwargs)
         )
         if save_to:
             self.save_conllu(corpus, save_to, log_file=None)
@@ -169,7 +150,7 @@ class FeatsJointTagger(BaseTagger):
             'ERROR: To evaluate the exact label you must specify its own ' \
             'feat only'
         args, kwargs = get_func_params(FeatsJointTagger.evaluate, locals())
-        field = self._orig_field
+        field = self._field
         if label:
             del kwargs['feats']
             field += ':' + (feats if isinstance(feats, str) else feats[0])
@@ -308,6 +289,12 @@ class FeatsJointTagger(BaseTagger):
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
         args, kwargs = get_func_params(FeatsJointTagger.train, locals())
+
+        [x.update({self._field: find_affixes(x['FORM'], x[self._field])})
+             for x in self._train_corpus for x in x]
+
+        [x.update({self._field: find_affixes(x['FORM'], x[self._field])})
+             for x in self._test_corpus for x in x]
 
         key_vals = set(x[self._field] for x in self._train_corpus for x in x)
         [None if x[self._field] in key_vals else
@@ -693,6 +680,15 @@ class FeatsSeparateTagger(BaseTagger):
         args, kwargs = get_func_params(FeatsSeparateTagger.train, locals())
         del kwargs['feats']
         del kwargs['word_emb_path_suffix']
+
+        [x.update({self._field:
+                       '|'.join('='.join((y, x[self._field][y]))
+                                    for y in sorted(x[self._field]))})
+             for x in self._train_corpus for x in x]
+        [x.update({self._field:
+                       '|'.join('='.join((y, x[self._field][y]))
+                                    for y in sorted(x[self._field]))})
+             for x in self._test_corpus for x in x]
 
         if log_file:
             print('###### {} TAGGER TRAINING PIPELINE ######'
