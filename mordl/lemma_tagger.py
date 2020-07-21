@@ -237,11 +237,11 @@ class LemmaTagger(BaseTagger):
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
+        args, kwargs = get_func_params(LemmaTagger.train, locals())
+
         self._cdict = CorpusDict(corpus=self._train_corpus,
                                  format='conllu_parsed', log_file=log_file)
         self._save_cdict(save_as + '.cdict.pickle')
-
-        args, kwargs = get_func_params(LemmaTagger.train, locals())
 
         if log_file:
             print('\nPreliminary trainset preparation:', file=log_file)
