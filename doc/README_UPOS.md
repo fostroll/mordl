@@ -15,8 +15,26 @@
 
 First of all, you need to create a tagger object.
 ```python
-tagger = UposTagger()
+tagger = UposTagger(field='UPOS')
 ```
+Creates an `UposTagger` object.
+
+Args:
+
+**field** (`str`): the name of the field which needs to be predicted by the
+training tagger. May contain up to 3 elements, separated by a colon (`:`).
+Format is: `'<field name>:<feat name>:<replacement for None>'`. The
+replacement is used during the training time as a filler for a fields without
+a value for that we could predict them, too. In the *CoNLL-U* format the
+replacer is `'_'` sign, so we use it, too, as a default replacement. You'll
+hardly have a reason to change it. Examples:<br/> 
+`'UPOS'` - predict the *UPOS* field;<br/>
+`'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS* field;<br/>
+`'FEATS:Animacy:_O'` - likewise the above, but if feat value is `None`, it
+will be replaced by `'_O'` during training;<br/>
+`'XPOS::_O'` - predict the *XPOS* field and use `'_O'` as replacement for
+`None`.
+
 Afterwards, load train and test data into the tagger object:
 ```python
 tagger.load_train_corpus(corpus, append=False, test=None, seed=None)
