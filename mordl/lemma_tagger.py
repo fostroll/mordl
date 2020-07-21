@@ -61,6 +61,7 @@ class LemmaTagger(BaseTagger):
                            and not tok['UPOS'].endswith(' first'):
                    tok['UPOS'] += ' first'
                    isfirst = False
+            yield sent
 
     @staticmethod
     def _restore_upos(corpus, with_orig=False):
@@ -71,8 +72,14 @@ class LemmaTagger(BaseTagger):
                 upos = tok['UPOS']
                 if upos.endswith(' first'):
                     tok['UPOS'] = upos[:-6]
-        [restore_upos(x) for x in corpus for x in (sent if with_orig else
-                                                   [sent])]
+        for sent in corpus:
+            for tok in sent:
+                if with_orig:
+                    restore_upos(sent[0])
+                    restore_upos(sent[1])
+                else:
+                    restore_upos(sent)
+            yield sent
 
     @classmethod
     def _find_affixes(cls, form, lemma):
@@ -388,7 +395,7 @@ class LemmaTaggerF(BaseTagger):
         for sent in corpus:
             if isinstance(sent, tuple):
                 sent = sent[0]
-# del            isfirst = True
+            isfirst = True
             for tok in sent:
                 upos = tok['UPOS']
                 if upos:
@@ -400,10 +407,11 @@ class LemmaTaggerF(BaseTagger):
                             for feat, val in sorted(feats.items()):
                                 if feat in rel_feats_:
                                     upos += ' ' + feat + ':' + val
-# del                    if isfirst and tok['FORM'] and '-' not in tok['ID']:
-# del                       upos += ' first'
-# del                       isfirst = False
+                    if isfirst and tok['FORM'] and '-' not in tok['ID']:
+                       upos += ' first'
+                       isfirst = False
                     tok['UPOS'] = upos
+            yield sent
 
     @staticmethod
     def _restore_upos(corpus, with_orig=False):
@@ -414,8 +422,14 @@ class LemmaTaggerF(BaseTagger):
                 upos = tok['UPOS']
                 if upos:
                     tok['UPOS'] = upos.split(' ')[0]
-        [restore_upos(x) for x in corpus for x in (sent if with_orig else
-                                                   [sent])]
+        for sent in corpus:
+            for tok in sent:
+                if with_orig:
+                    restore_upos(sent[0])
+                    restore_upos(sent[1])
+                else:
+                    restore_upos(sent)
+            yield sent
 
     @classmethod
     def _find_affixes(cls, form, lemma):
