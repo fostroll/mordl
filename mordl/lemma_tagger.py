@@ -893,7 +893,8 @@ class LemmaTaggerF2(BaseTagger):
                         isfirst = False
                 yield sentence
 
-        corpus = self._transform_upos(corpus)
+        key_vals = self._ds.transform_dict
+        corpus = self._transform_upos(corpus, key_vals)
         corpus = super().predict(self._orig_field, 'UPOS', corpus, **kwargs)
         corpus = self._restore_upos(corpus)
         corpus = process(corpus)
