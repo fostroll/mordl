@@ -41,6 +41,9 @@ will be replaced by `'_O'` during training;<br/>
 **feats_clip_coef** (`int`): feature clipping coefficient which allows to
 eliminate all features that have lower frequency than 
 `<most frequent feature frequency>` divided by `feats_clip_coef`.
+* `feats_clip_coef=0` means "do not use feats"
+* `feats_clip_coef=None` means "use all feats"
+Relevant only if `cdict` is specified and `field` is not from `FEATS`
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
@@ -54,7 +57,7 @@ refer to
 [MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
 chapter.
 
-### Training <a name="train"></a>
+### Train <a name="train"></a>
 
 ***MorDL*** allows you to train a custom LSTM-based NER model.
 
@@ -189,7 +192,7 @@ reproducibility.
 
 Returns the train statistics.
 
-### Saving Trained Models <a name="save"></a>
+### Save Trained Models <a name="save"></a>
 
 Normally, you don't need to save the model deliberately. The model is saved
 during training after each successful epoch, but you can save model
@@ -211,7 +214,7 @@ dict) and two for the dataset (config and the internal state). All file names
 start with **name** and their endings are: `.config.json` and `.pt` for the
 model; `_ds.config.json` and `_ds.pt` for the dataset.
 
-### Loading Trained Models <a name="load"></a>
+### Load Trained Models <a name="load"></a>
      
 You can load the saved model for inference using `.load()` method. First,
 you need to initialize the model class `NETagger()` and then load trained
@@ -239,7 +242,7 @@ Loads tagger's internal state saved by its `.save()` method.
 
 ### Predict <a name="predict"></a>
 
-Using the trained corpus, predict POS tags for the specified corpus:
+Using the trained corpus, predict tags for the specified corpus:
 ```python
 tagger.predict(corpus, with_orig=False, batch_size=BATCH_SIZE,
                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE)
@@ -279,7 +282,7 @@ When predictions are ready, evaluate predicitons on the development test set
 based on gold corpus:
 ```python
 tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
-                 split=None, clone_ds=False, log_file=LOG_FILE):
+                 split=None, clone_ds=False, log_file=LOG_FILE)
 ```
 Evaluates predicitons on the development test set.
 
@@ -291,7 +294,7 @@ Args:
 If `None`, predictions will be created on-the-fly based on the `gold` corpus.
 
 **label** (`str`): specific label of the target field to be evaluated, e.g.
- `label='GEO'`.
+`label='GEO'`.
 
 **batch_size** (`int`): number of sentences per batch. Default
 `batch_size=64`.
