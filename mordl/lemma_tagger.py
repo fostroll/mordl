@@ -17,7 +17,7 @@ from mordl.feat_tagger_model import FeatTaggerModel
 _OP_C_ASIS = 'asis'
 _OP_C_TITLE = 'title'
 _OP_C_LOWER = 'lower'
-_FEATS_MIN_SCALE = 10
+_FEATS_MIN_SCALE = 5
 
 
 class LemmaTagger(BaseTagger):
