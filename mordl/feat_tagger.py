@@ -21,7 +21,8 @@ class FeatTagger(BaseTagger):
     `feats_clip_coef=None` means "use all feats"
     relevant only if cdict is specified and field is not from FEATS
     """
-    def __init__(self, field, cdict=None, feats_clip_coef=0):
+    def __init__(self, field, cdict=None, feats_clip_coef=0,
+                 log_file=LOG_FILE):
         super().__init__()
         if field.find(':') == -1:
             field = 'FEATS:' + field
