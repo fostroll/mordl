@@ -4,7 +4,7 @@
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
-best: 0.990522246978597 / 0.9909570523911394
+best: 0.9906235230571873 / 0.9910337597695369
 """
 from Levenshtein import editops
 from corpuscula import CorpusDict
@@ -17,6 +17,7 @@ from mordl.feat_tagger_model import FeatTaggerModel
 _OP_C_ASIS = 'asis'
 _OP_C_TITLE = 'title'
 _OP_C_LOWER = 'lower'
+_FEATS_MIN_SCALE = 10
 
 
 class LemmaTagger(BaseTagger):
@@ -382,14 +383,14 @@ class LemmaTaggerF(BaseTagger):
     def _transform_upos(self, corpus):
         tags = self._cdict.get_tags_freq()
         if tags:
-            thresh = tags[0][1] / 5
+            thresh = tags[0][1] / _FEATS_MIN_SCALE
             tags = [x[0] for x in tags if x[1] > thresh]
         rel_feats = {}
         for tag in tags:
             feats_ = rel_feats[tag] = set()
             tag_feats = self._cdict.get_feats_freq(tag)
             if tag_feats:
-                thresh = tag_feats[0][1] / 5
+                thresh = tag_feats[0][1] / _FEATS_MIN_SCALE
                 [feats_.add(x[0]) for x in tag_feats if x[1] > thresh]
 
         for sent in corpus:
