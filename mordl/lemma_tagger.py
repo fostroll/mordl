@@ -25,7 +25,6 @@ class LemmaTagger(BaseTagger):
 
     def __init__(self, field='LEMMA', work_field=None):
         super().__init__()
-        self._cdict = CorpusDict()
         self._orig_field = field
         self._field = work_field if work_field else field + 'd' 
 
@@ -153,7 +152,7 @@ class LemmaTagger(BaseTagger):
     def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):
         args, kwargs = get_func_params(LemmaTagger.load, locals())
         super().load(FeatTaggerModel, *args, **kwargs)
-        self._cdict.restore_from(name + '.cdict.pickle', log_file=log_file)
+        self._load_cdict(name + '.cdict.pickle', log_file=log_file)
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
@@ -256,6 +255,7 @@ class LemmaTagger(BaseTagger):
 
         self._cdict = CorpusDict(corpus=self._train_corpus,
                                  format='conllu_parsed', log_file=LOG_FILE)
+        self._save_cdict(save_as + '.cdict.pickle')
 
         args, kwargs = get_func_params(LemmaTagger.train, locals())
 

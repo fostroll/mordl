@@ -45,7 +45,6 @@ class BaseTagger(BaseParser):
 
     def __init__(self):
         super().__init__()
-        delattr(self, '_cdict')
         self._model = None
         self._ds = None
 
