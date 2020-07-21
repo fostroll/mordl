@@ -267,7 +267,7 @@ class LemmaTagger(BaseTagger):
                 res = a[0], a[2], a[3], a[5]
             else:
                 res = None,
-            return res, lemma
+            return lemma, res
 
         [x.update({self._field: find_affixes(x['FORM'], x[self._field])})
              for x in self._train_corpus for x in x]
