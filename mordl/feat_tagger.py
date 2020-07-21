@@ -142,7 +142,7 @@ class FeatTagger(BaseTagger):
                'ERROR: `with_orig` can be True only if save_to is None'
         args, kwargs = get_func_params(FeatTagger.predict, locals())
 
-        if feats_clip_coef != 0:
+        if self._feats_clip_coef != 0:
             kwargs['save_to'] = None
 
             cdict = self._cdict
@@ -153,7 +153,7 @@ class FeatTagger(BaseTagger):
 
         corpus = super().predict(self._field, 'UPOS', corpus, **kwargs)
 
-        if feats_clip_coef != 0:
+        if self._feats_clip_coef != 0:
             corpus = self._restore_upos(corpus)
 
             if save_to:
@@ -329,6 +329,18 @@ class FeatTagger(BaseTagger):
 
         Returns the train statistics.
         """
+        if self._feats_clip_coef != 0:
+            self._cdict = CorpusDict(corpus=self._train_corpus,
+                                     format='conllu_parsed',
+                                     log_file=log_file)
+            self._save_cdict(save_as + '.cdict.pickle')
+
+            list(self._transform_upos(self._train_corpus))
+            key_vals = set(x['UPOS'] for x in self._train_corpus for x in x
+                               if x['FORM'] and x['UPOS']
+                                            and '-' not in x['ID'])
+            list(self._transform_upos(self._test_corpus, key_vals))
+
         args, kwargs = get_func_params(FeatTagger.train, locals())
         return super().train(self._field, 'UPOS', FeatTaggerModel, 'upos',
                              *args, **kwargs)
