@@ -77,7 +77,8 @@ class LemmaTagger(BaseTagger):
                             for feat, val in sorted(feats.items()):
                                 if feat in rel_feats_:
                                     upos_ += ' ' + feat + ':' + val
-                        upos = upos_ if key_vals and upos_ in key_vals else \
+                        upos = upos_ \
+                                   if not key_vals or upos_ in key_vals else \
                                [*get_close_matches(upos_,
                                                    key_vals, n=1), upos][0]
                     tok['UPOS'] = upos
