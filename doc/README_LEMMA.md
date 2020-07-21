@@ -1,6 +1,6 @@
 <h2 align="center">MorDL: Morphological Tagger (POS, lemmata, NER etc.)</h2>
 
-## Part of Speech Tagging
+## Lemma Prediction
 
 ### Table of Contents
 
@@ -15,7 +15,7 @@
 
 First of all, you need to create a tagger object.
 ```python
-tagger = UposTagger()
+tagger = LemmaTagger()
 ```
 Afterwards, load train and test data into the tagger object:
 ```python
@@ -27,38 +27,42 @@ refer to
 [MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
 chapter.
 
-### Train <a name="train"></a>
+### Training <a name="train"></a>
 
-***MorDL*** allows you to train a custom LSTM-based POS-tagging model.
+***MorDL*** allows you to train a custom LSTM-based lemma prediction model.
+We treat lemma prediction as a sequence labelling task, rather than a
+sequence-to-sequence problem. 
 
-**NB:** By this step you should have a tagger object `tagger` created and
-training data loaded.
+**NB:** By this step you should have a tagger object created and training data
+loaded.
 
-Training a POS tagger:
 ```python
-tagger.train(save_as, device=None, epochs=None, min_epochs=0, bad_epochs=5,
+tagger.train(save_as,
+             device=None, epochs=None, min_epochs=0, bad_epochs=5,
              batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
              max_grad_norm=None, tags_to_remove=None,
              word_emb_type='bert', word_emb_model_device=None,
              word_emb_path=None, word_emb_tune_params=None,
              word_transform_kwargs=None, word_next_emb_params=None,
              rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-             emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=2, lstm_do=0,
-             bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
-             log_file=LOG_FILE):
+             upos_emb_dim=None, emb_out_dim=512, lstm_hidden_dim=256,
+             lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
+             bn3=True, do3=.4, seed=None, log_file=LOG_FILE)
 ```
-We assume all positional argumets but **save_as** are for internal use only
-and should be hidden in descendant classes.
+Creates and trains a lemma prediction model.
+
+We assume all positional argumets but **save_as** are for internal use
+only and should be hidden in descendant classes.
 
 During training, the best model is saved after each successful epoch.
 
 Args:
 
 **save_as** (`str`): the name of the tagger using for save. As a result, 4
-files will be created after training: two for tagger's model (config and state
-dict) and two for the dataset (config and the internal state). All created
-file names use **save_as** as prefix, while their endings are: `.config.json`
-and `.pt` for the model; `_ds.config.json` and `_ds.pt` for the dataset.
+files will be created after training: two for tagger's model (config and
+state dict) and two for the dataset (config and the internal state). All file
+names are used **save_as** as prefix and their endings are: `.config.json` and
+`.pt` for the model; `_ds.config.json` and `_ds.pt` for the dataset.
 
 **device**: device for the model. E.g.: 'cuda:0'.
 
@@ -68,26 +72,25 @@ and `.pt` for the model; `_ds.config.json` and `_ds.pt` for the dataset.
 **min_epochs** (`int`): minimum number of training epochs.
 
 **bad_epochs** (`int`): maximum allowed number of bad epochs (epochs when
-selected **control_metric** is became not better) in a row. Default 
+selected **control_metric** is became not better) in a row. Default
 `bad_epochs=5`.
 
-**batch_size** (`int`): number of sentences per batch. For training,
-default `batch_size=32`.
+**batch_size** (`int`): number of sentences per batch. For training, default
+`batch_size=32`.
 
-**control_metric** (`str`): metric to control training. Default
-`control_metric='accuracy'`. Any that is supported by the `junky.train()`
-method. In the moment it is: 'accuracy', 'f1' and 'loss'. Default
-`control_metric=accuracy`.
+**control_metric** (`str`): metric to control training. Any that is supported
+by the `junky.train()` method. Currently, options are: 'accuracy', 'f1' and
+'loss'. Default `control_metric=accuracy`.
 
 **max_grad_norm** (`float`): gradient clipping parameter, used with
 `torch.nn.utils.clip_grad_norm_()`.
 
 **tags_to_remove** (`list([str])|dict({str: list([str])})`): tags, tokens with
- those must be removed from the corpus. May be a `list` of tag names or a
- `dict` of `{<feat name>: [<feat value>, ...]}`. This argument may be used,
-for example, to remove some infrequent tags from the corpus. Note, that we
-remove the tokens from the train corpus as a whole, not just replace those
-tags to `None`.
+those must be removed from the corpus. May be a `list` of tag names or a
+`dict` of `{<feat name>: [<feat value>, ...]}`. This argument may be used, for
+example, to remove some infrequent tags from the corpus. Note, that we remove
+the tokens from the train corpus as a whole, not just replace those tags to
+`None`.
 
 **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding types.
 
@@ -98,7 +101,7 @@ are placed. Relevant only with embedding types, models of which use devices
 (currently, only 'bert').
 
 **word_emb_tune_params**: parameters for word embeddings finetuning. For now,
-only BERT embeddings finetuning is supported with 
+only BERT embeddings finetuning is supported with
 `mordl.WordEmbeddings.bert_tune()`. So, **word_emb_tune_params** is a `dict`
 of keyword args for this method. You can replace any except `test_data`.
 
@@ -119,7 +122,10 @@ dictionaries if you need more than one additional model.
 the layer is skipped.
 
 **cnn_kernels** (`list([int])`): CNN kernel sizes. By default,
-`cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with **cnn_emb_dim** not `None`.
+`cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with not `None` **cnn_emb_dim**.
+
+**upos_emb_dim** (`int`): auxiliary UPOS label embedding dimensionality.
+Default `upos_emb_dim=60`.
 
 **emb_out_dim** (`int`): output embedding dimensionality. Default
 `emb_out_dim=512`.
@@ -130,7 +136,7 @@ the layer is skipped.
 **lstm_layers** (`int`): number of Bidirectional LSTM layers. Default
 `lstm_layers=1`.
 
-**lstm_do** (`float`): dropout between LSTM layers. Only relevant, if 
+**lstm_do** (`float`): dropout between LSTM layers. Only relevant, if
 `lstm_layers` > `1`.
 
 **bn1** (`bool`): whether batch normalization layer should be applied after
@@ -158,7 +164,7 @@ reproducibility.
 
 Returns the train statistics.
 
-### Save Trained Models <a name="save"></a>
+### Saving Trained Models <a name="save"></a>
 
 Normally, you don't need to save the model deliberately. The model is saved
 during training after each successful epoch, but you can save model
@@ -180,39 +186,40 @@ dict) and two for the dataset (config and the internal state). All file names
 start with **name** and their endings are: `.config.json` and `.pt` for the
 model; `_ds.config.json` and `_ds.pt` for the dataset.
 
-### Load Trained Models <a name="load"></a>
+### Loading Trained Models <a name="load"></a>
      
 You can load the saved model for inference using `.load()` method. First,
-you need to initialize the model class `UposTagger()` and then load trained
+you need to initialize the model class `LemmaTagger()` and then load trained
 model parameters into it.
 
 ```python
-tagger = UposTagger()
+tagger = LemmaTagger()
 tagger.load(name, device=None, dataset_device=None, log_file=LOG_FILE)
 ```
-Loads tagger's internal state saved by its `.save()` method.
+Loads feature tagger and dataset.
 
 Args:
 
-**name** (`str`): name of the internal state previously saved.
+**name** (`str`): name of the previously saved internal state.
 
 **device**: a device for the loading model if you want to override its
 previously saved value.
 
-**dataset_device**: a device for the loading dataset if you want to override
-its previously saved value.
+**dataset_device**: a device for the loading dataset if you want to
+override its previously saved value.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
+Loads tagger's internal state saved by its `.save()` method.
 
-### Predict POS Tags <a name="predict"></a>
+### Predict <a name="predict"></a>
 
-Using the trained corpus, predict POS tags for the specified corpus:
+Using the trained corpus, predict lemmata for the specified corpus:
 ```python
-tagger.predict(corpus, with_orig=False, batch_size=BATCH_SIZE, split=None,
-			   clone_ds=False, save_to=None, log_file=LOG_FILE)
+tagger.predict(corpus, with_orig=False, batch_size=BATCH_SIZE,
+               split=None, clone_ds=False, save_to=None, log_file=LOG_FILE)
 ```
-Predicts tags in the UPOS field of the corpus.
+Predicts tags in the `Lemma` fields of the corpus.
 
 Args:
 
@@ -239,27 +246,31 @@ without splits.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-Returns corpus with tag predictions in the UPOS field.
+Returns corpus with tag predictions in the `MISC:NE` field.
 
 ### Evaluate <a name="eval"></a>
 
 When predictions are ready, evaluate predicitons on the development test set
 based on gold corpus:
 ```python
-tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
-                split=None, clone_ds=False, log_file=LOG_FILE)
+tagger.evaluate(gold, test=None, feats=None, label=None,
+				batch_size=BATCH_SIZE, split=None, clone_ds=False,
+				log_file=LOG_FILE)
 ```
 Evaluates predicitons on the development test set.
 
 Args:
 
-**gold** (`tuple(<sentences> <labels>)`): corpus with actual target tags.
+**gold** (`tuple(<sentences> <labels>)`): corpus with actual target lemmata.
 
-**test** (`tuple(<sentences> <labels>)`): corpus with predicted target tags.
-If `None`, predictions will be created on-the-fly based on the `gold` corpus.
+**test** (`tuple(<sentences> <labels>)`): corpus with predicted target
+lemmata. If `None`, predictions will be created on-the-fly based on the `gold`
+corpus.
+
+**feats** (`str|list([str])`): TODO
 
 **label** (`str`): specific label of the target field to be evaluated, e.g.
-`label='VERB'`.
+`field='MISC:NE'`, `label='GEO'`.
 
 **batch_size** (`int`): number of sentences per batch. Default
 `batch_size=64`.

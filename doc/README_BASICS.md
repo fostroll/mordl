@@ -7,11 +7,11 @@ This chapter gives an overview on MorDL taggers and basic pipeline.
 ### Table of Contents
 
 1. [Initialization](#init)
-2. [Loading Train and Test Data](#data)
-3. [Removing Rare Features](#rare)
+2. [Load Train and Test Data](#data)
+3. [Remove Rare Features](#rare)
 4. [Main Pipeline: Train - Predict - Evaluate](#pipeline)
-5. [Saving and Loading Trained Models](#save)
-6. [Saving and Loading Model's `state_dict`](#state)
+5. [Save and Load Trained Models](#save)
+6. [Save and Load Model's `state_dict`](#state)
 
 ### Initialization <a name="init"></a>
 
@@ -21,7 +21,7 @@ documentation for detailed information:
 `UposTagger()`
 * [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md): 
 `NETagger()`
-* [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMATA.md):
+* [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md):
 `LemmaTagger()`
 * [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md):
 `FeatTagger()`, `FeatsJointTagger()` and `FeatsSeparateTagger()`
@@ -32,7 +32,7 @@ part-of-speech tagger:
 tagger = UposTagger()
 ```
 
-### Loading Train and Test Data <a name="data"></a>
+### Load Train and Test Data <a name="data"></a>
 
 After the tagger is initialized, we need to load train and test data into it.
 
@@ -66,7 +66,7 @@ Args:
 
 **param append** add corpus to already loaded one(s).
 
-### Removing Rare Features <a name="rare"></a>
+### Remove Rare Features <a name="rare"></a>
 
 If needed, you can remove rare features from train and test data. 
 
@@ -102,14 +102,15 @@ corresponding tagger documentation:
 
 * [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md)
 * [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
-* [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMATA.md)
+* [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md)
 * [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
 
-### Saving and Loading Trained Models <a name="save"></a>
+### Save and Load Trained Models <a name="save"></a>
 
-The model is saved during training after each successful epoch, but you can
-save model configuration at any time using `.save()` method. Afterwards, you
-can load the model for inference using `.load()` method. 
+Normally, you don't need to save the model deliberately. The model is saved
+during training after each successful epoch, but you can save model
+configuration at any time using `.save()` method. The saved model can be
+loaded back for inference with `.load()` method. 
 
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
@@ -122,7 +123,7 @@ Args:
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-The `.save()` method creates 4 files for a tagger: two for its model (config
+The `.save()` method creates 4 files for the tagger: two for the model (config
 and state dict) and two for the dataset (config and the internal state). All
 file names start with **name** and their endings are: `.config.json` and `.pt`
 for the model; `_ds.config.json` and `_ds.pt` for the dataset.
@@ -149,7 +150,7 @@ overrride its previously saved value.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-### Saving and Loading Model's `state_dict` <a name="state"></a>
+### Save and Load Model's `state_dict` <a name="state"></a>
 
 You can save and load only model's `state_dict` using `save_state_dict` and
 `load_state_dict` methods.
