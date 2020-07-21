@@ -14,6 +14,7 @@ a sequence-to-sequence problem, as described in
 4. [Load Trained Models](#load)
 5. [Predict](#predict)
 6. [Evaluate](#eval)
+7. [Miscellaneous methods](#misc)
 
 ### Initialization and Data Loading <a name="init"></a>
 

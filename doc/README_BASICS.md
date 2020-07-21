@@ -8,16 +8,15 @@ This chapter gives an overview on MorDL taggers and basic pipeline.
 
 1. [Initialization](#init)
 2. [Load Train and Test Data](#data)
-3. [Remove Rare Features](#rare)
-4. [Main Pipeline: Train - Predict - Evaluate](#pipeline)
-5. [Save and Load Trained Models](#save)
-6. [Save and Load Model's `state_dict`](#state)
+3. [Main Pipeline: Train - Predict - Evaluate](#pipeline)
+4. [Save and Load Trained Models](#save)
+5. [Save and Load Model's `state_dict`](#state)
 
 ### Initialization <a name="init"></a>
 
 Currently, MorDL has 4 different tagger types. Refer to the specific tagger
 documentation for detailed information:
-* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md):
+* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md):
 `UposTagger()`
 * [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md): 
 `NETagger()`
@@ -26,7 +25,7 @@ documentation for detailed information:
 * [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md):
 `FeatTagger()`, `FeatsJointTagger()` and `FeatsSeparateTagger()`
 
-First of all, we need to create the tagger object. For example, to create a
+First of all, you need to create the tagger object. For example, to create a
 part-of-speech tagger:
 ```python
 tagger = UposTagger()
@@ -66,41 +65,15 @@ Args:
 
 **param append** add corpus to already loaded one(s).
 
-### Remove Rare Features <a name="rare"></a>
-
-If needed, you can remove rare features from train and test data. 
-
-**Note** that this method allows you to eliminate the whole feature, not a
-spesific rare label. For example, it will remove the whole `FEATS:Case`
-feature, if it is unfrequent in the corpus, **not** only unfrequent ergative
-`Erg` case leaving all the other cases as is.
-```python
-tagger.remove_rare_feats(abs_thresh=None, rel_thresh=None,
-                         full_rel_thresh=None)
-```
-Removes feats from train and test corpora, occurence of which in the train
-corpus is less then a threshold.
-
-Args:
-
-**abs_thresh**: remove features if their count in the train corpus is less
-than this value
-
-**rel_thresh**: remove features if their frequency with respect to total feats
-count of the train corpus is less than this value
-
-**full_rel_thresh**: remove features if their frequency with respect to the
-full count of the tokens of the train corpus is less than this value
-
 ### Main Pipeline: Train - Predict - Evaluate <a name="pipeline"></a>
 
 Main pipeline consists of 3 steps: training - prediction - evaluation.
 Parameters vary for each different tagger.
 
 To learn more about training, prediction and evaluation steps, refer to the
-corresponding tagger documentation:
+corresponding chapters:
 
-* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md)
+* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md)
 * [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
 * [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md)
 * [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
@@ -177,3 +150,9 @@ Args:
 **f**: a file from where state dictionary will be loaded.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
+
+### MorDL Supplements
+
+To learn about supplement methods, supported in MorDL, refer to the
+[SUPPLEMENTS](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md)
+chapter.
