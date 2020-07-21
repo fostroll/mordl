@@ -10,9 +10,8 @@ This chapter gives an overview on MorDL taggers and basic pipeline.
 2. [Loading Train and Test Data](#data)
 3. [Removing Rare Features](#rare)
 4. [Main Pipeline: Train - Predict - Evaluate](#pipeline)
-5. [Saving Trained Models](#save)
-7. [Loading Trained Models](#load)
-8. [Saving and Loading Model's state_dict](#state)
+5. [Saving and Loading Trained Models](#save)
+6. [Saving and Loading Model's `state_dict`](#state)
 
 ### Initialization <a name="init"></a>
 
@@ -69,11 +68,12 @@ Args:
 
 ### Removing Rare Features <a name="rare"></a>
 
-If needed, you can remove rare features from train and test data. Note that
-this method allows you to eliminate the whole feature, not a spesific rare
-label. For example, it will remove the whole `FEATS:Case` feature, if it is
-unfrequent in the corpus, **not** only unfrequent ergative `Erg` case leaving
-all the other cases as is.
+If needed, you can remove rare features from train and test data. 
+
+**Note** that this method allows you to eliminate the whole feature, not a
+spesific rare label. For example, it will remove the whole `FEATS:Case`
+feature, if it is unfrequent in the corpus, **not** only unfrequent ergative
+`Erg` case leaving all the other cases as is.
 ```python
 tagger.remove_rare_feats(abs_thresh=None, rel_thresh=None,
                          full_rel_thresh=None)
@@ -105,7 +105,7 @@ corresponding tagger documentation:
 * [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMATA.md)
 * [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
 
-### Saving Trained Models <a name="save"></a>
+### Saving and Loading Trained Models <a name="save"></a>
 
 The model is saved during training after each successful epoch, but you can
 save model configuration at any time using `.save()` method.
@@ -126,8 +126,7 @@ dict) and two for the dataset (config and the internal state). All file names
 start with **name** and their endings are: `.config.json` and `.pt` for the
 model; `_ds.config.json` and `_ds.pt` for the dataset.
 
-### Loading Trained Models <a name="load"></a>
-     
+__
 You can load the trained model for inference using `.load()` method. First,
 you need to initialize the model class `UposTagger()` and then load trained
 model parameters into it.
