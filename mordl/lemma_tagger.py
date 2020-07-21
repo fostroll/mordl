@@ -150,6 +150,9 @@ class LemmaTagger(BaseTagger):
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
+        assert self._ds is not None, \
+               "ERROR: The tagger doesn't have a dataset. Call the train() " \
+               'method first'
         assert not with_orig or save_to is None, \
                'ERROR: `with_orig` can be True only if save_to is None'
         args, kwargs = get_func_params(LemmaTagger.predict, locals())
@@ -206,7 +209,8 @@ class LemmaTagger(BaseTagger):
                 yield sentence
 
         key_vals = self._ds.get_dataset('t_0').transform_dict
-        corpus = self._transform_upos(corpus, key_vals)
+        corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
+        corpus = self._transform_upos(corpus, key_vals=key_vals)
         corpus = super().predict(self._field, 'UPOS', corpus, **kwargs)
         corpus = self._restore_upos(corpus)
         corpus = process(corpus)
