@@ -749,18 +749,17 @@ class LemmaTaggerF2(BaseTagger):
             for tok in sent:
                 upos = tok['UPOS']
                 if upos:
-                    upos = upos.split(' ')[0]
+                    upos = upos_ = upos.split(' ')[0]
                     feats = tok['FEATS']
                     if feats:
                         rel_feats_ = rel_feats.get(upos)
                         if rel_feats_:
                             for feat, val in sorted(feats.items()):
                                 if feat in rel_feats_:
-                                    upos_ = upos + ' ' + feat + ':' + val
-                                    upos = upos_ if key_vals \
-                                                and upos_ in key_vals else \
-                                           [*get_close_matches(upos, key_vals,
-                                                               n=1), upos_][0]
+                                    upos_ += ' ' + feat + ':' + val
+                        upos = upos_ if key_vals and upos_ in key_vals else \
+                               [*get_close_matches(upos_,
+                                                   key_vals, n=1), upos][0]
                     tok['UPOS'] = upos
             yield sent
 
