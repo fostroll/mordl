@@ -219,21 +219,9 @@ class LemmaTagger(BaseTagger):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
-    def evaluate(self, gold, test=None, feats=None, label=None,
-                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                 log_file=LOG_FILE):
-        assert not label or feats, \
-            'ERROR: To evaluate the exact label you must specify its ' \
-            'feat, too'
-        assert not label or not feats \
-                         or isinstance(feats, str) or len(feats) == 1, \
-            'ERROR: To evaluate the exact label you must specify its own ' \
-            'feat only'
+    def evaluate(self, gold, test=None, batch_size=BATCH_SIZE, split=None,
+                 clone_ds=False, log_file=LOG_FILE):
         args, kwargs = get_func_params(LemmaTagger.evaluate, locals())
-        if label:
-            del kwargs['feats']
-            self._field += ':' + (feats if isinstance(feats, str) else \
-                           feats[0])
         return super().evaluate(self._field, *args, **kwargs)
 
     def train(self, save_as,
