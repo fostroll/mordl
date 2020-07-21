@@ -2,6 +2,10 @@
 
 ## Lemma Prediction
 
+In MorDL, we treat lemma prediction as a sequence labelling task, rather than
+a sequence-to-sequence problem, as described in 
+[Straka M., 2018](https://www.aclweb.org/anthology/K18-2020.pdf), part 4.4.
+
 ### Table of Contents
 
 1. [Initialization and Data Loading](#init)
@@ -253,9 +257,8 @@ Returns corpus with tag predictions in the `MISC:NE` field.
 When predictions are ready, evaluate predicitons on the development test set
 based on gold corpus:
 ```python
-tagger.evaluate(gold, test=None, feats=None, label=None,
-				batch_size=BATCH_SIZE, split=None, clone_ds=False,
-				log_file=LOG_FILE)
+tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
+				split=None, clone_ds=False, log_file=LOG_FILE)
 ```
 Evaluates predicitons on the development test set.
 
@@ -267,10 +270,7 @@ Args:
 lemmata. If `None`, predictions will be created on-the-fly based on the `gold`
 corpus.
 
-**feats** (`str|list([str])`): TODO
-
-**label** (`str`): specific label of the target field to be evaluated, e.g.
-`field='MISC:NE'`, `label='GEO'`.
+**label** (`str`): specific lemma to be evaluated.
 
 **batch_size** (`int`): number of sentences per batch. Default
 `batch_size=64`.
