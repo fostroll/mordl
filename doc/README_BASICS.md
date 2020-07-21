@@ -122,28 +122,30 @@ Args:
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-The method creates 4 files for a tagger: two for its model (config and state
-dict) and two for the dataset (config and the internal state). All file names
-start with **name** and their endings are: `.config.json` and `.pt` for the
-model; `_ds.config.json` and `_ds.pt` for the dataset.
+The `.save()` method creates 4 files for a tagger: two for its model (config
+and state dict) and two for the dataset (config and the internal state). All
+file names start with **name** and their endings are: `.config.json` and `.pt`
+for the model; `_ds.config.json` and `_ds.pt` for the dataset.
 
 ```python
-tagger = UposTagger()
-tagger.load(name, device=None, dataset_device=None, log_file=LOG_FILE)
+tagger.load(model_class, name, device=None, dataset_device=None,
+            log_file=LOG_FILE)
 ```
 Loads tagger's internal state saved by its `.save()` method. First,
-you need to initialize the model class `UposTagger()` and then load trained
-model parameters into it.
+you need to initialize the model class and then load trained model parameters
+into it.
 
 Args:
+
+**model_class**: model class object.
 
 **name** (`str`): name of the internal state previously saved.
 
 **device**: a device for the loading model if you want to override its
 previously saved value.
 
-**dataset_device**: a device for the loading dataset if you want to override
-its previously saved value.
+**dataset_device**: a device for the loading dataset if you want to
+overrride its previously saved value.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
