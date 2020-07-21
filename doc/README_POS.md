@@ -2,9 +2,10 @@
 
 ## Part of Speech Tagging
 
-First of all, you need to create a tagger object and load training data.
-You can find instructions on object creation and data loading in the
-[MorDL Basics](TODO)
+First of all, you need to create a tagger object and load train and test
+corpus data. You can find instructions on object creation and data loading in
+the 
+[MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
 chapter.
 
 ### Table of Contents
@@ -150,8 +151,8 @@ Returns the train statistics.
 
 ### Saving Trained Models <a name="save"></a>
 
-The model is saved during training after all successful epochs, but you can
-save the model at any time using `.save()` method.
+The model is saved during training after each successful epoch, but you can
+save model configuration at any time using `.save()` method.
 
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
