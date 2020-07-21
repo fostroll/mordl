@@ -15,8 +15,20 @@
 
 First of all, you need to create a tagger object.
 ```python
-tagger = NETagger()
+tagger = NETagger(cdict=None, feats_clip_coef=6, log_file=LOG_FILE)
 ```
+Creates a `NETagger` object.
+
+Args:
+
+**cdict**:
+
+**feats_clip_coef** (`int`): feature clipping coefficient which allows to
+eliminate all features that have lower frequency than 
+`<most frequent feature frequency>` divided by `feats_clip_coef`.
+
+**log_file**: a stream for info messages. Default is `sys.stdout`.
+
 Afterwards, load train and test data into the tagger object:
 ```python
 tagger.load_train_corpus(corpus, append=False, test=None, seed=None)
