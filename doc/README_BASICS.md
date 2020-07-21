@@ -6,13 +6,15 @@ This chapter gives an overview on MorDL taggers and basic pipeline.
 
 ### Table of Contents
 
-1. [Initialization](#train)
-2. [Loading Train and Test Data](#save)
-3. [Loading Trained Models](#load)
-4. [Predict POS Tags](#predict)
-5. [Evaluate Predictions](#eval)
+1. [Initialization](#init)
+2. [Loading Train and Test Data](#data)
+3. [Removing Rare Features](#rare)
+4. [Main Pipeline: Train - Predict - Evaluate](#pipeline)
+5. [Saving Trained Models](#save)
+7. [Loading Trained Models](#load)
+8. [Saving and Loading Model's state_dict](#state)
 
-### Initialization
+### Initialization <a name="init"></a>
 
 Currently, MorDL has 4 different tagger types. Refer to the specific tagger
 documentation for detailed information:
@@ -31,7 +33,7 @@ part-of-speech tagger:
 tagger = UposTagger()
 ```
 
-### Loading Train and Test Data
+### Loading Train and Test Data <a name="data"></a>
 
 After the tagger is initialized, we need to load train and test data into it.
 
@@ -65,7 +67,7 @@ Args:
 
 **param append** add corpus to already loaded one(s).
 
-### Removing Rare Features
+### Removing Rare Features <a name="rare"></a>
 
 If needed, you can remove rare features from train and test data. Note that
 this method allows you to eliminate the whole feature, not a spesific rare
@@ -90,7 +92,7 @@ count of the train corpus is less than this value
 **full_rel_thresh**: remove features if their frequency with respect to the
 full count of the tokens of the train corpus is less than this value
 
-### Main Pipeline: Train - Predict - Evaluate
+### Main Pipeline: Train - Predict - Evaluate <a name="pipeline"></a>
 
 Main pipeline consists of 3 steps: training - prediction - evaluation.
 Parameters vary for each different tagger.
@@ -148,7 +150,7 @@ its previously saved value.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-### Saving and Loading Model's `state_dict`
+### Saving and Loading Model's `state_dict` <a name="state"></a>
 
 You can save and load only model's `state_dict` using `save_state_dict` and
 `load_state_dict` methods.
