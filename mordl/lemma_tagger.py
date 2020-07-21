@@ -273,7 +273,8 @@ class LemmaTagger(BaseTagger):
              for x in self._test_corpus for x in x]
 
         list(self._transform_upos(self._train_corpus))
-        key_vals = set(x['UPOS'] for x in self._train_corpus for x in x)
+        key_vals = set(x['UPOS'] for x in self._train_corpus for x in x
+                           if x['FORM'] and x['UPOS'] and '-' not in x['ID'])
         list(self._transform_upos(self._test_corpus, key_vals))
 
         if log_file:
