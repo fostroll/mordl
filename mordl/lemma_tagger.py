@@ -273,12 +273,8 @@ class LemmaTagger(BaseTagger):
              for x in self._test_corpus for x in x]
 
         list(self._transform_upos(self._train_corpus))
-        list(self._transform_upos(self._test_corpus))
         key_vals = set(x['UPOS'] for x in self._train_corpus for x in x)
-        [None if x['UPOS'] in key_vals else
-         x.update({self._field: [*get_close_matches(x['UPOS'],
-                                                    key_vals, n=1), ''][0]})
-             for x in self._test_corpus for x in x]
+        list(self._transform_upos(self._test_corpus, key_vals))
 
         if log_file:
             print('done.', file=log_file)
