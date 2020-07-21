@@ -2,6 +2,10 @@
 
 ## Lemma Prediction
 
+In MorDL, we treat lemma prediction as a sequence labelling task, rather than
+a sequence-to-sequence problem, as described in 
+[Straka M., 2018](https://www.aclweb.org/anthology/K18-2020.pdf), part 4.4.
+
 ### Table of Contents
 
 1. [Initialization and Data Loading](#init)
