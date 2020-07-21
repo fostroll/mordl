@@ -108,7 +108,8 @@ corresponding tagger documentation:
 ### Saving and Loading Trained Models <a name="save"></a>
 
 The model is saved during training after each successful epoch, but you can
-save model configuration at any time using `.save()` method.
+save model configuration at any time using `.save()` method. Afterwards, you
+can load the model for inference using `.load()` method. 
 
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
@@ -126,16 +127,13 @@ dict) and two for the dataset (config and the internal state). All file names
 start with **name** and their endings are: `.config.json` and `.pt` for the
 model; `_ds.config.json` and `_ds.pt` for the dataset.
 
-__
-You can load the trained model for inference using `.load()` method. First,
-you need to initialize the model class `UposTagger()` and then load trained
-model parameters into it.
-
 ```python
 tagger = UposTagger()
 tagger.load(name, device=None, dataset_device=None, log_file=LOG_FILE)
 ```
-Loads tagger's internal state saved by its `.save()` method.
+Loads tagger's internal state saved by its `.save()` method. First,
+you need to initialize the model class `UposTagger()` and then load trained
+model parameters into it.
 
 Args:
 
