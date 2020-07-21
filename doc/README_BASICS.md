@@ -2,10 +2,20 @@
 
 ## MorDL Basics
 
+This chapter gives an overview on MorDL taggers and basic pipeline.
+
+### Table of Contents
+
+1. [Initialization](#train)
+2. [Loading Train and Test Data](#save)
+3. [Loading Trained Models](#load)
+4. [Predict POS Tags](#predict)
+5. [Evaluate Predictions](#eval)
+
 ### Initialization
 
-Currently, MorDL has 4 different tagger types. Refer to the spesific tagger
-documentation for more information:
+Currently, MorDL has 4 different tagger types. Refer to the specific tagger
+documentation for detailed information:
 * [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md):
 `UposTagger()`
 * [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md): 
@@ -57,11 +67,16 @@ Args:
 
 ### Removing Rare Features
 
+If needed, you can remove rare features from train and test data. Note that
+this method allows you to eliminate the whole feature, not a spesific rare
+label. For example, it will remove the whole `FEATS:Case` feature, if it is
+unfrequent in the corpus, **not** only unfrequent ergative `Erg` case leaving
+all the other cases as is.
 ```python
 tagger.remove_rare_feats(abs_thresh=None, rel_thresh=None,
                          full_rel_thresh=None)
 ```
-Remove feats from train and test corpora, occurence of which in the train
+Removes feats from train and test corpora, occurence of which in the train
 corpus is less then a threshold.
 
 Args:
@@ -74,6 +89,19 @@ count of the train corpus is less than this value
 
 **full_rel_thresh**: remove features if their frequency with respect to the
 full count of the tokens of the train corpus is less than this value
+
+### Main Pipeline: Train - Predict - Evaluate
+
+Main pipeline consists of 3 steps: training - prediction - evaluation.
+Parameters vary for each different tagger.
+
+To learn more about training, prediction and evaluation steps, refer to the
+corresponding tagger documentation:
+
+* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md)
+* [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
+* [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMATA.md)
+* [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
 
 ### Saving Trained Models <a name="save"></a>
 
@@ -147,16 +175,3 @@ Args:
 **f**: a file from where state dictionary will be loaded.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
-
-### Main Pipeline: Train - Predict - Evaluate
-
-Main pipeline consists of 3 steps: training - prediction - evaluation.
-Parameters vary for each different tagger.
-
-To learn more about training, prediction and evaluation steps, refer to the
-spesific tagger chappter:
-
-* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md)
-* [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
-* [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMATA.md)
-* [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
