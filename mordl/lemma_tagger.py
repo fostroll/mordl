@@ -8,7 +8,7 @@ best: 0.9906235230571873 / 0.9910337597695369 (F2, 5)
 """
 from Levenshtein import editops
 from corpuscula import CorpusDict
-from difflib import SequenceMatcher
+from difflib import SequenceMatcher, get_close_matches
 from junky import get_func_params
 from mordl.base_tagger import BaseTagger
 from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
@@ -730,7 +730,7 @@ class LemmaTaggerF2(BaseTagger):
         return form[:a], form[a:a + size], form[a + size:], \
                lemma[:b], lemma[b:b + size], lemma[b + size:]
 
-    def _transform_upos(self, corpus):
+    def _transform_upos(self, corpus, key_vals=None):
         tags = self._cdict.get_tags_freq()
         if tags:
             thresh = tags[0][1] / _FEATS_MIN_SCALE
@@ -756,7 +756,11 @@ class LemmaTaggerF2(BaseTagger):
                         if rel_feats_:
                             for feat, val in sorted(feats.items()):
                                 if feat in rel_feats_:
-                                    upos += ' ' + feat + ':' + val
+                                    upos_ = upos + ' ' + feat + ':' + val
+                                    upos = upos_ if key_vals \
+                                                and upos_ in key_vals else \
+                                           [*get_close_matches(upos, key_vals,
+                                                               n=1), upos_][0]
                     tok['UPOS'] = upos
             yield sent
 
@@ -949,6 +953,11 @@ class LemmaTaggerF2(BaseTagger):
 
         list(self._transform_upos(self._train_corpus))
         list(self._transform_upos(self._test_corpus))
+        key_vals = set(x['UPOS'] for x in self._train_corpus for x in x)
+        [None if x['UPOS'] in key_vals else
+         x.update({self._field: [*get_close_matches(x['UPOS'],
+                                                    key_vals, n=1), ''][0]})
+             for x in self._test_corpus for x in x]
 
         if log_file:
             print('done.', file=log_file)
