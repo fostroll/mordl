@@ -26,9 +26,9 @@ class FeatTagger(BaseTagger):
         if field.find(':') == -1:
             field = 'FEATS:' + field
         self._field = field
-        assert not (cdict and field.startswith('FEATS:')),
+        assert not (cdict and field.startswith('FEATS:')), \
             'ERROR: cdict must be None for FEATS fields'
-        assert cdict or feats_clip_coef == 0,
+        assert cdict or feats_clip_coef == 0, \
             'ERROR: feats_clip_coef must be zero if cdict is not specified'
         if cdict:
             self._load_cdict(cdict, log_file=log_file)
