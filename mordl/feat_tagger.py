@@ -329,6 +329,8 @@ class FeatTagger(BaseTagger):
         args, kwargs = get_func_params(FeatTagger.train, locals())
 
         if self._feats_clip_coef != 0:
+            [x.update({'LEMMA': x['FORM']})
+                 for x in tagger._train_corpus for x in x]
             self._cdict = CorpusDict(corpus=self._train_corpus,
                                      format='conllu_parsed', log_file=log_file)
             self._save_cdict(save_as + '.cdict.pickle')
