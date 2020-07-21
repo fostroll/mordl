@@ -4,7 +4,7 @@
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
-best: 0.9893406927283775 / 0.9896104117481611
+best: 0.990522246978597 / 0.9909570523911394
 """
 from Levenshtein import editops
 from corpuscula import CorpusDict
@@ -70,7 +70,7 @@ class LemmaTagger(BaseTagger):
                 sent = sent[0]
             for tok in sent:
                 upos = tok['UPOS']
-                if upos.endswith(' first'):
+                if upos and upos.endswith(' first'):
                     tok['UPOS'] = upos[:-6]
         for sent in corpus:
             for tok in sent:
