@@ -4,7 +4,6 @@
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
-best: 0.9908682735804469 / 0.9913150201569945 (6)
 """
 from Levenshtein import editops
 from corpuscula import CorpusDict
