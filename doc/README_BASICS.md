@@ -14,7 +14,7 @@ This chapter gives an overview on MorDL taggers and basic pipeline.
 
 ### Initialization <a name="init"></a>
 
-Currently, MorDL has 4 different tagger types. Refer to the specific tagger
+Currently, MorDL has 5 different tagger types. Refer to the specific tagger
 documentation for detailed information:
 * [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md):
 `UposTagger()`
@@ -22,8 +22,10 @@ documentation for detailed information:
 `NETagger()`
 * [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md):
 `LemmaTagger()`
+* [FEAT](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md):
+`FeatTagger()`
 * [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md):
-`FeatTagger()`, `FeatsJointTagger()` and `FeatsSeparateTagger()`
+`FeatsJointTagger()` and `FeatsSeparateTagger()`
 
 First of all, you need to create the tagger object. For example, to create a
 part-of-speech tagger:
@@ -76,6 +78,7 @@ corresponding chapters:
 * [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md)
 * [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
 * [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md)
+* [FEAT](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md)
 * [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
 
 ### Save and Load Trained Models <a name="save"></a>
