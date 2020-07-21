@@ -65,7 +65,7 @@ class LemmaTagger(BaseTagger):
 
     @staticmethod
     def _restore_upos(corpus, with_orig=False):
-        def restore_upos(sentence):
+        def restore_upos(sent):
             if isinstance(sent, tuple):
                 sent = sent[0]
             for tok in sent:
@@ -192,11 +192,11 @@ class LemmaTagger(BaseTagger):
                         isfirst = False
                 yield sentence
 
-        self._transform_upos(corpus)
-        corpus = process(
-            super().predict(self._orig_field, 'UPOS', *args, **kwargs)
-        )
-        self._restore_upos(corpus)
+        corpus = self._transform_upos(corpus)
+        corpus = super().predict(self._orig_field, 'UPOS', corpus, **kwargs)
+        corpus = self._restore_upos(corpus)
+        corpus = process(corpus)
+
         if save_to:
             self.save_conllu(corpus, save_to, log_file=None)
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
@@ -415,7 +415,7 @@ class LemmaTaggerF(BaseTagger):
 
     @staticmethod
     def _restore_upos(corpus, with_orig=False):
-        def restore_upos(sentence):
+        def restore_upos(sent):
             if isinstance(sent, tuple):
                 sent = sent[0]
             for tok in sent:
@@ -542,11 +542,11 @@ class LemmaTaggerF(BaseTagger):
                         isfirst = False
                 yield sentence
 
-        self._transform_upos(corpus)
-        corpus = process(
-            super().predict(self._orig_field, 'UPOS', *args, **kwargs)
-        )
-        self._restore_upos(corpus)
+        corpus = self._transform_upos(corpus)
+        corpus = super().predict(self._orig_field, 'UPOS', corpus, **kwargs)
+        corpus = self._restore_upos(corpus)
+        corpus = process(corpus)
+
         if save_to:
             self.save_conllu(corpus, save_to, log_file=None)
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
@@ -761,7 +761,7 @@ class LemmaTaggerF2(BaseTagger):
 
     @staticmethod
     def _restore_upos(corpus, with_orig=False):
-        def restore_upos(sentence):
+        def restore_upos(sent):
             if isinstance(sent, tuple):
                 sent = sent[0]
             for tok in sent:
@@ -888,11 +888,11 @@ class LemmaTaggerF2(BaseTagger):
                         isfirst = False
                 yield sentence
 
-        self._transform_upos(corpus)
-        corpus = process(
-            super().predict(self._orig_field, 'UPOS', *args, **kwargs)
-        )
-        self._restore_upos(corpus)
+        corpus = self._transform_upos(corpus)
+        corpus = super().predict(self._orig_field, 'UPOS', corpus, **kwargs)
+        corpus = self._restore_upos(corpus)
+        corpus = process(corpus)
+
         if save_to:
             self.save_conllu(corpus, save_to, log_file=None)
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
