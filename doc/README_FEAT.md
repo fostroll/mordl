@@ -31,10 +31,10 @@ Args:
 **field** (`str`): the name of the field which needs to be predicted by the
 training tagger. May contain up to 3 elements, separated by a colon (`:`).
 Format is: `'<field name>:<feat name>:<replacement for None>'`. The
-replacement is used during the training time as a filler for a fields without
-a value for that we could predict them, too. In the *CoNLL-U* format the
-replacer is `'_'` sign, so we use it, too, as a default replacement. You'll
-hardly have a reason to change it. Examples:<br/> 
+replacement is used during training as a filler for a fields without a value
+so that we could predict them, too. In the *CoNLL-U* format the replacer is a
+`'_'` sign, so we use it as a default replacement. Normally, you wouldn't need
+to change this parameter. Examples:<br/> 
 `'UPOS'` - predict the *UPOS* field;<br/>
 `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS* field;<br/>
 `'FEATS:Animacy:_O'` - likewise the above, but if feat value is `None`, it
@@ -45,11 +45,11 @@ will be replaced by `'_O'` during training;<br/>
 **cdict**: [TODO]
 
 **feats_clip_coef** (`int`): feature clipping coefficient which allows to
-eliminate all features that have lower frequency than 
+eliminate all features that have a lower frequency than 
 `<most frequent feature frequency>` divided by `feats_clip_coef`.
 * `feats_clip_coef=0` means "do not use feats"
 * `feats_clip_coef=None` means "use all feats"
-Relevant only if `cdict` is specified and `field` is not from `FEATS`
+Relevant only if `cdict` is specified and `field` is not from `FEATS`.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
@@ -65,7 +65,7 @@ chapter.
 
 ### Train <a name="train"></a>
 
-***MorDL*** allows you to train a custom LSTM-based single morphological
+***MorDL*** allows you to train a custom biLSTM-based single morphological
 feature prediction model.
 
 **NB:** By this step you should have a tagger object created and training data
@@ -90,11 +90,11 @@ During training, the best model is saved after each successful epoch.
 
 Args:
 
-**save_as** (`str`): the name of the tagger using for save. As a result, 4
-files will be created after training: two for tagger's model (config and
-state dict) and two for the dataset (config and the internal state). All file
-names are used **save_as** as prefix and their endings are: `.config.json` and
-`.pt` for the model; `_ds.config.json` and `_ds.pt` for the dataset.
+**save_as** (`str`): the name of the tagger used for save. As a result, 4
+files will be created after training: two for tagger's model (config and state
+dict) and two for the dataset (config and the internal state). All file names
+use **save_as** as a prefix and their endings are: `.config.json` and `.pt`
+for the model; `_ds.config.json` and `_ds.pt` for the dataset.
 
 **device**: device for the model. E.g.: 'cuda:0'.
 
@@ -129,7 +129,7 @@ the tokens from the train corpus as a whole, not just replace those tags to
 **word_emb_path** (`str`): path to word embeddings storage.
 
 **word_emb_model_device**: the torch device where the model of word embeddings
-are placed. Relevant only with embedding types, models of which use devices
+is placed. Relevant only with embedding types, models of which use devices
 (currently, only 'bert').
 
 **word_emb_tune_params**: parameters for word embeddings finetuning. For now,
@@ -247,12 +247,13 @@ without splits.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-Returns corpus with tag predictions in the `MISC:NE` field.
+Returns corpus with tag predictions for the specified feature of the `FEATS`
+field.
 
 ### Evaluate <a name="eval"></a>
 
 When predictions are ready, evaluate predicitons on the development test set
-based on gold corpus:
+based on the gold corpus:
 ```python
 tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
                  split=None, clone_ds=False, log_file=LOG_FILE)

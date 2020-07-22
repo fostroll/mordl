@@ -11,6 +11,7 @@ This chapter gives an overview on MorDL taggers and the basic pipeline.
 3. [Main Pipeline: Train - Predict - Evaluate](#pipeline)
 4. [Save and Load Trained Models](#save)
 5. [Save and Load Model's `state_dict`](#state)
+6. [Save and Restore Model Backups](#backup)
 
 ### Initialization <a name="init"></a>
 
@@ -44,7 +45,7 @@ Loads the train corpus.
 
 Args:
 
-**corpus**: a name of the file in *CoNLL-U* format or list/iterator of 
+**corpus**: a name of the file in *CoNLL-U* format or list/iterator of
 sentences in *Parsed CoNLL-U*.
 
 **append** (`bool`): whether to add **corpus** to the already loaded one(s).
@@ -109,15 +110,14 @@ for the model; `_ds.config.json` and `_ds.pt` for the dataset.
 tagger.load(model_class, name, device=None, dataset_device=None,
             log_file=LOG_FILE)
 ```
-Loads tagger's internal state saved by its `.save()` method. First,
-you need to initialize the model class and then load trained model parameters
-into it.
+Loads tagger's internal state saved by its `.save()` method. First, you need
+to initialize the model class and then load trained model parameters into it.
 
 Args:
 
 **model_class**: model class object.
 
-**name** (`str`): name of the internal state previously saved.
+**name** (`str`): name of the previously saved internal state.
 
 **device**: a device for the loading model if you want to override its
 previously saved value.
@@ -154,6 +154,21 @@ Args:
 **f**: a file from where state dictionary will be loaded.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
+
+
+### Save and Restore Model Backups <a name="backup"></a>
+
+Anytime, you can backup and restore internal states of trained models.
+
+```python
+o = tagger.backup()
+```
+Get current state.
+
+```python
+tagger.restore(o)
+```
+Restore current state from backup object.
 
 ### MorDL Supplements
 

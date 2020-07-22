@@ -48,7 +48,7 @@ eliminate all features that have a lower frequency than
 `<most frequent feature frequency>` divided by `feats_clip_coef`.
 * `feats_clip_coef=0` means "do not use feats"
 * `feats_clip_coef=None` means "use all feats"
-Relevant only if `cdict` is specified and `field` is not from `FEATS`
+Relevant only if `cdict` is specified and `field` is not from `FEATS`.
 
 Afterwards, load train and test data into the tagger object:
 ```python
@@ -250,7 +250,7 @@ Returns corpus with tag predictions in the `MISC:NE` field.
 ### Evaluate <a name="eval"></a>
 
 When predictions are ready, evaluate predicitons on the development test set
-based on gold corpus:
+based on the gold corpus:
 ```python
 tagger.evaluate(gold, test=None, batch_size=BATCH_SIZE, split=None,
 				clone_ds=False, log_file=LOG_FILE)
