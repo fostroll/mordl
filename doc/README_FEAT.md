@@ -6,7 +6,7 @@ MorDL supports single and multiple feature taggers. In this chapter, we cover
 a single feature tagger `FeatTagger()`.
 
 For multiple feature taggers, refer to 
-[README_FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
+[Multiple Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
 chapter.
 
 ### Table of Contents

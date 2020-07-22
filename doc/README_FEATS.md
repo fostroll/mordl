@@ -9,7 +9,7 @@ Joint and separate FEATS taggers have slightly different initialization,
 training and prediction methods and the same evaluation method.
 
 For a single feature tagger, refer to 
-[README_FEAT](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md)
+[Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md)
 chapter.
 
 ### Table of Contents

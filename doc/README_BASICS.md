@@ -17,15 +17,15 @@ This chapter gives an overview on MorDL taggers and the basic pipeline.
 
 Currently, MorDL has 5 different tagger types. Refer to the specific tagger
 documentation for detailed information:
-* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md):
+* [POS Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md):
 `UposTagger()`
 * [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md): 
 `NETagger()`
-* [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md):
+* [Lemma Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md):
 `LemmaTagger()`
-* [FEAT](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md):
+* [Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md):
 `FeatTagger()`
-* [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md):
+* [Multiple Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md):
 `FeatsJointTagger()` and `FeatsSeparateTagger()`
 
 First of all, you need to create the tagger object. For example, to create a
@@ -173,5 +173,5 @@ Restore current state from backup object.
 ### MorDL Supplements
 
 To learn about supplement methods, supported in MorDL, refer to the
-[SUPPLEMENTS](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md)
+[MorDL Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md)
 chapter.

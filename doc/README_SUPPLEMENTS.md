@@ -11,10 +11,11 @@ To learn more about taggers, main pipeline and beyond, refer to other
 chapters:
 
 * [MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
-* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md)
+* [POS Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md)
 * [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
-* [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md)
-* [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
+* [Lemma Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md)
+* [Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md)
+* [Multiple Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
 
 ### Table of Contents
 
