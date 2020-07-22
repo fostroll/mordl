@@ -91,7 +91,7 @@ class BaseTagger(BaseParser):
 
     @staticmethod
     def _get_filenames(name):
-        return tuple(os.path.join(x)
+        return tuple(os.path.join(name, x)
                          for x in [_MODEL_CONFIG_FN, _MODEL_FN,
                                    _DATASETS_CONFIG_FN, _DATASETS_FN,
                                    _CDICT_FN])
