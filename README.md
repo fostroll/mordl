@@ -12,8 +12,8 @@ and named entity recognition.
 Scores on *SynTagRus*: accuracy `?%` for POS tagging; `98.74%` for lemmata
 detection.
 
-This project was made with a focus on Russian language, but it can also be
-used with other languages (European, at least).
+This project was developed with a focus on Russian language, but it can also
+be used with other languages (European, at least).
 
 ## Installation
 
