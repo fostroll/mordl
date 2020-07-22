@@ -223,8 +223,6 @@ class BaseTaggerModel(BaseModel):
 
         x_ = torch.sigmoid(self._H(x_))
         gate = torch.sigmoid(self._T(x))
-        #x_ = F.relu(self._H(x_))
-        #gate = F.relu(self._T(x))
         x = x_ * gate + x * (1 - gate)
 
         if self._bn3:
