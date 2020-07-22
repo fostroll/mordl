@@ -59,7 +59,7 @@ class FeatTaggerModel(BaseTaggerModel):
     `lstm_hidden_dim=256`.
 
     **lstm_layers** (`int`): number of Bidirectional LSTM layers. Default
-    `lstm_layers=2`.
+    `lstm_layers=1`.
 
     **lstm_do** (`float`): dropout between LSTM layers. Only relevant, if
     `lstm_layers` > `1`.
@@ -86,7 +86,7 @@ class FeatTaggerModel(BaseTaggerModel):
                  alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,
                  cnn_emb_dim=None, cnn_kernels=[1, 2, 3, 4, 5, 6],
                  upos_emb_dim=60, upos_num=0, upos_pad_idx=0,
-                 emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=2,
+                 emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=1,
                  lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
                  bn3=True, do3=.4):
         if isinstance(cnn_kernels, Iterable):
