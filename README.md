@@ -19,26 +19,26 @@ be used with other languages (European, at least).
 
 ### pip
 
-***MorDL*** supports *Python 3.5* or later. To install it via *pip*, run:
+***MorDL*** supports *Python 3.5* or later. To install via *pip*, run:
 ```sh
 $ pip install mordl
 ```
 
-If you currently have a previous version of ***MorDL*** installed, use:
+If you currently have a previous version of ***MorDL*** installed, run:
 ```sh
 $ pip install mordl -U
 ```
 
 ### From Source
 
-Alternatively, you can also install ***MorDL*** from source of this *git
+Alternatively, you can install ***MorDL*** from the source of this *git
 repository*:
 ```sh
 $ git clone https://github.com/fostroll/mordl.git
 $ cd mordl
 $ pip install -e .
 ```
-This gives you access to examples that are not included to the *PyPI* package.
+This gives you access to examples that are not included in the *PyPI* package.
 
 ## Usage
 
