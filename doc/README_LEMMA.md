@@ -32,10 +32,10 @@ Args:
 **field** (`str`): the name of the field which needs to be predicted by the
 training tagger. May contain up to 3 elements, separated by a colon (`:`).
 Format is: `'<field name>:<feat name>:<replacement for None>'`. The
-replacement is used during the training time as a filler for a fields without
-a value for that we could predict them, too. In the *CoNLL-U* format the
-replacer is `'_'` sign, so we use it, too, as a default replacement. You'll
-hardly have a reason to change it. Examples:<br/> 
+replacement is used during training as a filler for a fields without a value
+so that we could predict them, too. In the *CoNLL-U* format the replacer is a
+`'_'` sign, so we use it as a default replacement. Normally, you wouldn't need
+to change this parameter. Examples:<br/> 
 `'UPOS'` - predict the *UPOS* field;<br/>
 `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS* field;<br/>
 `'FEATS:Animacy:_O'` - likewise the above, but if feat value is `None`, it
@@ -44,7 +44,7 @@ will be replaced by `'_O'` during training;<br/>
 `None`.
 
 **feats_clip_coef** (`int`): feature clipping coefficient which allows to
-eliminate all features that have lower frequency than 
+eliminate all features that have a lower frequency than 
 `<most frequent feature frequency>` divided by `feats_clip_coef`.
 * `feats_clip_coef=0` means "do not use feats"
 * `feats_clip_coef=None` means "use all feats"
@@ -62,7 +62,7 @@ chapter.
 
 ### Train <a name="train"></a>
 
-***MorDL*** allows you to train a custom LSTM-based lemma prediction model.
+***MorDL*** allows you to train a custom biLSTM-based lemma prediction model.
 We treat lemma prediction as a sequence labelling task, rather than a
 sequence-to-sequence problem. 
 
@@ -88,15 +88,15 @@ During training, the best model is saved after each successful epoch.
 
 Args:
 
-**save_as** (`str`): the name of the tagger using for save. As a result, 4
-files will be created after training: two for tagger's model (config and
-state dict) and two for the dataset (config and the internal state). All file
-names are used **save_as** as prefix and their endings are: `.config.json` and
-`.pt` for the model; `_ds.config.json` and `_ds.pt` for the dataset.
+**save_as** (`str`): the name of the tagger used for save. As a result, 4
+files will be created after training: two for tagger's model (config and state
+dict) and two for the dataset (config and the internal state). All file names
+use **save_as** as a prefix and their endings are: `.config.json` and `.pt`
+for the model; `_ds.config.json` and `_ds.pt` for the dataset.
 
 **device**: device for the model. E.g.: 'cuda:0'.
 
-**epochs** (`int`): number of epochs to train. If `None`, train until 
+**epochs** (`int`): number of epochs to train. If `None`, train until
 `bad_epochs` is met, but no less than `min_epochs`.
 
 **min_epochs** (`int`): minimum number of training epochs.
@@ -127,7 +127,7 @@ the tokens from the train corpus as a whole, not just replace those tags to
 **word_emb_path** (`str`): path to word embeddings storage.
 
 **word_emb_model_device**: the torch device where the model of word embeddings
-are placed. Relevant only with embedding types, models of which use devices
+is placed. Relevant only with embedding types, models of which use devices
 (currently, only 'bert').
 
 **word_emb_tune_params**: parameters for word embeddings finetuning. For now,
@@ -137,10 +137,10 @@ of keyword args for this method. You can replace any except `test_data`.
 
 **word_transform_kwargs** (`dict`): keyword arguments for `.transform()`
 method of the dataset created for sentences to word embeddings conversion. See
-the `.transform()` method of `junky.datasets.BertDataset` for the the
-description of the parameters.
+the `.transform()` method of `junky.datasets.BertDataset` for the description
+of the parameters.
 
-**word_next_emb_params**: if you want to use several different embedding
+**word_next_emb_params**: if you want to use several different embedding 
 models at once, pass parameters of the additional model as a dictionary with
 keys `(emb_path, emb_model_device, transform_kwargs)`; or a list of such
 dictionaries if you need more than one additional model.
