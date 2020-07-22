@@ -51,7 +51,6 @@ chapter.
 **NB:** By this step you should have a tagger object `tagger` created and
 training data loaded.
 
-Training a POS tagger:
 ```python
 tagger.train(save_as, device=None, epochs=None, min_epochs=0, bad_epochs=5,
              batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
@@ -62,10 +61,9 @@ tagger.train(save_as, device=None, epochs=None, min_epochs=0, bad_epochs=5,
              rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
              emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=2, lstm_do=0,
              bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
-             log_file=LOG_FILE):
+             log_file=LOG_FILE)
 ```
-We assume all positional argumets but **save_as** are for internal use only
-and should be hidden in descendant classes.
+Creates and trains a POS tagging model.
 
 During training, the best model is saved after each successful epoch.
 

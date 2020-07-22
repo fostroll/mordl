@@ -82,12 +82,9 @@ tagger.train(save_as,
 			 rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
 			 upos_emb_dim=None, emb_out_dim=512, lstm_hidden_dim=256,
 			 lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
-			 bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
+			 bn3=True, do3=.4, seed=None, log_file=LOG_FILE)
 ```
 Creates and trains a single-feature prediction model.
-
-We assume all positional argumets but **save_as** are for internal use
-only and should be hidden in descendant classes.
 
 During training, the best model is saved after each successful epoch.
 

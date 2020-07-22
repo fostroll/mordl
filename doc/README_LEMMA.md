@@ -81,9 +81,6 @@ tagger.train(save_as,
 ```
 Creates and trains a lemma prediction model.
 
-We assume all positional argumets but **save_as** are for internal use
-only and should be hidden in descendant classes.
-
 During training, the best model is saved after each successful epoch.
 
 Args:
