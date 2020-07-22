@@ -1,4 +1,4 @@
-<h2 align="center">MorDL: Morphological Tagger (POS, lemmata, NER etc.)</h2>
+<h2 align="center">MorDL: Morphological Parser (POS, lemmata, NER etc.)</h2>
 
 ## MorDL Supplements
 

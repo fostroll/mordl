@@ -1,4 +1,4 @@
-<h2 align="center">MorDL: morphological parser (POS, lemmata, NER etc.)</h2>
+<h2 align="center">MorDL: Morphological Parser (POS, lemmata, NER etc.)</h2>
 
 [![PyPI Version](https://img.shields.io/pypi/v/morra?color=blue)](https://pypi.org/project/mordl/)
 [![Python Version](https://img.shields.io/pypi/pyversions/morra?color=blue)](https://www.python.org/)
@@ -11,7 +11,7 @@ sentence parsing and named-entity recognition.
 Scores on *SynTagRus*: accuracy `?%` for POS tagging; `98.74%` for lemmata
 detection.
 
-This project was making with a focus on Russian language, but it can also be
+This project was made with a focus on Russian language, but it can also be
 used with some other languages (European, at least).
 
 ## Installation
@@ -41,33 +41,35 @@ This gives you access to examples that are not included to the *PyPI* package.
 
 ## Usage
 
-Input and output format for ***Morra*** is
-[*CoNLL-U*](https://universaldependencies.org/format.html) when input or
-output is a file, or
+***MorDL's*** supports 
+[*CoNLL-U*](https://universaldependencies.org/format.html) (if input/output is
+a file), or
 [*Parsed CoNLL-U*](https://github.com/fostroll/corpuscula/blob/master/doc/README_PARSED_CONLLU.md)
-if it is an object. Also, it allows
+(if input/output is an object). Also, ***MorDL's*** allows
 [***Corpuscula***'s corpora wrappers](https://github.com/fostroll/corpuscula/blob/master/doc/README_CORPORA.md)
 as input.
 
-[MorphParser Basics](https://github.com/fostroll/morra/blob/master/doc/README_BASICS.md)
+[MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
 
-[Part of Speach Tagging](https://github.com/fostroll/morra/blob/master/doc/README_POS.md)
+[POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md)
 
-[Lemmata Detection](https://github.com/fostroll/morra/blob/master/doc/README_LEMMA.md)
+[NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
 
-[Morphological Feats Tagging](https://github.com/fostroll/morra/blob/master/doc/README_FEATS.md)
+[Lemma Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md)
 
-[Named-entity Recognition](https://github.com/fostroll/morra/blob/master/doc/README_NER.md)
+[FEAT Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md)
 
-[Supplements](https://github.com/fostroll/morra/blob/master/doc/README_SUPPLEMENTS.md)
+[FEATS Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
+
+[MorDL Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md)
 
 ## Examples
 
-You can find them in the directory `examples` of our ***Morra*** github
-repository.
+You can find MorDL pipeline examples in the `examples` directory of our
+***MorDL*** GitHub repository.
 
 ## License
 
-***Morra*** is released under the BSD License. See the
-[LICENSE](https://github.com/fostroll/morra/blob/master/LICENSE) file for more
+***MorDL*** is released under the BSD License. See the
+[LICENSE](https://github.com/fostroll/mordl/blob/master/LICENSE) file for more
 details.
