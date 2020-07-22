@@ -9,11 +9,12 @@ sentence parsing (POS-tagging, lemmatization, morphological feature tagging)
 and named entity recognition.
 
 [TODO]
-Scores on *SynTagRus*: accuracy `?%` for POS tagging; `98.74%` for lemmata
-detection.
+Scores (accuracy) on *SynTagRus*: UPOS: `99.15%`; FEATS: `??.??%`;
+LEMMA: `99.15%`. In all experiments we used `seed=42`. We're sure that some
+other `seed` values may help to achive even better results.
 
-This project was developed with a focus on Russian language, but it can also
-be used with other languages (European, at least).
+This project was developed with a focus on Russian language, but a few nuances
+we used don't worsen the quality of other languages processing.
 
 ## Installation
 
