@@ -70,7 +70,7 @@ If needed, you can remove rare features from train and test data.
 **Note** that this method allows you to eliminate the whole feature, not a
 spesific rare label. For example, it will remove the whole `FEATS:Case`
 feature, if it is unfrequent in the corpus, **not** only unfrequent ergative
-`Erg` case leaving all the other cases as is.
+'Erg' case leaving all the other cases as is.
 ```python
 tagger.remove_rare_feats(abs_thresh=None, rel_thresh=None,
                          full_rel_thresh=None)
