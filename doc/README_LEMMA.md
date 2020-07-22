@@ -13,11 +13,11 @@ to lemmatized string.
 ### Table of Contents
 
 1. [Initialization and Data Loading](#init)
-2. [Train](#train)
-3. [Save and Load Trained Models](#save)
-4. [Predict](#predict)
-5. [Evaluate](#eval)
-6. [Lemmatization Supplements](#lemma_suppl)
+1. [Train](#train)
+1. [Save and Load Trained Models](#save)
+1. [Predict](#predict)
+1. [Evaluate](#eval)
+1. [Lemmatization Supplements](#lemma_suppl)
 
 ### Initialization and Data Loading <a name="init"></a>
 
