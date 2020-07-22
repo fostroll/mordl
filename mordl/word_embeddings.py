@@ -875,9 +875,7 @@ class WordEmbeddings:
                     kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
             elif isinstance(ds, WordDataset):
-                loglevel_ = transform_kwargs.pop('loglevel', None)
-                if loglevel is None:
-                    loglevel = loglevel_
+                loglevel = transform_kwargs.pop('loglevel', loglevel)
             else:
                 break
             junky.clear_tqdm()
