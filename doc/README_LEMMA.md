@@ -4,9 +4,11 @@
 
 In MorDL, we treat lemma prediction as a sequence labelling task, rather than
 a sequence-to-sequence problem, as described in
-[Straka M., 2018](https://www.aclweb.org/anthology/K18-2020.pdf), part 4.4, and
+[Straka M., 2018](https://www.aclweb.org/anthology/K18-2020.pdf), part 4.4,
+and
 [Kondratyuk D. and Milan Straka, 2019](https://www.aclweb.org/anthology/D19-1279.pdf),
-part 2.3.
+part 2.3. Overall, lemmatization is based on edit operations from source string
+to lemmatized string.
 
 ### Table of Contents
 
@@ -15,6 +17,7 @@ part 2.3.
 3. [Save and Load Trained Models](#save)
 4. [Predict](#predict)
 5. [Evaluate](#eval)
+6. [Lemmatization Supplements](#lemma_suppl)
 
 ### Initialization and Data Loading <a name="init"></a>
 
@@ -275,3 +278,47 @@ without splits.
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
 Prints metrics and returns evaluation accuracy.
+
+### Lemmatization Supplements <a name="lemma_suppl"></a>
+
+As lemmatization is based on edit operations from source string to lemmatized
+string, there are several supplement methods for `LemmaTagger()`.
+
+```python
+tagger.find_affixes(form, lemma, lower=False)
+```
+Find the longest common part of the given **form** and **lemma**.
+
+Args:
+
+**lower** (`bool`): if `True` then return values will be always in lower case.
+
+Rerutns prefix, common part, suffix/flexion of **form** & prefix, common part,
+suffix/flexion of **lemma** (`str`, `str`, `str`, `str`, `str`, `str`).
+
+```python
+tagger.get_editops(str_from, str_to, allow_replace=True, allow_copy=True)
+```
+Get edit operations from `str_from` to `str_to` according to Levenstein
+distance. Supported edit operations: 'delete', 'insert', 'replace', 'copy'.
+
+Args:
+
+**str_from** (`str`): source string.
+
+**str_to** (`str`): target string.
+
+**allow_replace** (`bool`): whether to allow **replace** edit operation.
+
+**allow_copy** (`bool`): whether to allow **copy** edit operation.
+
+```python
+tagger.apply_editops(str_from, ops)
+```
+Apply edit operations to the source string.
+
+Args:
+
+**str_from** (`str`): source string to apply edit operations to.
+
+**ops** (`list([str])`): list of edit operations.

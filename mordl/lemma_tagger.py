@@ -144,9 +144,9 @@ class LemmaTagger(BaseTagger):
         **str_to** (`str`): target string.
 
         **allow_replace** (`bool`): whether to allow **replace** edit
-        operations.
+        operation.
 
-        **allow_copy** (`bool`): whether to allow **copy** edit operations.
+        **allow_copy** (`bool`): whether to allow **copy** edit operation.
         """
         res = []
         for op, idx_dst, idx_src in editops(str_from, str_to):
