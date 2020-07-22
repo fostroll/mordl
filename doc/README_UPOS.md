@@ -2,6 +2,9 @@
 
 ## Part of Speech Tagging
 
+With MorDL, you can create and train biLSTM-based POS-tagger models, make
+predictions and evaluate them.
+
 ### Table of Contents
 
 1. [Initialization and Data Loading](#init)

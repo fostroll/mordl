@@ -2,7 +2,7 @@
 
 ## MorDL Basics
 
-This chapter gives an overview on MorDL taggers and basic pipeline.
+This chapter gives an overview on MorDL taggers and the basic pipeline.
 
 ### Table of Contents
 
@@ -58,19 +58,19 @@ reproducibility. Used only if test is not `None`.
 ```python
 tagger.load_test_corpus(corpus, append=False)
 ```
-Load development test corpus to validate on during training iterations.
+Load development test corpus for validation during training iterations.
 
 Args:
 
-**corpus** a name of file in CoNLL-U format or list/iterator of sentences in
-*Parsed CoNLL-U*.
+**corpus** a name of the file in CoNLL-U format or list/iterator of sentences
+in *Parsed CoNLL-U*.
 
 **param append** add corpus to already loaded one(s).
 
 ### Main Pipeline: Train - Predict - Evaluate <a name="pipeline"></a>
 
 Main pipeline consists of 3 steps: training - prediction - evaluation.
-Parameters vary for each different tagger.
+Parameters vary slightly for each different tagger.
 
 To learn more about training, prediction and evaluation steps for each tagger,
 refer to the corresponding chapters:
