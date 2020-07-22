@@ -118,7 +118,9 @@ class BaseTagger(BaseParser):
                 emb_model_device=word_emb_model_device,
                 transform_kwargs=word_transform_kwargs,
                 next_emb_params=word_next_emb_params,
-                loglevel=int(log_file is not None)
+                loglevel=0 if log_file is None else
+                         1 if log_file == sys.stdin else
+                         2
             )
             ds.add('x', x)
         else:
