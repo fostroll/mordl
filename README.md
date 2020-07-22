@@ -4,15 +4,16 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/morra?color=blue)](https://www.python.org/)
 [![License: BSD-3](https://img.shields.io/badge/License-BSD-brightgreen.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
-The tool provides tools to organize a pipeline for complete morphological
-sentence parsing and named-entity recognition.
+***MorDL*** is a tool to organize a pipeline for complete morphological
+sentence parsing (POS-tagging, lemmatization, morphological feature tagging)
+and named entity recognition.
 
 [TODO]
 Scores on *SynTagRus*: accuracy `?%` for POS tagging; `98.74%` for lemmata
 detection.
 
 This project was made with a focus on Russian language, but it can also be
-used with some other languages (European, at least).
+used with other languages (European, at least).
 
 ## Installation
 
