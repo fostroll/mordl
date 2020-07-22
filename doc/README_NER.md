@@ -3,7 +3,8 @@
 ## Named Entity Tagging
 
 With MorDL, you can create and train biLSTM-based NER models, make predictions
-and evaluate them.
+and evaluate them. You can train a NER model with any custom named entities
+from your training corpus.
 
 ### Table of Contents
 
