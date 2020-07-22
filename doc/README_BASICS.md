@@ -85,8 +85,9 @@ corresponding chapters:
 
 Normally, you don't need to save the model deliberately. The model is saved
 during training after each successful epoch, but you can save model
-configuration at any time using `.save()` method. The saved model can be
-loaded back for inference with `.load()` method. 
+configuration at any time using `.save()` method.
+
+The saved model can be loaded back for inference with `.load()` method. 
 
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
@@ -122,7 +123,7 @@ Args:
 previously saved value.
 
 **dataset_device**: a device for the loading dataset if you want to
-overrride its previously saved value.
+override its previously saved value.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 

@@ -2,14 +2,20 @@
 
 ## Single Feature Tagging
 
+MorDL supports single and multiple feature taggers. In this chapter, we cover
+a single feature tagger `FeatTagger()`.
+
+For multiple feature taggers, refer to 
+[README_FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
+chapter.
+
 ### Table of Contents
 
 1. [Initialization and Data Loading](#init)
 2. [Train](#train)
-3. [Save Trained Models](#save)
-4. [Load Trained Models](#load)
-5. [Predict](#predict)
-6. [Evaluate](#eval)
+3. [Save and Load Trained Models](#save)
+4. [Predict](#predict)
+5. [Evaluate](#eval)
 
 ### Initialization and Data Loading <a name="init"></a>
 
@@ -193,53 +199,22 @@ reproducibility.
 
 Returns the train statistics.
 
-### Save Trained Models <a name="save"></a>
+### Save and Load Trained Models <a name="save"></a>
 
 Normally, you don't need to save the model deliberately. The model is saved
 during training after each successful epoch, but you can save model
 configuration at any time using `.save()` method.
 
+The saved model can be loaded back for inference with `.load()` method. 
+
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
+tagger.load(model_class, name, device=None, dataset_device=None,
+            log_file=LOG_FILE)
 ```
-Saves the internal state of the tagger.
-
-Args:
-
-**name**: a name to save with.
-
-**log_file**: a stream for info messages. Default is `sys.stdout`.
-
-The method creates 4 files for a tagger: two for its model (config and state
-dict) and two for the dataset (config and the internal state). All file names
-start with **name** and their endings are: `.config.json` and `.pt` for the
-model; `_ds.config.json` and `_ds.pt` for the dataset.
-
-### Load Trained Models <a name="load"></a>
-     
-You can load the saved model for inference using `.load()` method. First,
-you need to initialize the model class `NETagger()` and then load trained
-model parameters into it.
-
-```python
-tagger = NETagger()
-tagger.load(name, device=None, dataset_device=None, log_file=LOG_FILE)
-```
-Loads feature tagger and dataset.
-
-Args:
-
-**name** (`str`): name of the previously saved internal state.
-
-**device**: a device for the loading model if you want to override its
-previously saved value.
-
-**dataset_device**: a device for the loading dataset if you want to
-override its previously saved value.
-
-**log_file**: a stream for info messages. Default is `sys.stdout`.
-
-Loads tagger's internal state saved by its `.save()` method.
+For detailed info on `.save()` and `.load()`, refer to
+[MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
+chapter.
 
 ### Predict <a name="predict"></a>
 
