@@ -798,10 +798,6 @@ class BaseTagger(BaseParser):
             print('=== {} TAGGER TRAINING PIPELINE ==='.format(header),
                   file=log_file)
 
-        model_config_fn, model_fn, _, _, cdict_fn = \
-            self._get_filenames(save_as)
-        self._save_cdict(cdict_fn)
-
         # 1. Prepare corpora
         train = self._prepare_corpus(
             self._train_corpus, fields=fields,
@@ -897,6 +893,10 @@ class BaseTagger(BaseParser):
                             ds=ds_test, log_file=log_file_)
         else:
             ds_test = None
+
+        model_config_fn, model_fn, _, _, cdict_fn = \
+            self._get_filenames(save_as)
+        self._save_cdict(cdict_fn)
 
         # 4. Create model
         if log_file:
