@@ -593,6 +593,9 @@ class BaseTagger(BaseParser):
                                       c / n if n > 0 else 1.), file=log_file)
         return ct / nt if nt > 0 else 1.
 
+    def conll18_ud_eval(gold_file, system_file, verbose=False, counts=False):
+        pass
+
     def train(self, field, add_fields, model_class, tag_emb_names, save_as,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
