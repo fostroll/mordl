@@ -52,15 +52,15 @@ as input.
 
 [MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
 
-[POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md)
+[POS Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md)
 
 [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
 
 [Lemma Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md)
 
-[FEAT Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md)
+[Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md)
 
-[FEATS Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
+[Multiple Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
 
 [MorDL Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md)
 
