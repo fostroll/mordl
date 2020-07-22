@@ -99,7 +99,6 @@ class FeatTagger(BaseTagger):
         """
         args, kwargs = get_func_params(FeatTagger.load, locals())
         super().load(FeatTaggerModel, *args, **kwargs)
-        self._load_cdict(name + '.cdict.pickle', log_file=log_file)
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):

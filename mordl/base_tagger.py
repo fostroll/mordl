@@ -17,9 +17,16 @@ from mordl import WordEmbeddings
 from morra.base_parser import BaseParser
 from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE, \
                            NONE_TAG, TRAIN_BATCH_SIZE
+import os
 import sys
 import torch
 from typing import Iterator
+
+_MODEL_CONFIG_FN = 'model_config.json'
+_MODEL_FN = 'model.pt'
+_DATASETS_CONFIG_FN = 'ds_config.json'
+_DATASETS_FN = 'ds.pt'
+_CDICT_FN = 'cdict.pickle'
 
 
 class BaseTagger(BaseParser):
@@ -84,15 +91,10 @@ class BaseTagger(BaseParser):
 
     @staticmethod
     def _get_filenames(name):
-        if isinstance(name, tuple):
-            model_fn, model_config_fn, ds_fn, ds_config_fn = name
-        else:
-            if name.endswith('.pt'):
-                name = name[:-3]
-            model_fn, model_config_fn, ds_fn, ds_config_fn = \
-                name + '.pt', name + CONFIG_EXT, \
-                name + '_ds.pt', name + '_ds' + CONFIG_EXT
-        return model_fn, model_config_fn, ds_fn, ds_config_fn
+        return tuple(os.path.join(x)
+                         for x in [_MODEL_CONFIG_FN, _MODEL_FN,
+                                   _DATASETS_CONFIG_FN, _DATASETS_FN,
+                                   _CDICT_FN])
 
     @staticmethod
     def _prepare_corpus(corpus, fields, tags_to_remove=None):
@@ -198,9 +200,11 @@ class BaseTagger(BaseParser):
             yield batch_
 
     def _save_dataset(self, name, ds=None):
+        if not os.path.isdir(name):
+            os.mkdir(name)
         if ds is None:
             ds = self._ds
-        ds_fn, ds_config_fn = self._get_filenames(name)[2:4]
+        ds_config_fn, ds_fn = self._get_filenames(name)[2:4]
         config = {}
         for name in ds.list():
             ds_ = ds.get_dataset(name)
@@ -213,7 +217,7 @@ class BaseTagger(BaseParser):
 
     def _load_dataset(self, name, device=None, for_self=True,
                       log_file=LOG_FILE):
-        ds_fn, ds_config_fn = self._get_filenames(name)[2:4]
+        ds_config_fn, ds_fn = self._get_filenames(name)[2:4]
         if log_file:
             print('Loading dataset...', end=' ', file=log_file)
             log_file.flush()
@@ -248,9 +252,11 @@ class BaseTagger(BaseParser):
         assert self._ds, "ERROR: The tagger doesn't have a dataset to save"
         assert self._model, "ERROR: The tagger doesn't have a model to save"
         self._save_dataset(name)
-        model_fn, model_config_fn = cls._get_filenames(name)[:2]
+        model_config_fn, model_fn, _, _, cdict_fn = \
+            self._get_filenames(name)
         self._model.save_config(model_config_fn, log_file=log_file)
         self._model.save_state_dict(model_fn, log_file=log_file)
+        self._save_cdict(cdict_fn)
 
     def load(self, model_class, name, device=None, dataset_device=None,
              log_file=LOG_FILE):
@@ -271,11 +277,13 @@ class BaseTagger(BaseParser):
         **log_file**: a stream for info messages. Default is `sys.stdout`.
         """
         self._load_dataset(name, device=dataset_device, log_file=log_file)
-        model_fn, model_config_fn = self._get_filenames(name)[:2]
+        model_config_fn, model_fn, _, _, cdict_fn = \
+            self._get_filenames(name)
         self._model = model_class.create_from_config(
             model_config_fn, state_dict_f=model_fn, device=device,
             log_file=log_file
         )
+        self._load_cdict(cdict_fn, log_file=log_file)
 
     @staticmethod
     def _normalize_field_names(names):
@@ -726,7 +734,9 @@ class BaseTagger(BaseParser):
             print('=== {} TAGGER TRAINING PIPELINE ==='.format(header),
                   file=log_file)
 
-        model_fn, model_config_fn = self._get_filenames(save_as)[:2]
+        model_config_fn, model_fn, _, _, cdict_fn = \
+            self._get_filenames(save_as)
+        self._save_cdict(cdict_fn)
 
         # 1. Prepare corpora
         train = self._prepare_corpus(
@@ -802,6 +812,7 @@ class BaseTagger(BaseParser):
         # 3. Create datasets
         if log_file:
             print('\nDATASETS CREATION', file=log_file)
+        log_file_ = sys.stderr if log_file else None
         ds_train = self._create_dataset(
             train[0],
             word_emb_type=word_emb_type, word_emb_path=word_emb_path,
@@ -811,12 +822,12 @@ class BaseTagger(BaseParser):
             with_chars=model_kwargs.get('rnn_emb_dim') \
                     or model_kwargs.get('cnn_emb_dim'),
             tags=train[1:-1], labels=train[-1], for_self=False,
-            log_file=sys.stderr)
+            log_file=log_file_)
         self._save_dataset(save_as, ds=ds_train)
         if test:
             ds_test = ds_train.clone(with_data=False)
             self._transform(test[0], tags=test[1:-1], labels=test[-1],
-                            ds=ds_test, log_file=sys.stderr)
+                            ds=ds_test, log_file=log_file_)
         else:
             ds_test = None
 
