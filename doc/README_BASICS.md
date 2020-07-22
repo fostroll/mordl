@@ -2,7 +2,7 @@
 
 ## MorDL Basics
 
-This chapter gives an overview on MorDL taggers and basic pipeline.
+This chapter gives an overview on MorDL taggers and the basic pipeline.
 
 ### Table of Contents
 
@@ -11,6 +11,7 @@ This chapter gives an overview on MorDL taggers and basic pipeline.
 3. [Main Pipeline: Train - Predict - Evaluate](#pipeline)
 4. [Save and Load Trained Models](#save)
 5. [Save and Load Model's `state_dict`](#state)
+6. [Save and Restore Model Backups](#backup)
 
 ### Initialization <a name="init"></a>
 
@@ -44,7 +45,7 @@ Loads the train corpus.
 
 Args:
 
-**corpus**: a name of the file in *CoNLL-U* format or list/iterator of 
+**corpus**: a name of the file in *CoNLL-U* format or list/iterator of
 sentences in *Parsed CoNLL-U*.
 
 **append** (`bool`): whether to add **corpus** to the already loaded one(s).
@@ -58,22 +59,22 @@ reproducibility. Used only if test is not `None`.
 ```python
 tagger.load_test_corpus(corpus, append=False)
 ```
-Load development test corpus to validate on during training iterations.
+Load development test corpus for validation during training iterations.
 
 Args:
 
-**corpus** a name of file in CoNLL-U format or list/iterator of sentences in
-*Parsed CoNLL-U*.
+**corpus** a name of the file in CoNLL-U format or list/iterator of sentences
+in *Parsed CoNLL-U*.
 
 **param append** add corpus to already loaded one(s).
 
 ### Main Pipeline: Train - Predict - Evaluate <a name="pipeline"></a>
 
 Main pipeline consists of 3 steps: training - prediction - evaluation.
-Parameters vary for each different tagger.
+Parameters vary slightly for each different tagger.
 
-To learn more about training, prediction and evaluation steps, refer to the
-corresponding chapters:
+To learn more about training, prediction and evaluation steps for each tagger,
+refer to the corresponding chapters:
 
 * [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md)
 * [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
@@ -109,15 +110,14 @@ for the model; `_ds.config.json` and `_ds.pt` for the dataset.
 tagger.load(model_class, name, device=None, dataset_device=None,
             log_file=LOG_FILE)
 ```
-Loads tagger's internal state saved by its `.save()` method. First,
-you need to initialize the model class and then load trained model parameters
-into it.
+Loads tagger's internal state saved by its `.save()` method. First, you need
+to initialize the model class and then load trained model parameters into it.
 
 Args:
 
 **model_class**: model class object.
 
-**name** (`str`): name of the internal state previously saved.
+**name** (`str`): name of the previously saved internal state.
 
 **device**: a device for the loading model if you want to override its
 previously saved value.
@@ -154,6 +154,21 @@ Args:
 **f**: a file from where state dictionary will be loaded.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
+
+
+### Save and Restore Model Backups <a name="backup"></a>
+
+Anytime, you can backup and restore internal states of trained models.
+
+```python
+o = tagger.backup()
+```
+Get current state.
+
+```python
+tagger.restore(o)
+```
+Restore current state from backup object.
 
 ### MorDL Supplements
 

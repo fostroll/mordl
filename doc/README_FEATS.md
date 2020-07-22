@@ -5,8 +5,11 @@
 MorDL supports single and multiple feature taggers. In this chapter, we cover
 multiple feature taggers `FeatsJointTagger()` and `FeatsSeparateTagger()`.
 
-For multiple feature taggers, refer to 
-[README_FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
+Joint and separate FEATS taggers have slightly different initialization,
+training and prediction methods and the same evaluation method.
+
+For a single feature tagger, refer to 
+[README_FEAT](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md)
 chapter.
 
 ### Table of Contents
@@ -15,21 +18,20 @@ chapter.
 1. [Initialization and Data Loading](#init)
 2. [Train](#train)
 3. [Predict](#predict)
-4. [Evaluate](#eval)
 
 * [Separate Tagger](#separate)
 1. [Initialization and Data Loading](#init_sep)
 2. [Train](#train_sep)
 3. [Predict](#predict_sep)
-4. [Evaluate](#eval_sep)
 
+* [Evaluate](#eval)
 * [Save and Load Trained Models](#save)
 
 ## Joint Feats Tagger <a name="joint"></a>
 
 Joint Feats tagger implies that target classes are compiled of all different
-feature tag combinations that are present in the training set and predicted
-jointly.
+feature tag combinations that are present in the training set. These classes
+are predicted jointly.
 
 ### Initialization and Data Loading <a name="init"></a>
 
@@ -44,10 +46,10 @@ Args:
 **field** (`str`): the name of the field which needs to be predicted by the
 training tagger. May contain up to 3 elements, separated by a colon (`:`).
 Format is: `'<field name>:<feat name>:<replacement for None>'`. The
-replacement is used during the training time as a filler for a fields without
-a value for that we could predict them, too. In the *CoNLL-U* format the
-replacer is `'_'` sign, so we use it, too, as a default replacement. You'll
-hardly have a reason to change it. Examples:<br/> 
+replacement is used during training as a filler for a fields without a value
+so that we could predict them, too. In the *CoNLL-U* format the replacer is a
+`'_'` sign, so we use it as a default replacement. Normally, you wouldn't need
+to change this parameter. Examples:<br/> 
 `'UPOS'` - predict the *UPOS* field;<br/>
 `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS* field;<br/>
 `'FEATS:Animacy:_O'` - likewise the above, but if feat value is `None`, it
@@ -67,15 +69,14 @@ chapter.
 
 ### Training <a name="train"></a>
 
-***MorDL*** allows you to train a custom LSTM-based joint multiple feature
+***MorDL*** allows you to train a custom bi-based joint multiple feature
 prediction model.
 
 **NB:** By this step you should have a tagger object created and training data
 loaded.
 
 ```python
-tagger.train(save_as,
-			 device=None, epochs=None, min_epochs=0, bad_epochs=5,
+tagger.train(save_as, device=None, epochs=None, min_epochs=0, bad_epochs=5,
 			 batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
 			 max_grad_norm=None, tags_to_remove=None,
 			 word_emb_type='bert', word_emb_model_device=None,
@@ -92,11 +93,11 @@ During training, the best model is saved after each successful epoch.
 
 Args:
 
-**save_as** (`str`): the name of the tagger using for save. As a result, 4
-files will be created after training: two for tagger's model (config and
-state dict) and two for the dataset (config and the internal state). All file
-names are used **save_as** as prefix and their endings are: `.config.json` and
-`.pt` for the model; `_ds.config.json` and `_ds.pt` for the dataset.
+**save_as** (`str`): the name of the tagger used for save. As a result, 4
+files will be created after training: two for tagger's model (config and state
+dict) and two for the dataset (config and the internal state). All file names
+use **save_as** as a prefix and their endings are: `.config.json` and `.pt`
+for the model; `_ds.config.json` and `_ds.pt` for the dataset.
 
 **device**: device for the model. E.g.: 'cuda:0'.
 
@@ -131,7 +132,7 @@ the tokens from the train corpus as a whole, not just replace those tags to
 **word_emb_path** (`str`): path to word embeddings storage.
 
 **word_emb_model_device**: the torch device where the model of word embeddings
-are placed. Relevant only with embedding types, models of which use devices
+is placed. Relevant only with embedding types, models of which use devices
 (currently, only 'bert').
 
 **word_emb_tune_params**: parameters for word embeddings finetuning. For now,
@@ -234,47 +235,10 @@ without splits.
 
 Returns corpus with tag predictions in the `FEATS` field.
 
-### Evaluate <a name="eval"></a>
-
-When predictions are ready, evaluate predicitons on the development test set
-based on gold corpus:
-```python
-tagger.evaluate(gold, test=None, feats=None, label=None, 
-                batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                log_file=LOG_FILE)
-```
-Evaluates predicitons on the development test set.
-
-Args:
-
-**gold** (`tuple(<sentences> <labels>)`): corpus with actual target tags.
-
-**test** (`tuple(<sentences> <labels>)`): corpus with predicted target tags.
-If `None`, predictions will be created on-the-fly based on the `gold` corpus.
-
-**feats** (`str|list([str])`): one or several subfields of `FEATS` to be
-evaluated.
-
-**label** (`str`): specific label of the target field to be evaluated, e.g.
-`label='Inan'`.
-
-**batch_size** (`int`): number of sentences per batch. Default
-`batch_size=64`.
-
-**split** (`int`): number of lines in each split. Allows to split a large
-dataset into several parts. Default `split=None`, i.e. process full dataset
-without splits.
-
-**clone_ds** (`bool`): if `True`, the dataset is cloned and transformed. If
-`False`, `transform_collate` is used without cloning the dataset.
-
-**log_file**: a stream for info messages. Default is `sys.stdout`.
-
-Prints metrics and returns evaluation accuracy.
-
 ## Separate Feats Tagger <a name="separate"></a>
 
-Joint Feats tagger implies that each feature is predicted separately.
+Joint Feats tagger implies that each feature of the `FEATS` field is predicted
+separately.
 
 ### Initialization and Data Loading <a name="init_sep"></a>
 
@@ -289,10 +253,10 @@ Args:
 **field** (`str`): the name of the field which needs to be predicted by the
 training tagger. May contain up to 3 elements, separated by a colon (`:`).
 Format is: `'<field name>:<feat name>:<replacement for None>'`. The
-replacement is used during the training time as a filler for a fields without
-a value for that we could predict them, too. In the *CoNLL-U* format the
-replacer is `'_'` sign, so we use it, too, as a default replacement. You'll
-hardly have a reason to change it. Examples:<br/> 
+replacement is used during training as a filler for a fields without a value
+so that we could predict them, too. In the *CoNLL-U* format the replacer is a
+`'_'` sign, so we use it as a default replacement. Normally, you wouldn't need
+to change this parameter. Examples:<br/> 
 `'UPOS'` - predict the *UPOS* field;<br/>
 `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS* field;<br/>
 `'FEATS:Animacy:_O'` - likewise the above, but if feat value is `None`, it
@@ -312,7 +276,7 @@ chapter.
 
 ### Training <a name="train_sep"></a>
 
-***MorDL*** allows you to train a custom LSTM-based joint multiple feature
+***MorDL*** allows you to train a custom biLSTM-based joint multiple feature
 prediction model.
 
 **NB:** By this step you should have a tagger object created and training data
@@ -338,11 +302,11 @@ During training, the best model is saved after each successful epoch.
 
 Args:
 
-**save_as** (`str`): the name of the tagger using for save. 4 files will be
-created after training: two for tagger's model (config and state dict) and two
-for the dataset (config and the internal state). All file names are used
-**save_as** as prefix and their endings are: `.config.json` and `.pt` for the
-model; `_ds.config.json` and `_ds.pt` for the dataset.
+**save_as** (`str`): the name of the tagger used for save. As a result, 4
+files will be created after training: two for tagger's model (config and state
+dict) and two for the dataset (config and the internal state). All file names
+use **save_as** as a prefix and their endings are: `.config.json` and `.pt`
+for the model; `_ds.config.json` and `_ds.pt` for the dataset.
 
 **feats** (`str|list([str])`): one or several subfields of `FEATS` to be
 evaluated.
@@ -378,7 +342,7 @@ the tokens from the train corpus as a whole, not just replace those tags to
 **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding types.
 
 **word_emb_model_device**: the torch device where the model of word embeddings
-are placed. Relevant only with embedding types, models of which use devices
+is placed. Relevant only with embedding types, models of which use devices
 (currently, only 'bert').
 
 **word_emb_path_suffix** (`str`): path suffix to word embeddings storage, from
@@ -450,7 +414,7 @@ Returns the train statistics.
 
 ### Predict <a name="predict_sep"></a>
 
-Using the trained corpus, predict POS tags for the specified corpus:
+Using the trained corpus, predict `FEATS` for the specified corpus:
 ```python
 tagger.predict(corpus, feats=None, remove_excess_feats=True, with_orig=False,
 			   batch_size=BATCH_SIZE, split=None, clone_ds=False,
@@ -490,10 +454,12 @@ without splits.
 
 Returns corpus with tag predictions in the specified field.
 
-### Evaluate <a name="eval_sep"></a>
+## Evaluate <a name="eval"></a>
+
+Evaluation step is the same for both joint and separate taggers.
 
 When predictions are ready, evaluate predicitons on the development test set
-based on gold corpus:
+based on the gold corpus:
 ```python
 tagger.evaluate(gold, test=None, feats=None, label=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,

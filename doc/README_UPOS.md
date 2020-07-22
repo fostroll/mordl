@@ -2,6 +2,9 @@
 
 ## Part of Speech Tagging
 
+With MorDL, you can create and train biLSTM-based POS-tagger models, make
+predictions and evaluate them.
+
 ### Table of Contents
 
 1. [Initialization and Data Loading](#init)
@@ -23,10 +26,10 @@ Args:
 **field** (`str`): the name of the field which needs to be predicted by the
 training tagger. May contain up to 3 elements, separated by a colon (`:`).
 Format is: `'<field name>:<feat name>:<replacement for None>'`. The
-replacement is used during the training time as a filler for a fields without
-a value for that we could predict them, too. In the *CoNLL-U* format the
-replacer is `'_'` sign, so we use it, too, as a default replacement. You'll
-hardly have a reason to change it. Examples:<br/> 
+replacement is used during training as a filler for a fields without a value
+so that we could predict them, too. In the *CoNLL-U* format the replacer is a
+`'_'` sign, so we use it as a default replacement. Normally, you wouldn't need
+to change this parameter. Examples:<br/> 
 `'UPOS'` - predict the *UPOS* field;<br/>
 `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS* field;<br/>
 `'FEATS:Animacy:_O'` - likewise the above, but if feat value is `None`, it
@@ -46,10 +49,10 @@ chapter.
 
 ### Train <a name="train"></a>
 
-***MorDL*** allows you to train a custom LSTM-based POS-tagging model.
+***MorDL*** allows you to train a custom biLSTM-based POS-tagging model.
 
-**NB:** By this step you should have a tagger object `tagger` created and
-training data loaded.
+**NB:** By this step you should have a tagger object created and training data
+loaded.
 
 ```python
 tagger.train(save_as, device=None, epochs=None, min_epochs=0, bad_epochs=5,
@@ -69,11 +72,11 @@ During training, the best model is saved after each successful epoch.
 
 Args:
 
-**save_as** (`str`): the name of the tagger using for save. As a result, 4
+**save_as** (`str`): the name of the tagger used for save. As a result, 4
 files will be created after training: two for tagger's model (config and state
-dict) and two for the dataset (config and the internal state). All created
-file names use **save_as** as prefix, while their endings are: `.config.json`
-and `.pt` for the model; `_ds.config.json` and `_ds.pt` for the dataset.
+dict) and two for the dataset (config and the internal state). All file names
+use **save_as** as a prefix and their endings are: `.config.json` and `.pt`
+for the model; `_ds.config.json` and `_ds.pt` for the dataset.
 
 **device**: device for the model. E.g.: 'cuda:0'.
 
@@ -89,27 +92,26 @@ selected **control_metric** is became not better) in a row. Default
 **batch_size** (`int`): number of sentences per batch. For training,
 default `batch_size=32`.
 
-**control_metric** (`str`): metric to control training. Default
-`control_metric='accuracy'`. Any that is supported by the `junky.train()`
-method. In the moment it is: 'accuracy', 'f1' and 'loss'. Default
-`control_metric=accuracy`.
+**control_metric** (`str`): metric to control training. Any that is supported
+by the `junky.train()` method. Currently, options are: 'accuracy', 'f1' and
+'loss'. Default `control_metric=accuracy`.
 
 **max_grad_norm** (`float`): gradient clipping parameter, used with
 `torch.nn.utils.clip_grad_norm_()`.
 
 **tags_to_remove** (`list([str])|dict({str: list([str])})`): tags, tokens with
- those must be removed from the corpus. May be a `list` of tag names or a
- `dict` of `{<feat name>: [<feat value>, ...]}`. This argument may be used,
-for example, to remove some infrequent tags from the corpus. Note, that we
-remove the tokens from the train corpus as a whole, not just replace those
-tags to `None`.
+those must be removed from the corpus. May be a `list` of tag names or a
+`dict` of `{<feat name>: [<feat value>, ...]}`. This argument may be used, for
+example, to remove some infrequent tags from the corpus. Note, that we remove
+the tokens from the train corpus as a whole, not just replace those tags to
+`None`.
 
 **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding types.
 
 **word_emb_path** (`str`): path to word embeddings storage.
 
 **word_emb_model_device**: the torch device where the model of word embeddings
-are placed. Relevant only with embedding types, models of which use devices
+is placed. Relevant only with embedding types, models of which use devices
 (currently, only 'bert').
 
 **word_emb_tune_params**: parameters for word embeddings finetuning. For now,
@@ -230,7 +232,7 @@ Returns corpus with tag predictions in the UPOS field.
 ### Evaluate <a name="eval"></a>
 
 When predictions are ready, evaluate predicitons on the development test set
-based on gold corpus:
+based on the gold corpus:
 ```python
 tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, log_file=LOG_FILE)

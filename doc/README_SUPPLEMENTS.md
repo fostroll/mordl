@@ -5,7 +5,10 @@
 MorDL package contains few additional utility methods that can simplify
 corpora processing.
 
-To learn more about main pipeline and beyond, refer to other chapters:
+**NB:** To use supplement methods, you should have a tagger object created.
+
+To learn more about taggers, main pipeline and beyond, refer to other
+chapters:
 
 * [MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
 * [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md)
@@ -18,7 +21,6 @@ To learn more about main pipeline and beyond, refer to other chapters:
 * [Load and Save Corpora](#corp)
 * [Split Corpus](#split)
 * [Remove Rare Features](#rare)
-* [Save and Restore Model Backups](#backup)
 
 ### Load and Save Corpora <a name="corp"></a>
 
@@ -86,18 +88,3 @@ count of the train corpus is less than this value
 
 **full_rel_thresh**: remove features if their frequency with respect to the
 full count of the tokens of the train corpus is less than this value
-
-### Save and Restore Model Backups <a name="backup"></a>
-
-Anytime, you can backup and restore internal states of trained models.
-
-```python
-o = tagger.backup()
-```
-Get current state.
-
-```python
-tagger.restore(o)
-```
-Restore current state from backup object.
-

@@ -4,9 +4,11 @@
 
 In MorDL, we treat lemma prediction as a sequence labelling task, rather than
 a sequence-to-sequence problem, as described in
-[Straka M., 2018](https://www.aclweb.org/anthology/K18-2020.pdf), part 4.4, and
+[Straka M., 2018](https://www.aclweb.org/anthology/K18-2020.pdf), part 4.4,
+and
 [Kondratyuk D. and Milan Straka, 2019](https://www.aclweb.org/anthology/D19-1279.pdf),
-part 2.3.
+part 2.3. Overall, lemmatization is based on edit operations from source string
+to lemmatized string.
 
 ### Table of Contents
 
@@ -15,6 +17,7 @@ part 2.3.
 3. [Save and Load Trained Models](#save)
 4. [Predict](#predict)
 5. [Evaluate](#eval)
+6. [Lemmatization Supplements](#lemma_suppl)
 
 ### Initialization and Data Loading <a name="init"></a>
 
@@ -29,10 +32,10 @@ Args:
 **field** (`str`): the name of the field which needs to be predicted by the
 training tagger. May contain up to 3 elements, separated by a colon (`:`).
 Format is: `'<field name>:<feat name>:<replacement for None>'`. The
-replacement is used during the training time as a filler for a fields without
-a value for that we could predict them, too. In the *CoNLL-U* format the
-replacer is `'_'` sign, so we use it, too, as a default replacement. You'll
-hardly have a reason to change it. Examples:<br/> 
+replacement is used during training as a filler for a fields without a value
+so that we could predict them, too. In the *CoNLL-U* format the replacer is a
+`'_'` sign, so we use it as a default replacement. Normally, you wouldn't need
+to change this parameter. Examples:<br/> 
 `'UPOS'` - predict the *UPOS* field;<br/>
 `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS* field;<br/>
 `'FEATS:Animacy:_O'` - likewise the above, but if feat value is `None`, it
@@ -41,11 +44,11 @@ will be replaced by `'_O'` during training;<br/>
 `None`.
 
 **feats_clip_coef** (`int`): feature clipping coefficient which allows to
-eliminate all features that have lower frequency than 
+eliminate all features that have a lower frequency than 
 `<most frequent feature frequency>` divided by `feats_clip_coef`.
 * `feats_clip_coef=0` means "do not use feats"
 * `feats_clip_coef=None` means "use all feats"
-Relevant only if `cdict` is specified and `field` is not from `FEATS`
+Relevant only if `cdict` is specified and `field` is not from `FEATS`.
 
 Afterwards, load train and test data into the tagger object:
 ```python
@@ -59,7 +62,7 @@ chapter.
 
 ### Train <a name="train"></a>
 
-***MorDL*** allows you to train a custom LSTM-based lemma prediction model.
+***MorDL*** allows you to train a custom biLSTM-based lemma prediction model.
 We treat lemma prediction as a sequence labelling task, rather than a
 sequence-to-sequence problem. 
 
@@ -67,8 +70,7 @@ sequence-to-sequence problem.
 loaded.
 
 ```python
-tagger.train(save_as,
-             device=None, epochs=None, min_epochs=0, bad_epochs=5,
+tagger.train(save_as, device=None, epochs=None, min_epochs=0, bad_epochs=5,
              batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
              max_grad_norm=None, tags_to_remove=None,
              word_emb_type='bert', word_emb_model_device=None,
@@ -85,15 +87,15 @@ During training, the best model is saved after each successful epoch.
 
 Args:
 
-**save_as** (`str`): the name of the tagger using for save. As a result, 4
-files will be created after training: two for tagger's model (config and
-state dict) and two for the dataset (config and the internal state). All file
-names are used **save_as** as prefix and their endings are: `.config.json` and
-`.pt` for the model; `_ds.config.json` and `_ds.pt` for the dataset.
+**save_as** (`str`): the name of the tagger used for save. As a result, 4
+files will be created after training: two for tagger's model (config and state
+dict) and two for the dataset (config and the internal state). All file names
+use **save_as** as a prefix and their endings are: `.config.json` and `.pt`
+for the model; `_ds.config.json` and `_ds.pt` for the dataset.
 
 **device**: device for the model. E.g.: 'cuda:0'.
 
-**epochs** (`int`): number of epochs to train. If `None`, train until 
+**epochs** (`int`): number of epochs to train. If `None`, train until
 `bad_epochs` is met, but no less than `min_epochs`.
 
 **min_epochs** (`int`): minimum number of training epochs.
@@ -124,7 +126,7 @@ the tokens from the train corpus as a whole, not just replace those tags to
 **word_emb_path** (`str`): path to word embeddings storage.
 
 **word_emb_model_device**: the torch device where the model of word embeddings
-are placed. Relevant only with embedding types, models of which use devices
+is placed. Relevant only with embedding types, models of which use devices
 (currently, only 'bert').
 
 **word_emb_tune_params**: parameters for word embeddings finetuning. For now,
@@ -134,10 +136,10 @@ of keyword args for this method. You can replace any except `test_data`.
 
 **word_transform_kwargs** (`dict`): keyword arguments for `.transform()`
 method of the dataset created for sentences to word embeddings conversion. See
-the `.transform()` method of `junky.datasets.BertDataset` for the the
-description of the parameters.
+the `.transform()` method of `junky.datasets.BertDataset` for the description
+of the parameters.
 
-**word_next_emb_params**: if you want to use several different embedding
+**word_next_emb_params**: if you want to use several different embedding 
 models at once, pass parameters of the additional model as a dictionary with
 keys `(emb_path, emb_model_device, transform_kwargs)`; or a list of such
 dictionaries if you need more than one additional model.
@@ -247,7 +249,7 @@ Returns corpus with tag predictions in the `MISC:NE` field.
 ### Evaluate <a name="eval"></a>
 
 When predictions are ready, evaluate predicitons on the development test set
-based on gold corpus:
+based on the gold corpus:
 ```python
 tagger.evaluate(gold, test=None, batch_size=BATCH_SIZE, split=None,
 				clone_ds=False, log_file=LOG_FILE)
@@ -275,3 +277,47 @@ without splits.
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
 Prints metrics and returns evaluation accuracy.
+
+### Lemmatization Supplements <a name="lemma_suppl"></a>
+
+As lemmatization is based on edit operations from source string to lemmatized
+string, there are several supplement methods for `LemmaTagger()`.
+
+```python
+tagger.find_affixes(form, lemma, lower=False)
+```
+Find the longest common part of the given **form** and **lemma**.
+
+Args:
+
+**lower** (`bool`): if `True` then return values will be always in lower case.
+
+Rerutns prefix, common part, suffix/flexion of **form** & prefix, common part,
+suffix/flexion of **lemma** (`str`, `str`, `str`, `str`, `str`, `str`).
+
+```python
+tagger.get_editops(str_from, str_to, allow_replace=True, allow_copy=True)
+```
+Get edit operations from `str_from` to `str_to` according to Levenstein
+distance. Supported edit operations: 'delete', 'insert', 'replace', 'copy'.
+
+Args:
+
+**str_from** (`str`): source string.
+
+**str_to** (`str`): target string.
+
+**allow_replace** (`bool`): whether to allow **replace** edit operation.
+
+**allow_copy** (`bool`): whether to allow **copy** edit operation.
+
+```python
+tagger.apply_editops(str_from, ops)
+```
+Apply edit operations to the source string.
+
+Args:
+
+**str_from** (`str`): source string to apply edit operations to.
+
+**ops** (`list([str])`): list of edit operations.
