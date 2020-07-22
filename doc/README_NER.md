@@ -67,8 +67,7 @@ chapter.
 loaded.
 
 ```python
-tagger.train(save_as,
-			 device=None, epochs=None, min_epochs=0, bad_epochs=5,
+tagger.train(save_as, device=None, epochs=None, min_epochs=0, bad_epochs=5,
 			 batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
 			 max_grad_norm=None, tags_to_remove=None,
 			 word_emb_type='bert', word_emb_model_device=None,
@@ -212,8 +211,8 @@ chapter.
 
 Using the trained corpus, predict tags for the specified corpus:
 ```python
-tagger.predict(corpus, with_orig=False, batch_size=BATCH_SIZE,
-               split=None, clone_ds=False, save_to=None, log_file=LOG_FILE)
+tagger.predict(corpus, with_orig=False, batch_size=BATCH_SIZE, split=None,
+			   clone_ds=False, save_to=None, log_file=LOG_FILE)
 ```
 Predicts tags in the `MISC:NE` fields of the corpus.
 
@@ -250,7 +249,7 @@ When predictions are ready, evaluate predicitons on the development test set
 based on the gold corpus:
 ```python
 tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
-                 split=None, clone_ds=False, log_file=LOG_FILE)
+                split=None, clone_ds=False, log_file=LOG_FILE)
 ```
 Evaluates predicitons on the development test set.
 

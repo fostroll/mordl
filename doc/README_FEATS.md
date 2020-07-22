@@ -76,8 +76,7 @@ prediction model.
 loaded.
 
 ```python
-tagger.train(save_as,
-			 device=None, epochs=None, min_epochs=0, bad_epochs=5,
+tagger.train(save_as, device=None, epochs=None, min_epochs=0, bad_epochs=5,
 			 batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
 			 max_grad_norm=None, tags_to_remove=None,
 			 word_emb_type='bert', word_emb_model_device=None,
