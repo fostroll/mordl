@@ -116,7 +116,8 @@ class BaseTagger(BaseParser):
                 sentences, emb_type=word_emb_type, emb_path=word_emb_path,
                 emb_model_device=word_emb_model_device,
                 transform_kwargs=word_transform_kwargs,
-                next_emb_params=word_next_emb_params, log_file=log_file
+                next_emb_params=word_next_emb_params,
+                loglevel=int(log_file is not None)
             )
             ds.add('x', x)
         else:
