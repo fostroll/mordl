@@ -5,8 +5,11 @@
 MorDL supports single and multiple feature taggers. In this chapter, we cover
 multiple feature taggers `FeatsJointTagger()` and `FeatsSeparateTagger()`.
 
-For multiple feature taggers, refer to 
-[README_FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
+Joint and separate FEATS taggers have slightly different initialization,
+training and prediction methods and the same evaluation method.
+
+For a single feature tagger, refer to 
+[README_FEAT](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md)
 chapter.
 
 ### Table of Contents
@@ -15,14 +18,13 @@ chapter.
 1. [Initialization and Data Loading](#init)
 2. [Train](#train)
 3. [Predict](#predict)
-4. [Evaluate](#eval)
 
 * [Separate Tagger](#separate)
 1. [Initialization and Data Loading](#init_sep)
 2. [Train](#train_sep)
 3. [Predict](#predict_sep)
-4. [Evaluate](#eval_sep)
 
+* [Evaluate](#eval)
 * [Save and Load Trained Models](#save)
 
 ## Joint Feats Tagger <a name="joint"></a>
@@ -233,44 +235,6 @@ without splits.
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
 Returns corpus with tag predictions in the `FEATS` field.
-
-### Evaluate <a name="eval"></a>
-
-When predictions are ready, evaluate predicitons on the development test set
-based on gold corpus:
-```python
-tagger.evaluate(gold, test=None, feats=None, label=None, 
-                batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                log_file=LOG_FILE)
-```
-Evaluates predicitons on the development test set.
-
-Args:
-
-**gold** (`tuple(<sentences> <labels>)`): corpus with actual target tags.
-
-**test** (`tuple(<sentences> <labels>)`): corpus with predicted target tags.
-If `None`, predictions will be created on-the-fly based on the `gold` corpus.
-
-**feats** (`str|list([str])`): one or several subfields of `FEATS` to be
-evaluated.
-
-**label** (`str`): specific label of the target field to be evaluated, e.g.
-`label='Inan'`.
-
-**batch_size** (`int`): number of sentences per batch. Default
-`batch_size=64`.
-
-**split** (`int`): number of lines in each split. Allows to split a large
-dataset into several parts. Default `split=None`, i.e. process full dataset
-without splits.
-
-**clone_ds** (`bool`): if `True`, the dataset is cloned and transformed. If
-`False`, `transform_collate` is used without cloning the dataset.
-
-**log_file**: a stream for info messages. Default is `sys.stdout`.
-
-Prints metrics and returns evaluation accuracy.
 
 ## Separate Feats Tagger <a name="separate"></a>
 
@@ -490,7 +454,9 @@ without splits.
 
 Returns corpus with tag predictions in the specified field.
 
-### Evaluate <a name="eval_sep"></a>
+## Evaluate <a name="eval"></a>
+
+Evaluation step is the same for both joint and separate taggers.
 
 When predictions are ready, evaluate predicitons on the development test set
 based on gold corpus:
