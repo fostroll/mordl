@@ -17,6 +17,7 @@ from mordl import WordEmbeddings
 from morra.base_parser import BaseParser
 from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE, \
                            NONE_TAG, TRAIN_BATCH_SIZE
+from mordl.lib import conll18_ud_eval
 import os
 import sys
 import torch
@@ -597,8 +598,60 @@ class BaseTagger(BaseParser):
                                       c / n if n > 0 else 1.), file=log_file)
         return ct / nt if nt > 0 else 1.
 
-    def conll18_ud_eval(gold_file, system_file, verbose=False, counts=False):
-        pass
+    def conll18_ud_eval(gold_file, system_file, verbose=True, counts=False):
+        """A wrapper for the official
+        [CoNLL18 UD Shared Task](https://universaldependencies.org/conll18/results.html)
+        evaluation script.
+
+        positional arguments:<br/>
+          gold_file      Name of the CoNLL-U file with the gold data.<br/>
+          system_file    Name of the CoNLL-U file with the predicted.
+
+        optional arguments:<br/>
+          verbose        Print all metrics.<br/>
+          counts         Print raw counts of correct/gold/system/aligned words
+                         instead of prec/rec/F1 for all metrics.
+
+        If `verbose=False`, only the official CoNLL18 UD Shared Task
+        evaluation metrics are printed.
+
+        If `verbose=True` (default), more metrics are printed (as precision,
+        recall, F1 score, and in case the metric is computed on aligned words
+        also accuracy on these):<br/>
+          - Tokens: how well do the gold tokens match system tokens<br/>
+          - Sentences: how well do the gold sentences match system
+              sentences<br/>
+          - Words: how well can the gold words be aligned to system words<br/>
+          - UPOS: using aligned words, how well does UPOS match<br/>
+          - XPOS: using aligned words, how well does XPOS match<br/>
+          - UFeats: using aligned words, how well does universal FEATS
+              match<br/>
+          - AllTags: using aligned words, how well does UPOS+XPOS+FEATS
+              match<br/>
+          - Lemmas: using aligned words, how well does LEMMA match<br/>
+          - UAS: using aligned words, how well does HEAD match<br/>
+          - LAS: using aligned words, how well does HEAD+DEPREL(ignoring
+              subtypes) match<br/>
+          - CLAS: using aligned words with content DEPREL, how well does
+              HEAD+DEPREL(ignoring subtypes) match<br/>
+          - MLAS: using aligned words with content DEPREL, how well does
+              HEAD+DEPREL(ignoring subtypes)+UPOS+UFEATS+FunctionalChildren(DEPREL+UPOS+UFEATS)
+              match<br/>
+          - BLEX: using aligned words with content DEPREL, how well does
+              HEAD+DEPREL(ignoring subtypes)+LEMMAS match
+
+        If `count=True`, raw counts of correct/gold_total/system_total/aligned
+          words are printed instead of precision/recall/F1/AlignedAccuracy for
+          all metrics.
+        """
+        argv = sys.argv
+        sys.argv = [gold_file, system_file]
+        if verbose:
+            sys.argv.append('-v')
+        if count:
+            sys.argv.append('-c')
+        conll18_ud_eval.main()
+        sys.argv = argv
 
     def train(self, field, add_fields, model_class, tag_emb_names, save_as,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
