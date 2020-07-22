@@ -155,14 +155,15 @@ class BaseTaggerModel(BaseModel):
                                hidden_size=lstm_hidden_dim,
                                num_layers=lstm_layers, batch_first=True,
                                dropout=lstm_do, bidirectional=True)
+        self._H = nn.Linear(lstm_hidden_dim * 2, emb_out_dim)
         self._T = nn.Linear(emb_out_dim, emb_out_dim)
         nn.init.constant_(self._T.bias, -1)
 
         self._bn3 = \
-            nn.BatchNorm1d(num_features=lstm_hidden_dim * 2) if bn3 else None
+            nn.BatchNorm1d(num_features=emb_out_dim) if bn3 else None
         self._do3 = nn.Dropout(p=do3) if do3 else None
 
-        self._out_l = nn.Linear(in_features=lstm_hidden_dim * 2,
+        self._out_l = nn.Linear(in_features=emb_out_dim,
                                 out_features=labels_num)
         self._out_masking = \
             Masking(input_size=labels_num,
@@ -220,6 +221,7 @@ class BaseTaggerModel(BaseModel):
         x_, _ = self._lstm_l(x_)
         x_, _ = pad_packed_sequence(x_, batch_first=True)
 
+        x_ = torch.sigmoid(self._H(x))
         gate = torch.sigmoid(self._T(x))
         x = x_ * gate + x * (1 - gate)
 
