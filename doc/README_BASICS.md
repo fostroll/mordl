@@ -7,11 +7,11 @@ This chapter gives an overview on MorDL taggers and the basic pipeline.
 ### Table of Contents
 
 1. [Initialization](#init)
-2. [Load Train and Test Data](#data)
-3. [Main Pipeline: Train - Predict - Evaluate](#pipeline)
-4. [Save and Load Trained Models](#save)
-5. [Save and Load Model's `state_dict`](#state)
-6. [Save and Restore Model Backups](#backup)
+1. [Load Train and Test Data](#data)
+1. [Main Pipeline: Train - Predict - Evaluate](#pipeline)
+1. [Save and Load Trained Models](#save)
+1. [Save and Load Model's `state_dict`](#state)
+1. [Save and Restore Model Backups](#backup)
 
 ### Initialization <a name="init"></a>
 

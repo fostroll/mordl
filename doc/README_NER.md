@@ -8,10 +8,10 @@ and evaluate them.
 ### Table of Contents
 
 1. [Initialization and Data Loading](#init)
-2. [Train](#train)
-3. [Save and Load Trained Models](#save)
-4. [Predict](#predict)
-5. [Evaluate](#eval)
+1. [Train](#train)
+1. [Save and Load Trained Models](#save)
+1. [Predict](#predict)
+1. [Evaluate](#eval)
 
 ### Initialization and Data Loading <a name="init"></a>
 
