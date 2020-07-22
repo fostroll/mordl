@@ -72,8 +72,8 @@ Args:
 Main pipeline consists of 3 steps: training - prediction - evaluation.
 Parameters vary for each different tagger.
 
-To learn more about training, prediction and evaluation steps, refer to the
-corresponding chapters:
+To learn more about training, prediction and evaluation steps for each tagger,
+refer to the corresponding chapters:
 
 * [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md)
 * [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
