@@ -15,14 +15,14 @@ chapter.
 ### Table of Contents
 
 * [Joint Tagger](#joint)
-1. [Initialization and Data Loading](#init)
-2. [Train](#train)
-3. [Predict](#predict)
+	1. [Initialization and Data Loading](#init)
+	2. [Train](#train)
+	3. [Predict](#predict)
 
 * [Separate Tagger](#separate)
-1. [Initialization and Data Loading](#init_sep)
-2. [Train](#train_sep)
-3. [Predict](#predict_sep)
+	1. [Initialization and Data Loading](#init_sep)
+	2. [Train](#train_sep)
+	3. [Predict](#predict_sep)
 
 * [Evaluate](#eval)
 * [Save and Load Trained Models](#save)
