@@ -221,7 +221,7 @@ class BaseTaggerModel(BaseModel):
         x_, _ = self._lstm_l(x_)
         x_, _ = pad_packed_sequence(x_, batch_first=True)
 
-        x_ = torch.sigmoid(self._H(x))
+        x_ = torch.sigmoid(self._H(x_))
         gate = torch.sigmoid(self._T(x))
         x = x_ * gate + x * (1 - gate)
 
