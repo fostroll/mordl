@@ -504,7 +504,8 @@ class FeatTaggerOld(BaseTagger):
 
         **word_emb_model_device**: the torch device where the model of word
         embeddings are placed. Relevant only with embedding types, models of
-        which use devices (currently, only 'bert').
+        which use devices (currently, only 'bert'). `None` means
+        **word_emb_model_device** = **device**
 
         **word_emb_tune_params**: parameters for word embeddings finetuning.
         For now, only BERT embeddings finetuning is supported with

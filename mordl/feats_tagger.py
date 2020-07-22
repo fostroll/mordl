@@ -216,7 +216,8 @@ class FeatsJointTagger(BaseTagger):
 
         **word_emb_model_device**: the torch device where the model of word
         embeddings are placed. Relevant only with embedding types, models of
-        which use devices (currently, only 'bert').
+        which use devices (currently, only 'bert'). `None` means
+        **word_emb_model_device** = **device**
 
         **word_emb_tune_params**: parameters for word embeddings finetuning.
         For now, only BERT embeddings finetuning is supported with
@@ -603,7 +604,8 @@ class FeatsSeparateTagger(BaseTagger):
 
         **word_emb_model_device**: the torch device where the model of word
         embeddings are placed. Relevant only with embedding types, models of
-        which use devices (currently, only 'bert').
+        which use devices (currently, only 'bert'). `None` means
+        **word_emb_model_device** = **device**
 
         **word_emb_path_suffix** (`str`): path suffix to word embeddings
         storage, from full embedding name in the format

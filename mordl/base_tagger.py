@@ -743,7 +743,8 @@ class BaseTagger(BaseParser):
 
         **word_emb_model_device**: the torch device where the model of word
         embeddings are placed. Relevant only with embedding types, models of
-        which use devices (currently, only 'bert').
+        which use devices (currently, only 'bert'). `None` means
+        **word_emb_model_device** = **device**
 
         **word_emb_tune_params**: parameters for word embeddings finetuning.
         For now, only BERT embeddings finetuning is supported with
@@ -810,6 +811,9 @@ class BaseTagger(BaseParser):
         ) if self._test_corpus is not None else None
 
         # 2. Tune embeddings
+        if word_emb_model_device is None:
+            word_emb_model_device = device
+
         def tune_word_emb(emb_type, emb_path, emb_model_device=None,
                           emb_tune_params=None):
             if emb_tune_params is True:
