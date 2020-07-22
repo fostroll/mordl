@@ -643,7 +643,7 @@ class WordEmbeddings:
     def create_dataset(cls, sentences, emb_type='ft', emb_path=None,
                        emb_model_device=None, transform_kwargs=None,
                        next_emb_params=None, batch_size=BATCH_SIZE,
-                       log_file=LOG_FILE):
+                       loglevel=2):
         """Creates dataset with embedded sequences.
 
         Args:
@@ -737,10 +737,8 @@ class WordEmbeddings:
                     kwargs.update(transform_kwargs)
                 if batch_size:
                     kwargs['batch_size'] = batch_size
-                kwargs['loglevel'] = \
-                    0 if not log_file else \
-                    1 if log_file == sys.stdout else \
-                    2
+                if loglevel is not None:
+                    kwargs['loglevel'] = loglevel
                 transform_kwargs = kwargs
                 model, tokenizer = emb_model
                 x = BertDataset(model, tokenizer)
@@ -775,7 +773,7 @@ class WordEmbeddings:
 
     @classmethod
     def transform(cls, ds, sentences, transform_kwargs=None,
-                  batch_size=BATCH_SIZE, log_file=LOG_FILE):
+                  batch_size=BATCH_SIZE, loglevel=1):
         """Converts **sentences** of tokens to the sequences of the
         corresponding indices.
 
@@ -814,9 +812,8 @@ class WordEmbeddings:
                     kwargs.update(transform_kwargs)
                 if batch_size:
                     kwargs['batch_size'] = batch_size
-                kwargs['loglevel'] = 0 if not log_file else \
-                                     1 if log_file == sys.stdout else \
-                                     2
+                if loglevel is not None:
+                    kwargs['loglevel'] = loglevel
                 transform_kwargs = kwargs
         for _ in range(1):
             if isinstance(ds, BertDataset):
@@ -835,7 +832,7 @@ class WordEmbeddings:
 
     @classmethod
     def transform_collate(cls, ds, sentences, transform_kwargs=None,
-                          batch_size=BATCH_SIZE, log_file=LOG_FILE):
+                          batch_size=BATCH_SIZE, loglevel=1):
         """Sequentially makes batches from `sentences`.
 
         Args:
@@ -877,11 +874,10 @@ class WordEmbeddings:
                 if transform_kwargs:
                     kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
-                loglevel = 0 if not log_file else \
-                           1 if log_file == sys.stdout else \
-                           2
             elif isinstance(ds, WordDataset):
-                loglevel = transform_kwargs.pop('loglevel', 1)
+                loglevel_ = transform_kwargs.pop('loglevel', None)
+                if loglevel is None:
+                    loglevel = loglevel_
             else:
                 break
             junky.clear_tqdm()
