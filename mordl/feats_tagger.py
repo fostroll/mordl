@@ -290,10 +290,12 @@ class FeatsJointTagger(BaseTagger):
 
         args, kwargs = get_func_params(FeatsJointTagger.train, locals())
 
-        [x.update({self._field: find_affixes(x['FORM'], x[self._field])})
+        [x.update({self._field: '|'.join('='.join((y, x[self._field][y]))
+                                    for y in sorted(x[self._field]))})
              for x in self._train_corpus for x in x]
 
-        [x.update({self._field: find_affixes(x['FORM'], x[self._field])})
+        [x.update({self._field: '|'.join('='.join((y, x[self._field][y]))
+                                    for y in sorted(x[self._field]))})
              for x in self._test_corpus for x in x]
 
         key_vals = set(x[self._field] for x in self._train_corpus for x in x)
