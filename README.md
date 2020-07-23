@@ -51,19 +51,19 @@ a file), or
 [***Corpuscula***'s corpora wrappers](https://github.com/fostroll/corpuscula/blob/master/doc/README_CORPORA.md)
 as input.
 
-[***MorDL*** Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
+[***MorDL*** Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#start)
 
-[Part of Speech Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md)
+[Part of Speech Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md#start)
 
-[Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md)
+[Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md#start)
 
-[Multiple Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
+[Multiple Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md#start)
 
-[Lemmata Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md)
+[Lemmata Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md#start)
 
-[Named-entity Recognition](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
+[Named-entity Recognition](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md#start)
 
-[Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md)
+[Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md#start)
 
 ## Examples
 
