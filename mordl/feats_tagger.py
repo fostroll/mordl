@@ -172,19 +172,20 @@ class FeatsJointTagger(BaseTagger):
         Args:
 
         **save_as** (`str`): the name using for save. Refer to the `.save()`
-        method's help of the `BaseTagger` for broad definition (see the
+        method's help of the `BaseTagger` for the broad definition (see the
         **name** arg there).
 
         **device**: device for the model. E.g.: 'cuda:0'.
 
-        **epochs** (`int`): number of epochs to train. If `None`, train until
-        `bad_epochs` is met, but no less than `min_epochs`.
+        **epochs** (`int`): number of epochs to train. If `None` (default),
+        train until `bad_epochs` is met, but no less than `min_epochs`.
 
-        **min_epochs** (`int`): minimum number of training epochs.
+        **min_epochs** (`int`): minimum number of training epochs. Default is
+        `0`
 
         **bad_epochs** (`int`): maximum allowed number of bad epochs (epochs
         when selected **control_metric** is became not better) in a row.
-        Default `bad_epochs=5`.
+        Default is `5`.
 
         **batch_size** (`int`): number of sentences per batch. For training,
         default `batch_size=32`.
@@ -196,10 +197,11 @@ class FeatsJointTagger(BaseTagger):
         **max_grad_norm** (`float`): gradient clipping parameter, used with
         `torch.nn.utils.clip_grad_norm_()`.
 
-        **tags_to_remove** (`list([str])|dict({str: list([str])})`): tags,
-        tokens with those must be removed from the corpus. May be a `list` of
-        tag names or a `dict` of `{<feat name>: [<feat value>, ...]}`. This
-        argument may be used, for example, to remove some infrequent tags from
+        **tags_to_remove** (`dict({str: str})|dict({str: list([str])})`):
+        tags, tokens with those must be removed from the corpus. It's a `dict`
+        with field names as keys and with value you want to remove. Applied
+        only to fields with atomic values (like UPOS). This argument may be
+        used, for example, to remove some infrequent or just excess tags from
         the corpus. Note, that we remove the tokens from the train corpus as a
         whole, not just replace those tags to `None`.
 
@@ -553,7 +555,7 @@ class FeatsSeparateTagger(BaseTagger):
         Args:
 
         **save_as** (`str`): the name using for save. Refer to the `.save()`
-        method's help of the `BaseTagger` for broad definition (see the
+        method's help of the `BaseTagger` for the broad definition (see the
         **name** arg there).
 
         **feats** (`str|list([str])`): one or several subfields of the
@@ -561,14 +563,15 @@ class FeatsSeparateTagger(BaseTagger):
 
         **device**: device for the model. E.g.: 'cuda:0'.
 
-        **epochs** (`int`): number of epochs to train. If `None`, train until
-        `bad_epochs` is met, but no less than `min_epochs`.
+        **epochs** (`int`): number of epochs to train. If `None` (default),
+        train until `bad_epochs` is met, but no less than `min_epochs`.
 
-        **min_epochs** (`int`): minimum number of training epochs.
+        **min_epochs** (`int`): minimum number of training epochs. Default is
+        `0`
 
         **bad_epochs** (`int`): maximum allowed number of bad epochs (epochs
         when selected **control_metric** is became not better) in a row.
-        Default `bad_epochs=5`.
+        Default is `5`.
 
         **batch_size** (`int`): number of sentences per batch. For training,
         default `batch_size=32`.
@@ -580,10 +583,11 @@ class FeatsSeparateTagger(BaseTagger):
         **max_grad_norm** (`float`): gradient clipping parameter, used with
         `torch.nn.utils.clip_grad_norm_()`.
 
-        **tags_to_remove** (`list([str])|dict({str: list([str])})`): tags,
-        tokens with those must be removed from the corpus. May be a `list` of
-        tag names or a `dict` of `{<feat name>: [<feat value>, ...]}`. This
-        argument may be used, for example, to remove some infrequent tags from
+        **tags_to_remove** (`dict({str: str})|dict({str: list([str])})`):
+        tags, tokens with those must be removed from the corpus. It's a `dict`
+        with field names as keys and with value you want to remove. Applied
+        only to fields with atomic values (like UPOS). This argument may be
+        used, for example, to remove some infrequent or just excess tags from
         the corpus. Note, that we remove the tokens from the train corpus as a
         whole, not just replace those tags to `None`.
 

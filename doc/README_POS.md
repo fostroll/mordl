@@ -62,73 +62,80 @@ Creates and trains the UPOS tagger model.
 
 During training, the best model is saved after each successful epoch.
 
-Args:
+*Training's args*:
 
-**save_as** (`str`): the name of the tagger used for save. As a result, 4
-files will be created after training: two for tagger's model (config and state
-dict) and two for the dataset (config and the internal state). All file names
-use **save_as** as a prefix and their endings are: `.config.json` and `.pt`
-for the model; `_ds.config.json` and `_ds.pt` for the dataset.
+**save_as** (`str`): the name using for save. Refer to the `.save()`
+method's help of the `BaseTagger` for the broad definition (see the
+**name** arg there).
 
 **device**: device for the model. E.g.: 'cuda:0'.
 
-**epochs** (`int`): number of epochs to train. If `None`, train until
-`bad_epochs` is met, but no less than `min_epochs`.
+**epochs** (`int`): number of epochs to train. If `None` (default),
+train until `bad_epochs` is met, but no less than `min_epochs`.
 
-**min_epochs** (`int`): minimum number of training epochs.
+**min_epochs** (`int`): minimum number of training epochs. Default is
+`0`
 
-**bad_epochs** (`int`): maximum allowed number of bad epochs (epochs when
-selected **control_metric** is became not better) in a row. Default
-`bad_epochs=5`.
+**bad_epochs** (`int`): maximum allowed number of bad epochs (epochs
+when selected **control_metric** is became not better) in a row.
+Default is `5`.
 
 **batch_size** (`int`): number of sentences per batch. For training,
 default `batch_size=32`.
 
-**control_metric** (`str`): metric to control training. Any that is supported
-by the `junky.train()` method. Currently, options are: 'accuracy', 'f1' and
+**control_metric** (`str`): metric to control training. Default
+`control_metric='accuracy'`. Any that is supported by the
+`junky.train()` method. In the moment it is: 'accuracy', 'f1' and
 'loss'. Default `control_metric=accuracy`.
 
 **max_grad_norm** (`float`): gradient clipping parameter, used with
 `torch.nn.utils.clip_grad_norm_()`.
 
-**tags_to_remove** (`list([str])|dict({str: list([str])})`): tags, tokens with
-those must be removed from the corpus. May be a `list` of tag names or a
-`dict` of `{<feat name>: [<feat value>, ...]}`. This argument may be used, for
-example, to remove some infrequent tags from the corpus. Note, that we remove
-the tokens from the train corpus as a whole, not just replace those tags to
-`None`.
+**tags_to_remove** (`dict({str: str})|dict({str: list([str])})`):
+tags, tokens with those must be removed from the corpus. It's a `dict`
+with field names as keys and with value you want to remove. Applied
+only to fields with atomic values (like UPOS). This argument may be
+used, for example, to remove some infrequent or just excess tags from
+the corpus. Note, that we remove the tokens from the train corpus as a
+whole, not just replace those tags to `None`.
 
-**word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding types.
+**word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding
+types.
 
 **word_emb_path** (`str`): path to word embeddings storage.
 
-**word_emb_model_device**: the torch device where the model of word embeddings
-is placed. Relevant only with embedding types, models of which use devices
-(currently, only 'bert').
+**word_emb_model_device**: the torch device where the model of word
+embeddings are placed. Relevant only with embedding types, models of
+which use devices (currently, only 'bert'). `None` means
+**word_emb_model_device** = **device**
 
-**word_emb_tune_params**: parameters for word embeddings finetuning. For now,
-only BERT embeddings finetuning is supported with
-`mordl.WordEmbeddings.bert_tune()`. So, **word_emb_tune_params** is a `dict`
-of keyword args for this method. You can replace any except `test_data`.
+**word_emb_tune_params**: parameters for word embeddings finetuning.
+For now, only BERT embeddings finetuning is supported with
+`mordl.WordEmbeddings.bert_tune()`. So, **word_emb_tune_params** is a
+`dict` of keyword args for this method. You can replace any except
+`test_data`.
 
-**word_transform_kwargs** (`dict`): keyword arguments for `.transform()`
-method of the dataset created for sentences to word embeddings conversion. See
-the `.transform()` method of `junky.datasets.BertDataset` for the the
-description of the parameters.
+**word_transform_kwargs** (`dict`): keyword arguments for
+`.transform()` method of the dataset created for sentences to word
+embeddings conversion. See the `.transform()` method of
+`junky.datasets.BertDataset` for the the description of the
+parameters.
 
-**word_next_emb_params**: if you want to use several different embedding
-models at once, pass parameters of the additional model as a dictionary with
-keys `(emb_path, emb_model_device, transform_kwargs)`; or a list of such
-dictionaries if you need more than one additional model.
+**word_next_emb_params**: if you want to use several different
+embedding models at once, pass parameters of the additional model as a
+dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
+or a list of such dictionaries if you need more than one additional
+model.
 
-**rnn_emb_dim** (`int`): character RNN (LSTM) embedding dimensionality. If
+**rnn_emb_dim** (`int`): character RNN (LSTM) embedding
+dimensionality. If `None`, the layer is skipped.
+
+**cnn_emb_dim** (`int`): character CNN embedding dimensionality. If
 `None`, the layer is skipped.
 
-**cnn_emb_dim** (`int`): character CNN embedding dimensionality. If `None`,
-the layer is skipped.
-
 **cnn_kernels** (`list([int])`): CNN kernel sizes. By default,
-`cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with **cnn_emb_dim** not `None`.
+`cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with not `None`
+**cnn_emb_dim**.
 
 **emb_out_dim** (`int`): output embedding dimensionality. Default
 `emb_out_dim=512`.
@@ -142,26 +149,26 @@ the layer is skipped.
 **lstm_do** (`float`): dropout between LSTM layers. Only relevant, if
 `lstm_layers` > `1`.
 
-**bn1** (`bool`): whether batch normalization layer should be applied after
-the embedding layer. Default `bn1=True`.
+**bn1** (`bool`): whether batch normalization layer should be applied
+after the embedding layer. Default `bn1=True`.
 
-**do1** (`float`): dropout rate after the first batch normalization layer
-`bn1`. Default `do1=.2`.
+**do1** (`float`): dropout rate after the first batch normalization
+layer `bn1`. Default `do1=.2`.
 
-**bn2** (`bool`): whether batch normalization layer should be applied after
-the linear layer before LSTM layer. Default `bn2=True`.
+**bn2** (`bool`): whether batch normalization layer should be applied
+after the linear layer before LSTM layer. Default `bn2=True`.
 
-**do2** (`float`): dropout rate after the second batch normalization layer
-`bn2`. Default `do2=.5`.
+**do2** (`float`): dropout rate after the second batch normalization
+layer `bn2`. Default `do2=.5`.
 
-**bn3** (`bool`): whether batch normalization layer should be applied after
-the LSTM layer. Default `bn3=True`.
+**bn3** (`bool`): whether batch normalization layer should be applied
+after the LSTM layer. Default `bn3=True`.
 
-**do3** (`float`): dropout rate after the third batch normalization layer
-`bn3`. Default `do3=.4`.
+**do3** (`float`): dropout rate after the third batch normalization
+layer `bn3`. Default `do3=.4`.
 
-**seed** (`int`): init value for the random number generator if you need
-reproducibility.
+**seed** (`int`): init value for the random number generator if you
+need reproducibility.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
