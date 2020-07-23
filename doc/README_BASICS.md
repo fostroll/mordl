@@ -106,9 +106,9 @@ is an internal state of
 [`corpuscula.CorpusDict`](https://github.com/fostroll/corpuscula/blob/master/doc/README_CDICT.md)
 object that is used by the tagger as a helper.
 
-`*.config.json` files contain parameters for objects' creation. It's
-editable, but you allowed to change only the device name. Any other
-changes most likely won't allow the tagger to load.
+`*.config.json` files contain parameters for objects' creation. They
+are editable, but you allowed to change only the device name. Any
+other changes most likely won't allow the tagger to load.
 
 The saved model can be loaded back for inference with:
 ```python

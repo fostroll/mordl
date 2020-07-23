@@ -261,9 +261,9 @@ class BaseTagger(BaseParser):
         is an internal state of *CorpusDict* object that is used by the tagger
         as a helper.
         
-        `*.config.json` files contain parameters for objects' creation. It's
-        editable, but you allowed to change only the device name. Any other
-        changes most likely won't allow the tagger to load.
+        `*.config.json` files contain parameters for objects' creation. They
+        are editable, but you allowed to change only the device name. Any
+        other changes most likely won't allow the tagger to load.
         """
         assert self._ds, "ERROR: The tagger doesn't have a dataset to save"
         assert self._model, "ERROR: The tagger doesn't have a model to save"
