@@ -169,17 +169,11 @@ class FeatsJointTagger(BaseTagger):
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
         """Creates and trains a feature tagger model.
 
-        We assume all positional argumets but **save_as** are for internal use
-        only and should be hidden in descendant classes.
-
         Args:
 
-        **save_as** (`str`): the name of the tagger using for save. There 4
-        files will be created after training: two for tagger's model (config
-        and state dict) and two for the dataset (config and the internal
-        state). All file names are used **save_as** as prefix and their
-        endings are: `.config.json` and `.pt` for the model; `_ds.config.json`
-        and `_ds.pt` for the dataset.
+        **save_as** (`str`): the name using for save. Refer to the `.save()`
+        method's help of the `BaseTagger` for broad definition (see the
+        **name** arg there).
 
         **device**: device for the model. E.g.: 'cuda:0'.
 
@@ -556,17 +550,11 @@ class FeatsSeparateTagger(BaseTagger):
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
         """Creates and trains a separate feature tagger model.
 
-        We assume all positional argumets but **save_as** are for internal use
-        only and should be hidden in descendant classes.
-
         Args:
 
-        **save_as** (`str`): the name of the tagger using for save. There 4
-        files will be created after training: two for tagger's model (config
-        and state dict) and two for the dataset (config and the internal
-        state). All file names are used **save_as** as prefix and their
-        endings are: `.config.json` and `.pt` for the model; `_ds.config.json`
-        and `_ds.pt` for the dataset.
+        **save_as** (`str`): the name using for save. Refer to the `.save()`
+        method's help of the `BaseTagger` for broad definition (see the
+        **name** arg there).
 
         **feats** (`str|list([str])`): one or several subfields of the
         key-value type fields like `FEATS` or `MISC` to be evaluated.

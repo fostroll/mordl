@@ -124,19 +124,13 @@ class UposTagger(BaseTagger):
               emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=2, lstm_do=0,
               bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
               log_file=LOG_FILE):
-        """Creates and trains a UPOS tagger model.
-
-        We assume all positional argumets but **save_as** are for internal use
-        only and should be hidden in descendant classes.
+        """Creates and trains the UPOS tagger model.
 
         Args:
 
-        **save_as** (`str`): the name of the tagger using for save. There 4
-        files will be created after training: two for tagger's model (config
-        and state dict) and two for the dataset (config and the internal
-        state). All created file names use **save_as** as prefix while their
-        endings are: `.config.json` and `.pt` for the model; `_ds.config.json`
-        and `_ds.pt` for the dataset.
+        **save_as** (`str`): the name using for save. Refer to the `.save()`
+        method's help of the `BaseTagger` for broad definition (see the
+        **name** arg there).
 
         **device**: device for the model. E.g.: 'cuda:0'.
 

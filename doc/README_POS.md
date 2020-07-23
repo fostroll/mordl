@@ -24,33 +24,24 @@ Creates an `UposTagger` object.
 
 Args:
 
-**field** (`str`): the name of the field which needs to be predicted by the
-training tagger. May contain up to 3 elements, separated by a colon (`:`).
-Format is: `'<field name>:<feat name>:<replacement for None>'`. The
-replacement is used during training as a filler for a fields without a value
-so that we could predict them, too. In the *CoNLL-U* format the replacer is a
-`'_'` sign, so we use it as a default replacement. Normally, you wouldn't need
-to change this parameter. Examples:<br/>
-`'UPOS'` - predict the *UPOS* field;<br/>
-`'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS* field;<br/>
-`'FEATS:Animacy:_O'` - likewise the above, but if feat value is `None`, it
-will be replaced by `'_O'` during training;<br/>
-`'XPOS::_O'` - predict the *XPOS* field and use `'_O'` as replacement for
-`None`.
+**field**: a name of the *CoNLL-U* field, values of which you want to
+predict. With the tagger, you can predict only fields with atomic values,
+like UPOS.
 
-Afterwards, load train and test data into the tagger object:
+Afterwards, load train and development test corpora into the tagger object
+created:
 ```python
 tagger.load_train_corpus(corpus, append=False, test=None, seed=None)
 tagger.load_test_corpus(corpus, append=False)
 ```
 For detailed info on `.load_train_corpus()` and `.load_test_corpus()`,
 refer to
-[MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
+[***MorDL*** Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#data)
 chapter.
 
 ### Train <a name="train"></a>
 
-***MorDL*** allows you to train a custom biLSTM-based POS-tagging model.
+***MorDL*** allows you to train a custom POS-tagging model.
 
 **NB:** By this step you should have a tagger object created and training data
 loaded.
@@ -67,7 +58,7 @@ tagger.train(save_as, device=None, epochs=None, min_epochs=0, bad_epochs=5,
              bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
              log_file=LOG_FILE)
 ```
-Creates and trains a POS tagging model.
+Creates and trains the UPOS tagger model.
 
 During training, the best model is saved after each successful epoch.
 
