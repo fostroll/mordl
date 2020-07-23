@@ -8,7 +8,7 @@ multiple feature taggers `FeatsJointTagger()` and `FeatsSeparateTagger()`.
 Joint and separate FEATS taggers have slightly different initialization,
 training and prediction methods and the same evaluation method.
 
-For a single feature tagger, refer to 
+For a single feature tagger, refer to
 [Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md)
 chapter.
 
@@ -49,7 +49,7 @@ Format is: `'<field name>:<feat name>:<replacement for None>'`. The
 replacement is used during training as a filler for a fields without a value
 so that we could predict them, too. In the *CoNLL-U* format the replacer is a
 `'_'` sign, so we use it as a default replacement. Normally, you wouldn't need
-to change this parameter. Examples:<br/> 
+to change this parameter. Examples:<br/>
 `'UPOS'` - predict the *UPOS* field;<br/>
 `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS* field;<br/>
 `'FEATS:Animacy:_O'` - likewise the above, but if feat value is `None`, it
@@ -101,7 +101,7 @@ for the model; `_ds.config.json` and `_ds.pt` for the dataset.
 
 **device**: device for the model. E.g.: 'cuda:0'.
 
-**epochs** (`int`): number of epochs to train. If `None`, train until 
+**epochs** (`int`): number of epochs to train. If `None`, train until
 `bad_epochs` is met, but no less than `min_epochs`.
 
 **min_epochs** (`int`): minimum number of training epochs.
@@ -256,7 +256,7 @@ Format is: `'<field name>:<feat name>:<replacement for None>'`. The
 replacement is used during training as a filler for a fields without a value
 so that we could predict them, too. In the *CoNLL-U* format the replacer is a
 `'_'` sign, so we use it as a default replacement. Normally, you wouldn't need
-to change this parameter. Examples:<br/> 
+to change this parameter. Examples:<br/>
 `'UPOS'` - predict the *UPOS* field;<br/>
 `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS* field;<br/>
 `'FEATS:Animacy:_O'` - likewise the above, but if feat value is `None`, it
@@ -313,7 +313,7 @@ evaluated.
 
 **device**: device for the model. E.g.: 'cuda:0'.
 
-**epochs** (`int`): number of epochs to train. If `None`, train until 
+**epochs** (`int`): number of epochs to train. If `None`, train until
 `bad_epochs` is met, but no less than `min_epochs`.
 
 **min_epochs** (`int`): minimum number of training epochs.
@@ -349,11 +349,11 @@ is placed. Relevant only with embedding types, models of which use devices
 full embedding name in the format `'<feat>_<word_emb_path_suffix>'`.
 
 **word_emb_tune_params**: parameters for word embeddings finetuning. For now,
-only BERT embeddings finetuning is supported with 
+only BERT embeddings finetuning is supported with
 `mordl.WordEmbeddings.bert_tune()`. So, **word_emb_tune_params** is a `dict`
 of keyword args for this method. You can replace any except `test_data`.
 
-**word_transform_kwargs** (`dict`): keyword arguments for `.transform()` 
+**word_transform_kwargs** (`dict`): keyword arguments for `.transform()`
 method of the dataset created for sentences to word embeddings conversion. See
 the `.transform()` method of `junky.datasets.BertDataset` for the the
 description of the parameters.
@@ -384,7 +384,7 @@ Default `upos_emb_dim=60`.
 **lstm_layers** (`int`): number of Bidirectional LSTM layers. Default
 `lstm_layers=1`.
 
-**lstm_do** (`float`): dropout between LSTM layers. Only relevant, if 
+**lstm_do** (`float`): dropout between LSTM layers. Only relevant, if
 `lstm_layers` > `1`.
 
 **bn1** (`bool`): whether batch normalization layer should be applied after
@@ -500,7 +500,7 @@ Normally, you don't need to save the model deliberately. The model is saved
 during training after each successful epoch, but you can save model
 configuration at any time using `.save()` method.
 
-The saved model can be loaded back for inference with `.load()` method. 
+The saved model can be loaded back for inference with `.load()` method.
 
 ```python
 tagger.save(self, name, log_file=LOG_FILE)

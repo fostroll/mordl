@@ -35,7 +35,7 @@ class LemmaTagger(BaseTagger):
     replacement is used during the training time as a filler for a fields
     without     a value for that we could predict them, too. In the *CoNLL-U*
     format the     replacer is `'_'` sign, so we use it, too, as a default
-    replacement. You'll hardly have a reason to change it. Examples:<br/> 
+    replacement. You'll hardly have a reason to change it. Examples:<br/>
     `'UPOS'` - predict the *UPOS* field;<br/>
     `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS
     field;<br/>
@@ -45,9 +45,9 @@ class LemmaTagger(BaseTagger):
     `None`.
 
     **feats_clip_coef** (`int`): feature clipping coefficient which allows to
-    eliminate all features that have lower frequency than 
+    eliminate all features that have lower frequency than
     `<most frequent feature frequency>` divided by `feats_clip_coef`.
-    
+
     `feats_clip_coef=0` means "do not use feats"
     `feats_clip_coef=None` means "use all feats"
     """

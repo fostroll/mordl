@@ -66,7 +66,7 @@ Returns a list of new corpora.
 
 ### Remove Rare Features <a name="rare"></a>
 
-If needed, you can remove rare features from train and test data. 
+If needed, you can remove rare features from train and test data.
 
 **Note** that this method allows you to eliminate the whole feature, not a
 spesific rare label. For example, it will remove the whole `FEATS:Case`

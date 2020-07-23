@@ -35,7 +35,7 @@ Format is: `'<field name>:<feat name>:<replacement for None>'`. The
 replacement is used during training as a filler for a fields without a value
 so that we could predict them, too. In the *CoNLL-U* format the replacer is a
 `'_'` sign, so we use it as a default replacement. Normally, you wouldn't need
-to change this parameter. Examples:<br/> 
+to change this parameter. Examples:<br/>
 `'UPOS'` - predict the *UPOS* field;<br/>
 `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS* field;<br/>
 `'FEATS:Animacy:_O'` - likewise the above, but if feat value is `None`, it
@@ -44,7 +44,7 @@ will be replaced by `'_O'` during training;<br/>
 `None`.
 
 **feats_clip_coef** (`int`): feature clipping coefficient which allows to
-eliminate all features that have a lower frequency than 
+eliminate all features that have a lower frequency than
 `<most frequent feature frequency>` divided by `feats_clip_coef`.
 * `feats_clip_coef=0` means "do not use feats"
 * `feats_clip_coef=None` means "use all feats"
@@ -64,7 +64,7 @@ chapter.
 
 ***MorDL*** allows you to train a custom biLSTM-based lemma prediction model.
 We treat lemma prediction as a sequence labelling task, rather than a
-sequence-to-sequence problem. 
+sequence-to-sequence problem.
 
 **NB:** By this step you should have a tagger object created and training data
 loaded.
@@ -139,7 +139,7 @@ method of the dataset created for sentences to word embeddings conversion. See
 the `.transform()` method of `junky.datasets.BertDataset` for the description
 of the parameters.
 
-**word_next_emb_params**: if you want to use several different embedding 
+**word_next_emb_params**: if you want to use several different embedding
 models at once, pass parameters of the additional model as a dictionary with
 keys `(emb_path, emb_model_device, transform_kwargs)`; or a list of such
 dictionaries if you need more than one additional model.
@@ -199,7 +199,7 @@ Normally, you don't need to save the model deliberately. The model is saved
 during training after each successful epoch, but you can save model
 configuration at any time using `.save()` method.
 
-The saved model can be loaded back for inference with `.load()` method. 
+The saved model can be loaded back for inference with `.load()` method.
 
 ```python
 tagger.save(self, name, log_file=LOG_FILE)

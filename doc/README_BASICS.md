@@ -19,7 +19,7 @@ Currently, MorDL has 5 different tagger types. Refer to the specific tagger
 documentation for detailed information:
 * [POS Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md):
 `UposTagger()`
-* [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md): 
+* [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md):
 `NETagger()`
 * [Lemma Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md):
 `LemmaTagger()`
@@ -88,7 +88,7 @@ Normally, you don't need to save the model deliberately. The model is saved
 during training after each successful epoch, but you can save model
 configuration at any time using `.save()` method.
 
-The saved model can be loaded back for inference with `.load()` method. 
+The saved model can be loaded back for inference with `.load()` method.
 
 ```python
 tagger.save(self, name, log_file=LOG_FILE)

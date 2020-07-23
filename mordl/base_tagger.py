@@ -253,7 +253,7 @@ class BaseTagger(BaseParser):
 
         The method creates 4 files for a tagger: two for its model (config and
         state dict) and two for the dataset (config and the internal state).
-        All file names start with **name** and their endings are: 
+        All file names start with **name** and their endings are:
         `.config.json` and `.pt` for the model; `_ds.config.json` and `_ds.pt`
         for the dataset.
         """

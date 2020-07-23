@@ -9,12 +9,12 @@ sentence parsing (POS-tagging, lemmatization, morphological feature tagging)
 and named entity recognition.
 
 [TODO]
-Scores (accuracy) on *SynTagRus*: UPOS: `99.15%`; FEATS: `??.??%`;
-LEMMA: `99.15%`. In all experiments we used `seed=42`. We're sure that some
-other `seed` values may help to achive even better results.
+Scores (accuracy) on *SynTagRus*: UPOS: `99.15%`; FEATS: `98.30%`;
+LEMMA: `99.13%`. In all experiments we used `seed=42`. Some other `seed`
+values may help to achive better results.
 
 This project was developed with a focus on Russian language, but a few nuances
-we used don't worsen the quality of other languages processing.
+we used hardly might worsen the quality of other languages processing.
 
 ## Installation
 
@@ -43,7 +43,7 @@ This gives you access to examples that are not included in the *PyPI* package.
 
 ## Usage
 
-***MorDL's*** supports 
+***MorDL's*** supports
 [*CoNLL-U*](https://universaldependencies.org/format.html) (if input/output is
 a file), or
 [*Parsed CoNLL-U*](https://github.com/fostroll/corpuscula/blob/master/doc/README_PARSED_CONLLU.md)
@@ -51,9 +51,9 @@ a file), or
 [***Corpuscula***'s corpora wrappers](https://github.com/fostroll/corpuscula/blob/master/doc/README_CORPORA.md)
 as input.
 
-[MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
+[***MorDL*** Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
 
-[POS Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md)
+[POS Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md)
 
 [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
 
@@ -63,11 +63,11 @@ as input.
 
 [Multiple Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
 
-[MorDL Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md)
+[Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md)
 
 ## Examples
 
-You can find MorDL pipeline examples in the `examples` directory of our
+You can find ***MorDL*** pipeline examples in the `examples` directory of our
 ***MorDL*** GitHub repository.
 
 ## License

@@ -141,7 +141,7 @@ class WordEmbeddings:
                   file=log_file)
 
         def prepare_corpus(sentences, labels, max_len=None):
-            """Method to run input sentences through tokenization and 
+            """Method to run input sentences through tokenization and
             apply overlays if input sentence is longer than the specified
             `max_len`.
             """
@@ -154,7 +154,7 @@ class WordEmbeddings:
                 Args:
 
                 **sentence**: input sentence.
-                
+
                 **text_labels**: labels for each token from the input sentence.
                 """
                 tokenized_sentence = []
@@ -234,7 +234,7 @@ class WordEmbeddings:
         def collate(batch):
             """Encodes and pads input batch, adding special tokens
             (`[CLS]`, `[SEP]`) and creating attention mask for the batch.
-            Output input indexes, attention masks, label indexes and 
+            Output input indexes, attention masks, label indexes and
             sequence lengths.
 
             Args:
@@ -344,7 +344,7 @@ class WordEmbeddings:
 
             **model**: finetuned BERT model.
 
-            **output_dir**: output directory to save the finetuned model. 
+            **output_dir**: output directory to save the finetuned model.
             """
             # Saving best-practices: if you use defaults names for the model,
             # you can reload it using from_pretrained()
@@ -672,7 +672,7 @@ class WordEmbeddings:
         or a list of such dictionaries if you need more than one additional
         models.
 
-        **batch_size**: number of sentences per batch. If not `None`, 
+        **batch_size**: number of sentences per batch. If not `None`,
         overwrites `batch_size` parameter from `transform_kwargs`.
         By default, `batch size=64`.
 
@@ -786,7 +786,7 @@ class WordEmbeddings:
 
         **transform_kwargs**: keyword arguments for `.transform` function.
 
-        **batch_size**: number of sentences per batch. If not `None`, 
+        **batch_size**: number of sentences per batch. If not `None`,
         overwrites `batch_size` parameter from `transform_kwargs`.
         By default, `batch size=64`.
 
@@ -845,7 +845,7 @@ class WordEmbeddings:
         **transform_kwargs**: keyword arguments for the `.transform` function
         of the **ds**.
 
-        **batch_size**: number of sentences per batch. If not `None`, 
+        **batch_size**: number of sentences per batch. If not `None`,
         overwrites `batch_size` parameter from `transform_kwargs`.
         By default, batch size is set in defaults to `64`.
 
@@ -958,7 +958,7 @@ class WordEmbeddings:
 
         **ds**: a dataset to apply **config**.
 
-        **config** (`dict` | `list([dict])`): config with model parameters. 
+        **config** (`dict` | `list([dict])`): config with model parameters.
         """
         if isinstance(config, dict):
             config = [config]

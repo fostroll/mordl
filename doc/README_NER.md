@@ -31,7 +31,7 @@ Format is: `'<field name>:<feat name>:<replacement for None>'`. The
 replacement is used during training as a filler for a fields without a value
 so that we could predict them, too. In the *CoNLL-U* format the replacer is a
 `'_'` sign, so we use it as a default replacement. Normally, you wouldn't need
-to change this parameter. Examples:<br/> 
+to change this parameter. Examples:<br/>
 `'UPOS'` - predict the *UPOS* field;<br/>
 `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS* field;<br/>
 `'FEATS:Animacy:_O'` - likewise the above, but if feat value is `None`, it
@@ -42,7 +42,7 @@ will be replaced by `'_O'` during training;<br/>
 **cdict**: [TODO]
 
 **feats_clip_coef** (`int`): feature clipping coefficient which allows to
-eliminate all features that have a lower frequency than 
+eliminate all features that have a lower frequency than
 `<most frequent feature frequency>` divided by `feats_clip_coef`.
 * `feats_clip_coef=0` means "do not use feats"
 * `feats_clip_coef=None` means "use all feats"
@@ -93,7 +93,7 @@ for the model; `_ds.config.json` and `_ds.pt` for the dataset.
 
 **device**: device for the model. E.g.: 'cuda:0'.
 
-**epochs** (`int`): number of epochs to train. If `None`, train until 
+**epochs** (`int`): number of epochs to train. If `None`, train until
 `bad_epochs` is met, but no less than `min_epochs`.
 
 **min_epochs** (`int`): minimum number of training epochs.
@@ -197,7 +197,7 @@ Normally, you don't need to save the model deliberately. The model is saved
 during training after each successful epoch, but you can save model
 configuration at any time using `.save()` method.
 
-The saved model can be loaded back for inference with `.load()` method. 
+The saved model can be loaded back for inference with `.load()` method.
 
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
