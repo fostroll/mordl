@@ -2,7 +2,7 @@
 
 ## MorDL Basics
 
-This chapter gives an overview on MorDL taggers and the basic pipeline.
+This chapter gives an overview on ***MorDL*** taggers and the basic pipeline.
 
 ### Table of Contents
 
@@ -15,18 +15,18 @@ This chapter gives an overview on MorDL taggers and the basic pipeline.
 
 ### Initialization <a name="init"></a>
 
-Currently, MorDL has 5 different tagger types. Refer to the specific tagger
-documentation for detailed information:
-* [POS Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md):
-`UposTagger()`
-* [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md):
-`NETagger()`
-* [Lemma Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md):
-`LemmaTagger()`
+Currently, MorDL has a bunch of tools for morphological tagging. Refer to the
+specific tagger documentation for detailed information:
+* [Part of Speech Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md):
+`mordl.UposTagger`
 * [Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md):
-`FeatTagger()`
+`mordl.FeatTagger`
 * [Multiple Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md):
-`FeatsJointTagger()` and `FeatsSeparateTagger()`
+`mordl.FeatsTagger` and `FeatsSeparateTagger()`
+* [Lemmata Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md):
+`mordl.LemmaTagger`
+* [Named-entity Recognition](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md):
+`mordl.NeTagger`
 
 First of all, you need to create the tagger object. For example, to create a
 part-of-speech tagger:

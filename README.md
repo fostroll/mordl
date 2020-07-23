@@ -53,22 +53,22 @@ as input.
 
 [***MorDL*** Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
 
-[POS Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md)
-
-[NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
-
-[Lemma Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md)
+[Part of Speech Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md)
 
 [Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md)
 
 [Multiple Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
 
+[Lemmata Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md)
+
+[Named-entity Recognition](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
+
 [Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md)
 
 ## Examples
 
-You can find ***MorDL*** pipeline examples in the `examples` directory of our
-***MorDL*** GitHub repository.
+You can find a Pyhon notebook with ***MorDL*** pipeline examples in the
+`examples` directory of our ***MorDL*** GitHub repository.
 
 ## License
 
