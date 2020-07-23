@@ -17,7 +17,7 @@ This chapter gives an overview on ***MorDL*** taggers and the basic pipeline.
 
 Currently, MorDL has a bunch of tools for morphological tagging. Refer to the
 specific tagger documentation for detailed information:
-* [Part of Speech Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md):
+* [Part of Speech Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md):
 `mordl.UposTagger`
 * [Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md):
 `mordl.FeatTagger`
