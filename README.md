@@ -1,4 +1,5 @@
 <h2 align="center">MorDL: Morphological Parser (POS, lemmata, NER etc.)</h2>
+<a name="start"></a>
 
 [![PyPI Version](https://img.shields.io/pypi/v/morra?color=blue)](https://pypi.org/project/mordl/)
 [![Python Version](https://img.shields.io/pypi/pyversions/morra?color=blue)](https://www.python.org/)
