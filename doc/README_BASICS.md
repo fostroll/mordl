@@ -9,40 +9,42 @@ This chapter gives an overview on ***MorDL*** taggers and the basic pipeline.
 
 1. [Initialization](#init)
 1. [Load Train and Test Data](#data)
-1. [Main Pipeline: Train - Predict - Evaluate](#pipeline)
-1. [Save and Load Trained Models](#save)
-1. [Save and Load Model's `state_dict`](#state)
-1. [Save and Restore Model Backups](#backup)
+1. [Usage: Train - Predict - Evaluate](#pipeline)
+1. [Save and Load the Internal State of the Tagger](#save)
 
 ### Initialization <a name="init"></a>
 
-Currently, MorDL has a bunch of tools for morphological tagging. Refer to the
-specific tagger documentation for detailed information:
-* [Part of Speech Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md):
+Currently, ***MorDL*** has a bunch of tools for morphological tagging. Refer
+to the specific tagger documentation for detailed information:
+* [Part of Speech Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md#start):
 `mordl.UposTagger`
-* [Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md):
+* [Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md#start):
 `mordl.FeatTagger`
-* [Multiple Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md):
-`mordl.FeatsTagger` and `FeatsSeparateTagger()`
-* [Lemmata Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md):
+* [Multiple Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md#start):
+`mordl.FeatsTagger` (along with `morld.feats_tagger.FeatsSeparateTagger`)
+* [Lemmata Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md#start):
 `mordl.LemmaTagger`
-* [Named-entity Recognition](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md):
+* [Named-entity Recognition](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md#start):
 `mordl.NeTagger`
 
 First of all, you need to create the tagger object. For example, to create a
-part-of-speech tagger:
+part-of-speech tagger, call:
 ```python
 tagger = UposTagger()
 ```
 
+For taggers of other types, you can find a description of their creation in
+corresponding chapters.
+
 ### Load Train and Test Data <a name="data"></a>
 
-After the tagger is initialized, we need to load train and test data into it.
+After the tagger is initialized, we need to load train and test corpora into
+it.
 
+To load the train corpus, use:
 ```python
 tagger.load_train_corpus(corpus, append=False, test=None, seed=None)
 ```
-Loads the train corpus.
 
 Args:
 
@@ -57,44 +59,43 @@ part of it stored as test corpus.
 **seed** (`int`): init value for the random number generator if you need
 reproducibility. Used only if test is not `None`.
 
+To load the development test corpus, call:
 ```python
 tagger.load_test_corpus(corpus, append=False)
 ```
-Load development test corpus for validation during training iterations.
+This corpus is used for validation during training iterations. It is not
+mandatory to load it, but without validation it's hard to stop training in
+time, when the quality of model is the highest.
 
 Args:
 
-**corpus** a name of the file in CoNLL-U format or list/iterator of sentences
-in *Parsed CoNLL-U*.
+**corpus** a name of the file in *CoNLL-U* format or list/iterator o
+sentences in *Parsed CoNLL-U*.
 
 **param append** add corpus to already loaded one(s).
 
-### Main Pipeline: Train - Predict - Evaluate <a name="pipeline"></a>
+### Usage: Train - Predict - Evaluate <a name="usage"></a>
 
-Main pipeline consists of 3 steps: training - prediction - evaluation.
-Parameters vary slightly for each different tagger.
+All our taggers contain 3 main methods: `.train()`, `.predict()` and
+`.evaluate()`. Parameters vary slightly for each tagger and described in the
+corresponding chapters:
+* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md#start)
+* [FEAT](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md#start)
+* [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md#start)
+* [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md#start)
+* [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md#start)
 
-To learn more about training, prediction and evaluation steps for each tagger,
-refer to the corresponding chapters:
+### Save and Load the Internal State of the Tagger <a name="save"></a>
 
-* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md)
-* [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md)
-* [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md)
-* [FEAT](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md)
-* [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md)
-
-### Save and Load Trained Models <a name="save"></a>
-
-Normally, you don't need to save the model deliberately. The model is saved
-during training after each successful epoch, but you can save model
-configuration at any time using `.save()` method.
-
-The saved model can be loaded back for inference with `.load()` method.
-
+Normally, you don't need to save the state of the tagger intentionally. During
+training, the state is saved automatically after each successful epoch.
+However, you can save the state configuration at any time, if you need. For
+example, you could want to do it, if you load model or/and dataset to
+device(s) that is differ from the device(s) used during training, and wish to
+save it back with renewed parameters. You can do it with:
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
 ```
-Saves the internal state of the tagger.
 
 Args:
 
@@ -102,17 +103,22 @@ Args:
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-The `.save()` method creates 4 files for the tagger: two for the model (config
-and state dict) and two for the dataset (config and the internal state). All
-file names start with **name** and their endings are: `.config.json` and `.pt`
-for the model; `_ds.config.json` and `_ds.pt` for the dataset.
+The method creates a directory **name** that contains 5 files: two for
+tagger's model (`model.config.json` and `model.pt`) and two for its
+dataset (`ds.config.json` and `ds.pt`). The 5th file (`cdict.pickle`)
+is an internal state of
+[`corpuscula.CorpusDict`](https://github.com/fostroll/corpuscula/blob/master/doc/README_CDICT.md)
+object that is used by the tagger as a helper.
 
+`*.config.json` files contain parameters for objects' creation. It's
+editable, but you allowed to change only the device name. Any other
+changes most likely won't allow the tagger to load.
+
+The saved model can be loaded back for inference with:
 ```python
 tagger.load(model_class, name, device=None, dataset_device=None,
             log_file=LOG_FILE)
 ```
-Loads tagger's internal state saved by its `.save()` method. First, you need
-to initialize the model class and then load trained model parameters into it.
 
 Args:
 
@@ -128,51 +134,9 @@ override its previously saved value.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-### Save and Load Model's `state_dict` <a name="state"></a>
-
-You can save and load only model's `state_dict` using `save_state_dict` and
-`load_state_dict` methods.
-
-```python
-tagger.save_state_dict(f, log_file=LOG_FILE)
-```
-Saves PyTorch model's state dictionary to a file to further use for model
-inference.
-
-Args:
-
-**f** (`str` : `file`): the file where state dictionary will be saved.
-
-**log_file**: a stream for info messages. Default is `sys.stdout`.
-
-```python
-tagger.load_state_dict(f, log_file=LOG_FILE):
-```
-Loads previously saved PyTorch model's state dictionary for inference.
-
-Args:
-
-**f**: a file from where state dictionary will be loaded.
-
-**log_file**: a stream for info messages. Default is `sys.stdout`.
-
-
-### Save and Restore Model Backups <a name="backup"></a>
-
-Anytime, you can backup and restore internal states of trained models.
-
-```python
-o = tagger.backup()
-```
-Get current state.
-
-```python
-tagger.restore(o)
-```
-Restore current state from backup object.
-
 ### MorDL Supplements
 
-To learn about supplement methods, supported in MorDL, refer to the
+Aside from basic methods, ***MorDL*** contain several supplement utilities
+that sometimes may be helpful. You may find their description in the
 [MorDL Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md)
 chapter.

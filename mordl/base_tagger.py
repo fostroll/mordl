@@ -44,6 +44,10 @@ class BaseTagger(BaseParser):
                                   .format(name, self.__class__.__name__))
     parse_train_corpus = \
         property(lambda self: self.__err_hideattr('parse_train_corpus'))
+    backup = \
+        property(lambda self: self.__err_hideattr(self, 'backup'))
+    restore = \
+        property(lambda self: self.__err_hideattr(self, 'restore'))
     _train_init = \
         property(lambda self: self.__err_hideattr(self, '_train_init'))
     _train_eval = \
@@ -251,11 +255,15 @@ class BaseTagger(BaseParser):
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        The method creates 4 files for a tagger: two for its model (config and
-        state dict) and two for the dataset (config and the internal state).
-        All file names start with **name** and their endings are:
-        `.config.json` and `.pt` for the model; `_ds.config.json` and `_ds.pt`
-        for the dataset.
+        The method creates a directory **name** that contains 5 files: two for
+        tagger's model (`model.config.json` and `model.pt`) and two for its
+        dataset (`ds.config.json` and `ds.pt`). The 5th file (`cdict.pickle`)
+        is an internal state of *CorpusDict* object that is used by the tagger
+        as a helper.
+        
+        `*.config.json` files contain parameters for objects' creation. It's
+        editable, but you allowed to change only the device name. Any other
+        changes most likely won't allow the tagger to load.
         """
         assert self._ds, "ERROR: The tagger doesn't have a dataset to save"
         assert self._model, "ERROR: The tagger doesn't have a model to save"
