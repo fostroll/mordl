@@ -40,13 +40,8 @@ class FeatTaggerModel(BaseTaggerModel):
     `cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with not `None`
     **cnn_emb_dim**.
 
-    **tag_emb_params** (`dict({'dim': int, 'num': int, 'pad_idx': int})` |
-    `list([dict])`): params of the embedding layers for additional
-    `junky.dataset.TokenDataset` outputs. If `None`, the layers are not
-    created.
-
     **upos_emb_dim** (`int`): auxiliary UPOS label embedding dimensionality.
-    Default `upos_emb_dim=60`.
+    Default `upos_emb_dim=200`.
 
     **upos_num** (`int`): length of UPOS vocabulary.
 
@@ -85,7 +80,7 @@ class FeatTaggerModel(BaseTaggerModel):
     def __init__(self, labels_num, labels_pad_idx=None, vec_emb_dim=None,
                  alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,
                  cnn_emb_dim=None, cnn_kernels=[1, 2, 3, 4, 5, 6],
-                 upos_emb_dim=60, upos_num=0, upos_pad_idx=0,
+                 upos_emb_dim=200, upos_num=0, upos_pad_idx=0,
                  emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=1,
                  lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
                  bn3=True, do3=.4):

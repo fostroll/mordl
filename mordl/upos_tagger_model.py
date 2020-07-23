@@ -41,11 +41,6 @@ class UposTaggerModel(BaseTaggerModel):
     `cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with not `None`
     **cnn_emb_dim**.
 
-    **tag_emb_params** (`dict({'dim': int, 'num': int, 'pad_idx': int})` |
-    `list([dict])`): params of the embedding layers for additional
-    `junky.dataset.TokenDataset` outputs. If `None`, the layers are not
-    created.
-
     **emb_out_dim** (`int`): output embedding dimensionality. Default
     `emb_out_dim=512`.
 

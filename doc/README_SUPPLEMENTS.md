@@ -83,10 +83,10 @@ corpus is less then a threshold.
 Args:
 
 **abs_thresh**: remove features if their count in the train corpus is less
-than this value
+than this value.
 
 **rel_thresh**: remove features if their frequency with respect to total feats
-count of the train corpus is less than this value
+count of the train corpus is less than this value.
 
 **full_rel_thresh**: remove features if their frequency with respect to the
-full count of the tokens of the train corpus is less than this value
+full count of the tokens of the train corpus is less than this value.
