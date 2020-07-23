@@ -62,8 +62,7 @@ Creates and trains the UPOS tagger model.
 
 During training, the best model is saved after each successful epoch.
 
-Training's args:
-------
+*Training's args*:<br/><hr/>
 
 **save_as** (`str`): the name using for save. Refer to the `.save()`
 method's help of the `BaseTagger` for the broad definition (see the
