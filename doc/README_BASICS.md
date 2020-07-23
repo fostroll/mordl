@@ -16,16 +16,12 @@ This chapter gives an overview on ***MorDL*** taggers and the basic pipeline.
 
 Currently, ***MorDL*** has a bunch of tools for morphological tagging. Refer
 to the specific tagger documentation for detailed information:
-* [Part of Speech Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md#start):
-`mordl.UposTagger`
-* [Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md#start):
-`mordl.FeatTagger`
-* [Multiple Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md#start):
-`mordl.FeatsTagger` (along with `morld.feats_tagger.FeatsSeparateTagger`)
-* [Lemmata Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md#start):
-`mordl.LemmaTagger`
-* [Named-entity Recognition](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md#start):
-`mordl.NeTagger`
+* [`mordl.UposTagger`: Part of Speech Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md#start)
+* [`mordl.FeatTagger`: Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md#start)
+* [`mordl.FeatsTagger`: Multiple Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md#start)
+(along with `morld.feats_tagger.FeatsSeparateTagger`)
+* [`mordl.LemmaTagger`: Lemmata Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md#start)
+* [`mordl.NeTagger`: Named-entity Recognition](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md#start)
 
 First of all, you need to create the tagger object. For example, to create a
 part-of-speech tagger, call:
