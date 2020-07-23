@@ -15,8 +15,13 @@ from mordl.upos_tagger_model import UposTaggerModel
 class UposTagger(BaseTagger):
     """
     A UPOS tagger class.
-    """
 
+    Args:
+
+    **field**: a name of the *CoNLL-U* field, values of which you want to
+    predict. With the tagger, you can predict only fields with atomic values,
+    like UPOS.
+    """
     def __init__(self, field='UPOS'):
         super().__init__()
         self._field = field

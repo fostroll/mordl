@@ -280,7 +280,8 @@ class BaseTagger(BaseParser):
 
         Args:
 
-        **model_class**: model class object.
+        **model_class**: a class of the model used for prediction. Must be
+        descendant of `BaseTaggerModel` class.
 
         **name** (`str`): name of the internal state previously saved.
 

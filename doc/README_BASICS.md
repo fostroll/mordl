@@ -90,7 +90,7 @@ example, you could want to do it, if you load model or/and dataset to
 device(s) that is differ from the device(s) used during training, and wish to
 save it back with renewed parameters. You can do it with:
 ```python
-tagger.save(self, name, log_file=LOG_FILE)
+tagger.save(name, log_file=LOG_FILE)
 ```
 
 Args:
@@ -112,13 +112,10 @@ other changes most likely won't allow the tagger to load.
 
 The saved model can be loaded back for inference with:
 ```python
-tagger.load(model_class, name, device=None, dataset_device=None,
-            log_file=LOG_FILE)
+tagger.load(name, device=None, dataset_device=None, log_file=LOG_FILE)
 ```
 
 Args:
-
-**model_class**: model class object.
 
 **name** (`str`): name of the previously saved internal state.
 
