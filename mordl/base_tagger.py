@@ -622,7 +622,7 @@ class BaseTagger(BaseParser):
         We assume all positional argumets but **save_as** are for internal use
         only and should be hide in descendant classes.
 
-        Args:
+        *Training's args*:
 
         **field** (`str`): the name of the field which needs to be predicted
         by the training tagger. May contain up to 3 elements, separated by a
@@ -690,6 +690,8 @@ class BaseTagger(BaseParser):
         the corpus. Note, that we remove the tokens from the train corpus as a
         whole, not just replace those tags to `None`.
 
+        *Word embedding params*:
+
         **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding
         types.
 
@@ -717,6 +719,8 @@ class BaseTagger(BaseParser):
         dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
         or a list of such dictionaries if you need more than one additional
         model.
+
+        *Other options*:
 
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.

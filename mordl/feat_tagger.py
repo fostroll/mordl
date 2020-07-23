@@ -208,7 +208,7 @@ class FeatTagger(BaseTagger):
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
         """Creates and trains a feature tagger model.
 
-        Args:
+        *Training's args*:
 
         **save_as** (`str`): the name using for save. Refer to the `.save()`
         method's help of the `BaseTagger` for the broad definition (see the
@@ -243,6 +243,8 @@ class FeatTagger(BaseTagger):
         used, for example, to remove some infrequent or just excess tags from
         the corpus. Note, that we remove the tokens from the train corpus as a
         whole, not just replace those tags to `None`.
+
+        *Word embedding params*:
 
         **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding
         types.
@@ -493,6 +495,8 @@ class FeatTaggerOld(BaseTagger):
         the corpus. Note, that we remove the tokens from the train corpus as a
         whole, not just replace those tags to `None`.
 
+        *Word embedding params*:
+
         **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding
         types.
 
@@ -520,6 +524,8 @@ class FeatTaggerOld(BaseTagger):
         dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
         or a list of such dictionaries if you need more than one additional
         model.
+
+        *Model hyperparameters*:
 
         **rnn_emb_dim** (`int`): character RNN (LSTM) embedding
         dimensionality. If `None`, the layer is skipped.
@@ -563,6 +569,8 @@ class FeatTaggerOld(BaseTagger):
 
         **do3** (`float`): dropout rate after the third batch normalization
         layer `bn3`. Default `do3=.4`.
+
+        *Other options*:
 
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.

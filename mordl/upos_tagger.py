@@ -163,6 +163,8 @@ class UposTagger(BaseTagger):
         the corpus. Note, that we remove the tokens from the train corpus as a
         whole, not just replace those tags to `None`.
 
+        *Word embedding params*:
+
         **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding
         types.
 
@@ -190,6 +192,8 @@ class UposTagger(BaseTagger):
         dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
         or a list of such dictionaries if you need more than one additional
         model.
+
+        *Model hyperparameters*:
 
         **rnn_emb_dim** (`int`): character RNN (LSTM) embedding
         dimensionality. If `None`, the layer is skipped.
@@ -230,6 +234,8 @@ class UposTagger(BaseTagger):
 
         **do3** (`float`): dropout rate after the third batch normalization
         layer `bn3`. Default `do3=.4`.
+
+        *Other options*:
 
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.
