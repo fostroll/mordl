@@ -236,9 +236,8 @@ class BaseTagger(BaseParser):
         with open(ds_config_fn, 'rt', encoding='utf-8') as f:
             config = json.loads(f.read())
             for name, cfg in config.items():
-                WordEmbeddings.apply_config(ds.get_dataset(name), cfg)
-            if device:
-                ds.to(device)
+                WordEmbeddings.apply_config(ds.get_dataset(name), cfg,
+                                            device=device)
         if log_file:
             print('done.', file=log_file)
         if for_self:

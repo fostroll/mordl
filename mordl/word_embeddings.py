@@ -951,7 +951,7 @@ class WordEmbeddings:
         return ds
 
     @classmethod
-    def apply_config(cls, ds, config):
+    def apply_config(cls, ds, config, device=None):
         """Apply config file to the dataset.
 
         Args:
@@ -969,7 +969,8 @@ class WordEmbeddings:
         embs, xtrn = {}, []
         for cfg in config:
             emb_type, emb_path = cfg['emb_type'], cfg['emb_path']
-            emb_model_device = cfg.get('emb_model_device')
+            emb_model_device = device if device else \
+                               cfg.get('emb_model_device')
             transform_kwargs = cfg.get('transform_kwargs', {})
             if emb_path in embs:
                 model = embs[emb_path]
