@@ -287,7 +287,7 @@ class BaseTagger(BaseParser):
         previously saved value.
 
         **dataset_device**: a device for the loading dataset if you want to
-        overrride its previously saved value.
+        override its previously saved value.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
         """

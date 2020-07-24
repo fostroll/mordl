@@ -959,6 +959,9 @@ class WordEmbeddings:
         **ds**: a dataset to apply **config**.
 
         **config** (`dict` | `list([dict])`): config with model parameters.
+
+        **device**: a device for the loading dataset if you want to override
+        its previously saved value.
         """
         if isinstance(config, dict):
             config = [config]

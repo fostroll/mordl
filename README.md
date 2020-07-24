@@ -9,13 +9,9 @@
 sentence parsing (POS-tagging, lemmatization, morphological feature tagging)
 and named entity recognition.
 
-[TODO]
-Scores (accuracy) on *SynTagRus*: UPOS: `99.15%`; FEATS: `98.30%`;
-LEMMA: `99.13%`. In all experiments we used `seed=42`. Some other `seed`
-values may help to achive better results.
-
-This project was developed with a focus on Russian language, but a few nuances
-we used hardly might worsen the quality of other languages processing.
+Scores (accuracy) on *SynTagRus*: UPOS: `99.15%`; FEATS: `98.28%` (tokens),
+`98.86%` (tags); LEMMA: `99.13%`. In all experiments we used `seed=42`. Some
+other `seed` values may help to achive better results.
 
 ## Installation
 
@@ -44,13 +40,78 @@ This gives you access to examples that are not included in the *PyPI* package.
 
 ## Usage
 
-***MorDL's*** supports
-[*CoNLL-U*](https://universaldependencies.org/format.html) (if input/output is
-a file), or
-[*Parsed CoNLL-U*](https://github.com/fostroll/corpuscula/blob/master/doc/README_PARSED_CONLLU.md)
-(if input/output is an object). Also, ***MorDL's*** allows
-[***Corpuscula***'s corpora wrappers](https://github.com/fostroll/corpuscula/blob/master/doc/README_CORPORA.md)
-as input.
+Our taggers use separate models, so they can be used independently. But to
+achieve best results FEATS tagger use UPOS tags during training. And LEMMA and
+NER taggers use both UPOS and FEATS tags. Thus, for fully untagged corpus, the
+tagging pipeline is serial applying the taggers, like this (assuming that our
+goal is NER and we already have trained taggers of all types):
+
+```python
+from mordl import UposTagger, FeatsTagger, NeTagger
+
+tagger_u, tagger_f, tagger_n = UposTagger(), FeatsTagger(), NeTagger()
+tagger_u.load('upos_model')
+tagger_f.load('feats_model')
+tagger_n.load('misc-ne_model')
+
+tagger_n.predict(
+    tagger_f.predict(
+        tagger_u.predict('untagged.conllu')
+    ), save_to='result.conllu'
+)
+```
+
+Any tagger in our pipeline may be replaced to the better one if you have it.
+The weakness or separate taggers, that they take more space. If all models
+were created with BERT embeddings, and you load them in memory simultaneously,
+they may eat up to 9Gb on GPU. Or even more, if you use them as part of
+multiprocess server (for example, as part of *Flask* application). In that
+case, during loading you have to use params **device** and **dataset_device**
+to distribute your models by various GPU. Alternatively, if you need just to
+tag some corpus once, you may load models serially:
+
+```python
+tagger = UposTagger()
+tagger.load('upos_model')
+tagger.predict('untagged.conllu', save_to='result_upos.conllu')
+del tagger  # just for sure
+tagger = FeatsTagger()
+tagger.load('feats_model')
+tagger.predict('result_upos.conllu', save_to='result_feats.conllu')
+del tagger
+tagger = NeTagger()
+tagger_n.load('misc-ne_model')
+tagger.predict('result_feats.conllu', save_to='result.conllu')
+del tagger
+```
+
+Don't use identical names for input and output file names when you call the
+`.predict()` methods. Normally, there will be no problem, because the methods
+by default load all input file in memory before tagging. But if input file is
+big, you may want to use **split** parameter for that the methods handle it by
+parts. In that case, saving of the first part of the tagging data occur before
+loading next. So, identical names will entail the data loss.
+
+Training process is also simple. If you have train corpora and you don't want
+any experiments, just run:
+```python
+from mordl import UposTagger
+
+tagger = UposTagger()
+tagger.load_train_corpus(train_corpus)
+tagger.load_test_corpus(dev_corpus)
+
+stat = tagger.train('upos_model', device='cuda:0', word_emb_tune_params={})
+```
+
+It's training pipeline for UPOS-tagger; pipelines for other taggers are
+identical. If you want train the model again to achieve, maybe, better
+results, and you don't need to re-train word embeddings model anew, set the
+**word_emb_tune_params** to `None`.
+
+For more complete understanding of ***MorDL*** toolkit usage, refer to the
+Python notebook with pipeline examples in the `examples` directory of the
+***MorDL*** GitHub repository. Also, the docs are available:
 
 [***MorDL*** Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#start)
 
@@ -66,10 +127,16 @@ as input.
 
 [Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md#start)
 
-## Examples
+This project was developed with a focus on Russian language, but a few nuances
+we used hardly might worsen the quality of other languages processing.
 
-You can find a Pyhon notebook with ***MorDL*** pipeline examples in the
-`examples` directory of our ***MorDL*** GitHub repository.
+***MorDL's*** supports
+[*CoNLL-U*](https://universaldependencies.org/format.html) (if input/output is
+a file), or
+[*Parsed CoNLL-U*](https://github.com/fostroll/corpuscula/blob/master/doc/README_PARSED_CONLLU.md)
+(if input/output is an object). Also, ***MorDL's*** allows
+[***Corpuscula***'s corpora wrappers](https://github.com/fostroll/corpuscula/blob/master/doc/README_CORPORA.md)
+as input.
 
 ## License
 
