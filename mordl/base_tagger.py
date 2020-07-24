@@ -17,7 +17,7 @@ from mordl import WordEmbeddings
 from morra.base_parser import BaseParser
 from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE, \
                            NONE_TAG, TRAIN_BATCH_SIZE
-from mordl.lib import conll18_ud_eval
+from mordl.lib.conll18_ud_eval import main as _conll18_ud_eval
 import os
 import sys
 import torch
@@ -985,5 +985,5 @@ def conll18_ud_eval(gold_file, system_file, verbose=True, counts=False):
         sys.argv.append('-v')
     if counts:
         sys.argv.append('-c')
-    conll18_ud_eval.main()
+    _conll18_ud_eval()
     sys.argv = argv
