@@ -983,7 +983,7 @@ def conll18_ud_eval(gold_file, system_file, verbose=True, counts=False):
     sys.argv = [gold_file, system_file]
     if verbose:
         sys.argv.append('-v')
-    if count:
+    if counts:
         sys.argv.append('-c')
     conll18_ud_eval.main()
     sys.argv = argv
