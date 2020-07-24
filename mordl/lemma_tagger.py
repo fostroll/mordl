@@ -44,17 +44,17 @@ class LemmaTagger(BaseTagger):
     `'XPOS::_O'` - predict the *XPOS* field and use `'_O'` as replacement for
     `None`.
 
-    **feats_clip_coef** (`int`): feature clipping coefficient which allows to
+    **feats_prune_coef** (`int`): feature prunning coefficient which allows to
     eliminate all features that have lower frequency than
-    `<most frequent feature frequency>` divided by `feats_clip_coef`.
+    `<most frequent feature frequency>` divided by `feats_prune_coef`.
 
-    `feats_clip_coef=0` means "do not use feats"
-    `feats_clip_coef=None` means "use all feats"
+    `feats_prune_coef=0` means "do not use feats"
+    `feats_prune_coef=None` means "use all feats"
     """
-    def __init__(self, field='LEMMA', feats_clip_coef=6):
+    def __init__(self, field='LEMMA', feats_prune_coef=6):
         super().__init__()
         self._field = field
-        self._feats_clip_coef = feats_clip_coef
+        self._feats_prune_coef = feats_prune_coef
 
     @staticmethod
     def find_affixes(form, lemma, lower=False):
@@ -79,17 +79,17 @@ class LemmaTagger(BaseTagger):
 
     def _transform_upos(self, corpus, key_vals=None):
         rel_feats = {}
-        clip_coef = self._feats_clip_coef
-        if clip_coef != 0:
+        prune_coef = self._feats_prune_coef
+        if prune_coef != 0:
             tags = self._cdict.get_tags_freq()
             if tags:
-                thresh = tags[0][1] / clip_coef if clip_coef else 0
+                thresh = tags[0][1] / prune_coef if prune_coef else 0
                 tags = [x[0] for x in tags if x[1] > thresh]
             for tag in tags:
                 feats_ = rel_feats[tag] = set()
                 tag_feats = self._cdict.get_feats_freq(tag)
                 if tag_feats:
-                    thresh = tag_feats[0][1] / clip_coef if clip_coef else 0
+                    thresh = tag_feats[0][1] / prune_coef if prune_coef else 0
                     [feats_.add(x[0]) for x in tag_feats if x[1] > thresh]
 
         for sent in corpus:

@@ -22,7 +22,7 @@ chapter.
 
 First of all, you need to create a tagger object.
 ```python
-tagger = FeatTagger(field, cdict=None, feats_clip_coef=0,
+tagger = FeatTagger(field, cdict=None, feats_prune_coef=0,
                     log_file=LOG_FILE)
 ```
 Creates a single-feature tagger.
@@ -45,11 +45,11 @@ will be replaced by `'_O'` during training;<br/>
 
 **cdict**: [TODO]
 
-**feats_clip_coef** (`int`): feature clipping coefficient which allows to
+**feats_prune_coef** (`int`): feature prunning coefficient which allows to
 eliminate all features that have a lower frequency than
-`<most frequent feature frequency>` divided by `feats_clip_coef`.
-* `feats_clip_coef=0` means "do not use feats"
-* `feats_clip_coef=None` means "use all feats"
+`<most frequent feature frequency>` divided by `feats_prune_coef`.
+* `feats_prune_coef=0` means "do not use feats"
+* `feats_prune_coef=None` means "use all feats"
 Relevant only if `cdict` is specified and `field` is not from `FEATS`.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.

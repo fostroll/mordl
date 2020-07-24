@@ -14,5 +14,5 @@ class NeTagger(FeatTagger):
     """
     Named entity tagger class.
     """
-    def __init__(self, feats_clip_coef=6):
-        super().__init__('MISC:NE', feats_clip_coef=feats_clip_coef)
+    def __init__(self, feats_prune_coef=6):
+        super().__init__('MISC:NE', feats_prune_coef=feats_prune_coef)

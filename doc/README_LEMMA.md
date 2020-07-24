@@ -24,7 +24,7 @@ to lemmatized string.
 
 First of all, you need to create a tagger object.
 ```python
-tagger = LemmaTagger(field='LEMMA', feats_clip_coef=6)
+tagger = LemmaTagger(field='LEMMA', feats_prune_coef=6)
 ```
 Creates a `LemmaTagger` object.
 
@@ -44,11 +44,11 @@ will be replaced by `'_O'` during training;<br/>
 `'XPOS::_O'` - predict the *XPOS* field and use `'_O'` as replacement for
 `None`.
 
-**feats_clip_coef** (`int`): feature clipping coefficient which allows to
+**feats_prune_coef** (`int`): feature prunning coefficient which allows to
 eliminate all features that have a lower frequency than
-`<most frequent feature frequency>` divided by `feats_clip_coef`.
-* `feats_clip_coef=0` means "do not use feats"
-* `feats_clip_coef=None` means "use all feats"
+`<most frequent feature frequency>` divided by `feats_prune_coef`.
+* `feats_prune_coef=0` means "do not use feats"
+* `feats_prune_coef=None` means "use all feats"
 Relevant only if `cdict` is specified and `field` is not from `FEATS`.
 
 Afterwards, load train and test data into the tagger object:
