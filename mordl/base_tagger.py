@@ -894,7 +894,7 @@ class BaseTagger(BaseParser):
             None, model, criterion, optimizer, scheduler,
             best_model_backup_method, datasets=(ds_train, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
-            batch_size=batch_size, control_metric='accuracy',
+            batch_size=batch_size, control_metric=control_metric,
             max_grad_norm=max_grad_norm,
             with_progress=log_file is not None, log_file=log_file
         )
@@ -911,7 +911,7 @@ class BaseTagger(BaseParser):
             None, model, criterion, optimizer, scheduler,
             best_model_backup_method, datasets=(ds_train, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
-            batch_size=batch_size, control_metric='accuracy',
+            batch_size=batch_size, control_metric=control_metric,
             max_grad_norm=max_grad_norm, best_score=best_score,
             with_progress=log_file is not None, log_file=log_file
         )
