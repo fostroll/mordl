@@ -88,9 +88,9 @@ del tagger
 Don't use identical names for input and output file names when you call the
 `.predict()` methods. Normally, there will be no problem, because the methods
 by default load all input file in memory before tagging. But if input file is
-big, you may want to use **split** parameter for that the methods handle it by
-parts. In that case, saving of the first part of the tagging data occur before
-loading next. So, identical names will entail the data loss.
+big, you may want to use **split** parameter for that the methods handle the
+file by parts. In that case, saving of the first part of the tagging data
+occur before loading next. So, identical names will entail the data loss.
 
 Training process is also simple. If you have train corpora and you don't want
 any experiments, just run:
