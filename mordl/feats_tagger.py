@@ -164,16 +164,17 @@ class FeatsJointTagger(BaseTagger):
               word_emb_path=None, word_emb_tune_params=None,
               word_transform_kwargs=None, word_next_emb_params=None,
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              upos_emb_dim=None, emb_out_dim=512, lstm_hidden_dim=256,
-              lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
+              upos_emb_dim=200, emb_out_dim=512, lstm_hidden_dim=256,
+              lstm_layers=3, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
         """Creates and trains a feature tagger model.
+
+        During training, the best model is saved after each successful epoch.
 
         *Training's args*:
 
         **save_as** (`str`): the name using for save. Refer to the `.save()`
-        method's help of the `BaseTagger` for the broad definition (see the
-        **name** arg there).
+        method's help for the broad definition (see the **name** arg there).
 
         **device**: device for the model. E.g.: 'cuda:0'.
 
@@ -207,15 +208,15 @@ class FeatsJointTagger(BaseTagger):
 
         *Word embedding params*:
 
-        **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding
-        types.
-
-        **word_emb_path** (`str`): path to word embeddings storage.
+        **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v')
+        embedding types.
 
         **word_emb_model_device**: the torch device where the model of word
         embeddings are placed. Relevant only with embedding types, models of
         which use devices (currently, only 'bert'). `None` means
         **word_emb_model_device** = **device**
+
+        **word_emb_path** (`str`): path to word embeddings storage.
 
         **word_emb_tune_params**: parameters for word embeddings finetuning.
         For now, only BERT embeddings finetuning is supported with
@@ -247,8 +248,8 @@ class FeatsJointTagger(BaseTagger):
         `cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with not `None`
         **cnn_emb_dim**.
 
-        **upos_emb_dim** (`int`): auxiliary UPOS label embedding
-        dimensionality. Default `upos_emb_dim=60`.
+        **upos_emb_dim** (`int`): auxiliary embedding dimensionality for UPOS
+        labels. Default `upos_emb_dim=200`.
 
         **emb_out_dim** (`int`): output embedding dimensionality. Default
         `emb_out_dim=512`.
@@ -257,7 +258,7 @@ class FeatsJointTagger(BaseTagger):
         `lstm_hidden_dim=256`.
 
         **lstm_layers** (`int`): number of Bidirectional LSTM layers. Default
-        `lstm_layers=1`.
+        `lstm_layers=3`.
 
         **lstm_do** (`float`): dropout between LSTM layers. Only relevant, if
         `lstm_layers` > `1`.
@@ -564,8 +565,10 @@ class FeatsSeparateTagger(BaseTagger):
         method's help of the `BaseTagger` for the broad definition (see the
         **name** arg there).
 
-        **feats** (`str|list([str])`): one or several subfields of the
-        key-value type fields like `FEATS` or `MISC` to be evaluated.
+        **feats** (`str|list([str])`): train model only for predicting one or
+        several subfields of the key-value type fields like FEATS or MISC.
+        E.g., for tagger created with `field='FEATS'` argument, allowed values
+        for **feats** are: 'Animacy', ['Case', 'Polarity', 'Tense'] etc.
 
         **device**: device for the model. E.g.: 'cuda:0'.
 
@@ -599,8 +602,8 @@ class FeatsSeparateTagger(BaseTagger):
 
         *Word embedding params*:
 
-        **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding
-        types.
+        **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v')
+        embedding types.
 
         **word_emb_model_device**: the torch device where the model of word
         embeddings are placed. Relevant only with embedding types, models of
@@ -641,8 +644,8 @@ class FeatsSeparateTagger(BaseTagger):
         `cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with not `None`
         **cnn_emb_dim**.
 
-        **upos_emb_dim** (`int`): auxiliary UPOS label embedding
-        dimensionality. Default `upos_emb_dim=200`.
+        **upos_emb_dim** (`int`): auxiliary embedding dimensionality for UPOS
+        labels. Default `upos_emb_dim=200`.
 
         **emb_out_dim** (`int`): output embedding dimensionality. Default
         `emb_out_dim=512`.

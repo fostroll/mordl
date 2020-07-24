@@ -620,6 +620,8 @@ class BaseTagger(BaseParser):
         We assume all positional argumets but **save_as** are for internal use
         only and should be hide in descendant classes.
 
+        During training, the best model is saved after each successful epoch.
+
         *Training's args*:
 
         **field** (`str`): the name of the field which needs to be predicted
@@ -693,12 +695,12 @@ class BaseTagger(BaseParser):
         **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding
         types.
 
-        **word_emb_path** (`str`): path to word embeddings storage.
-
         **word_emb_model_device**: the torch device where the model of word
         embeddings are placed. Relevant only with embedding types, models of
         which use devices (currently, only 'bert'). `None` means
         **word_emb_model_device** = **device**
+
+        **word_emb_path** (`str`): path to word embeddings storage.
 
         **word_emb_tune_params**: parameters for word embeddings finetuning.
         For now, only BERT embeddings finetuning is supported with

@@ -362,8 +362,7 @@ class LemmaTagger(BaseTagger):
         *Training's args*:
 
         **save_as** (`str`): the name using for save. Refer to the `.save()`
-        method's help of the `BaseTagger` for the broad definition (see the
-        **name** arg there).
+        method's help for the broad definition (see the **name** arg there).
 
         **device**: device for the model. E.g.: 'cuda:0'.
 
@@ -400,12 +399,12 @@ class LemmaTagger(BaseTagger):
         **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v')
         embedding types.
 
-        **word_emb_path** (`str`): path to word embeddings storage.
-
         **word_emb_model_device**: the torch device where the model of word
         embeddings are placed. Relevant only with embedding types, models of
         which use devices (currently, only 'bert'). `None` means
         **word_emb_model_device** = **device**
+
+        **word_emb_path** (`str`): path to word embeddings storage.
 
         **word_emb_tune_params**: parameters for word embeddings finetuning.
         For now, only BERT embeddings finetuning is supported with
@@ -437,8 +436,8 @@ class LemmaTagger(BaseTagger):
         `cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with not `None`
         **cnn_emb_dim**.
 
-        **upos_emb_dim** (`int`): auxiliary UPOS+FEATS label embedding
-        dimensionality. Default `upos_emb_dim=300`.
+        **upos_emb_dim** (`int`): auxiliary embedding dimensionality for
+        UPOS+FEATS joint labels. Default `upos_emb_dim=300`.
 
         **emb_out_dim** (`int`): output embedding dimensionality. Default
         `emb_out_dim=512`.

@@ -121,16 +121,17 @@ class UposTagger(BaseTagger):
               word_emb_path=None, word_emb_tune_params=None,
               word_transform_kwargs=None, word_next_emb_params=None,
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=2, lstm_do=0,
+              emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=3, lstm_do=0,
               bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
               log_file=LOG_FILE):
         """Creates and trains the UPOS tagger model.
 
+        During training, the best model is saved after each successful epoch.
+
         *Training's args*:
 
         **save_as** (`str`): the name using for save. Refer to the `.save()`
-        method's help of the `BaseTagger` for the broad definition (see the
-        **name** arg there).
+        method's help for the broad definition (see the **name** arg there).
 
         **device**: device for the model. E.g.: 'cuda:0'.
 
@@ -147,10 +148,9 @@ class UposTagger(BaseTagger):
         **batch_size** (`int`): number of sentences per batch. For training,
         default `batch_size=32`.
 
-        **control_metric** (`str`): metric to control training. Default
-        `control_metric='accuracy'`. Any that is supported by the
-        `junky.train()` method. In the moment it is: 'accuracy', 'f1' and
-        'loss'. Default `control_metric=accuracy`.
+        **control_metric** (`str`): metric to control training. Any that is
+        supported by the `junky.train()` method. In the moment it is:
+        'accuracy', 'f1' and 'loss'. Default `control_metric=accuracy`.
 
         **max_grad_norm** (`float`): gradient clipping parameter, used with
         `torch.nn.utils.clip_grad_norm_()`.
@@ -168,12 +168,12 @@ class UposTagger(BaseTagger):
         **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding
         types.
 
-        **word_emb_path** (`str`): path to word embeddings storage.
-
         **word_emb_model_device**: the torch device where the model of word
         embeddings are placed. Relevant only with embedding types, models of
         which use devices (currently, only 'bert'). `None` means
         **word_emb_model_device** = **device**
+
+        **word_emb_path** (`str`): path to word embeddings storage.
 
         **word_emb_tune_params**: parameters for word embeddings finetuning.
         For now, only BERT embeddings finetuning is supported with
@@ -212,7 +212,7 @@ class UposTagger(BaseTagger):
         `lstm_hidden_dim=256`.
 
         **lstm_layers** (`int`): number of Bidirectional LSTM layers. Default
-        `lstm_layers=1`.
+        `lstm_layers=3`.
 
         **lstm_do** (`float`): dropout between LSTM layers. Only relevant, if
         `lstm_layers` > `1`.

@@ -208,11 +208,12 @@ class FeatTagger(BaseTagger):
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
         """Creates and trains a feature tagger model.
 
+        During training, the best model is saved after each successful epoch.
+
         *Training's args*:
 
         **save_as** (`str`): the name using for save. Refer to the `.save()`
-        method's help of the `BaseTagger` for the broad definition (see the
-        **name** arg there).
+        method's help for the broad definition (see the **name** arg there).
 
         **device**: device for the model. E.g.: 'cuda:0'.
 
@@ -246,14 +247,15 @@ class FeatTagger(BaseTagger):
 
         *Word embedding params*:
 
-        **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding
-        types.
-
-        **word_emb_path** (`str`): path to word embeddings storage.
+        **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v')
+        embedding types.
 
         **word_emb_model_device**: the torch device where the model of word
         embeddings are placed. Relevant only with embedding types, models of
-        which use devices (currently, only 'bert').
+        which use devices (currently, only 'bert'). `None` means
+        **word_emb_model_device** = **device**
+
+        **word_emb_path** (`str`): path to word embeddings storage.
 
         **word_emb_tune_params**: parameters for word embeddings finetuning.
         For now, only BERT embeddings finetuning is supported with
@@ -273,6 +275,8 @@ class FeatTagger(BaseTagger):
         or a list of such dictionaries if you need more than one additional
         model.
 
+        *Model hyperparameters*:
+
         **rnn_emb_dim** (`int`): character RNN (LSTM) embedding
         dimensionality. If `None`, the layer is skipped.
 
@@ -283,8 +287,8 @@ class FeatTagger(BaseTagger):
         `cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with not `None`
         **cnn_emb_dim**.
 
-        **upos_emb_dim** (`int`): auxiliary UPOS label embedding
-        dimensionality. Default `upos_emb_dim=300`.
+        **upos_emb_dim** (`int`): auxiliary embedding dimensionality for UPOS
+        labels. Default `upos_emb_dim=300`.
 
         **emb_out_dim** (`int`): output embedding dimensionality. Default
         `emb_out_dim=512`.
@@ -293,7 +297,7 @@ class FeatTagger(BaseTagger):
         `lstm_hidden_dim=256`.
 
         **lstm_layers** (`int`): number of Bidirectional LSTM layers. Default
-        `lstm_layers=1`.
+        `lstm_layers=2`.
 
         **lstm_do** (`float`): dropout between LSTM layers. Only relevant, if
         `lstm_layers` > `1`.
@@ -315,6 +319,8 @@ class FeatTagger(BaseTagger):
 
         **do3** (`float`): dropout rate after the third batch normalization
         layer `bn3`. Default `do3=.4`.
+
+        *Other options*:
 
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.
