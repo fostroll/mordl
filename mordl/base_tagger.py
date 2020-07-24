@@ -980,7 +980,7 @@ def conll18_ud_eval(gold_file, system_file, verbose=True, counts=False):
       words are printed instead of precision/recall/F1/AlignedAccuracy for all
       metrics."""
     argv = sys.argv
-    sys.argv = [gold_file, system_file]
+    sys.argv = [None, gold_file, system_file]
     if verbose:
         sys.argv.append('-v')
     if counts:
