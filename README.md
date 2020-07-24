@@ -104,7 +104,7 @@ tagger.load_test_corpus(dev_corpus)
 stat = tagger.train('upos_model', device='cuda:0', word_emb_tune_params={})
 ```
 
-It's training pipeline for UPOS-tagger; pipelines for other taggers are
+It is training pipeline for the UPOS tagger; pipelines for other taggers are
 identical. If you want train the model again to achieve, maybe, better
 results, and you don't need to re-train word embeddings model anew, set the
 **word_emb_tune_params** to `None`.
