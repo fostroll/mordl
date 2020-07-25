@@ -11,7 +11,8 @@ and Named-entity recognition.
 
 Scores (accuracy) on *SynTagRus*: UPOS: `99.15%`; FEATS: `98.28%` (tokens),
 `98.86%` (tags); LEMMA: `99.13%`. In all experiments we used `seed=42`. Some
-other `seed` values may help to achive better results.
+other `seed` values may help to achive better results. Models' hyperparameters
+are also allowed to tune.
 
 The validation with the
 [official evaluation script](http://universaldependencies.org/conll18/conll18_ud_eval.py)
