@@ -116,9 +116,9 @@ supported by the `junky.train()` method. In the moment it is:
 tags, tokens with those must be removed from the corpus. It's a `dict`
 with field names as keys and with value you want to remove. Applied
 only to fields with atomic values (like UPOS). This argument may be
-used, for example, to remove some infrequent or excess tags from the
-corpus. Note, that we remove these tags from the train corpus as a
-whole, not just replace them to `None`.
+used, for example, to remove some infrequent or just excess tags from
+the corpus. Note, that we remove the tokens from the train corpus as a
+whole, not just replace those tags to `None`.
 
 *Word embedding params*:
 
@@ -206,7 +206,7 @@ The method returns the train statistics.
 
 ### Save and Load the Internal State of the Tagger<a name="save"></a>
 
-To save and load state of the tagger, use methods:
+To save and load the state of the tagger, use methods:
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
 tagger.load(model_class, name, device=None, dataset_device=None,
@@ -221,7 +221,7 @@ chapter.
 ### Evaluation<a name="eval"></a>
 
 When the training is done, you may evaluate prediction quality using the test
-or development test corpora:
+or the development test corpora:
 ```python
 tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, log_file=LOG_FILE)
@@ -235,7 +235,7 @@ list/iterator of sentences in *Parsed CoNLL-U*.
 
 **test**: a corpus of sentences with predicted target values. If
 `None`, the **gold** corpus will be retagged on-the-fly, and the
-result will be used **test**.
+result will be used as **test**.
 
 **label** (`str`): specific label of the target feat to be evaluated,
 e.g. `label='Inan'` for tagger created with `field='Animacy'` option.
@@ -249,7 +249,7 @@ full dataset without splits.
 
 **clone_ds** (`bool`): if `True`, the dataset is cloned and
 transformed. If `False`, `transform_collate` is used without cloning
-the dataset. There is no big differences between the variants. Both
+the dataset. There is no big difference between the variants. Both
 should produce identical results.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
@@ -273,7 +273,7 @@ list/iterator of sentences in *Parsed CoNLL-U*.
 
 **with_orig** (`bool`): if `True`, instead of only a sequence with
 predicted labels, returns a sequence of tuples where the first element
-is a sentence with predicted labels and the second element is an original
+is a sentence with predicted labels and the second element is the original
 sentence. `with_orig` can be `True` only if `save_to` is `None`.
 Default `with_orig=False`.
 
