@@ -9,7 +9,7 @@ This chapter gives an overview on ***MorDL*** taggers and the basic pipeline.
 
 1. [Initialization](#init)
 1. [Load Train and Test Data](#data)
-1. [Usage: Training - Evaluation - Inerence](#usage)
+1. [Usage: Training - Evaluation - Inference](#usage)
 1. [Save and Load the Internal State of the Tagger](#save)
 1. [***MorDL*** Supplements](#suppl)
 
