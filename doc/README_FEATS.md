@@ -5,7 +5,7 @@
 
 MorDL supports single and multiple feature taggers. In this chapter, we cover
 a multiple feature tagger `mordl.FeatsTagger` that allows to predict all
-content of key_value type fields in a single pass.
+content of key-value type fields in a single pass.
 
 For a single feature tagger, refer to
 [Single Feature Tagging](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md#start)
@@ -39,7 +39,7 @@ Args:
 which needs to be predicted with the tagger.
 
 Afterwards, load train and development test corpora into
-the tagger object created:
+the tagger object:
 ```python
 tagger.load_train_corpus(corpus, append=False, test=None, seed=None)
 tagger.load_test_corpus(corpus, append=False)
@@ -54,8 +54,8 @@ chapter.
 ***MorDL*** allows you to train a custom BiLSTM joint multiple feature
 prediction model.
 
-**NB:** By this step you should have a tagger object created and training data
-loaded.
+**NB:** By this step, you should have a tagger object created and training
+data loaded.
 
 ```python
 stat = tagger.train(save_as,
@@ -76,7 +76,7 @@ During training, the best model is saved after each successful epoch.
 
 *Training's args*:
 
-**save_as** (`str`): the name using for save. Refer to the `.save()`
+**save_as** (`str`): the name used for save. Refer to the `.save()`
 method's help for the broad definition (see the **name** arg there).
 
 **device**: device for the model. E.g.: 'cuda:0'.
@@ -88,7 +88,7 @@ train until `bad_epochs` is met, but no less than `min_epochs`.
 `0`
 
 **bad_epochs** (`int`): maximum allowed number of bad epochs (epochs
-when selected **control_metric** is became not better) in a row.
+during which the selected **control_metric** does not improve) in a row.
 Default is `5`.
 
 **batch_size** (`int`): number of sentences per batch. For training,
@@ -134,8 +134,8 @@ embeddings conversion. See the `.transform()` method of
 parameters.
 
 **word_next_emb_params**: if you want to use several different
-embedding models at once, pass parameters of the additional model as a
-dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
+embedding models at once, pass the parameters of the additional model as
+a dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
 or a list of such dictionaries if you need more than one additional
 model.
 
@@ -195,7 +195,7 @@ The method returns the train statistics.
 
 ### Save and Load the Internal State of the Tagger<a name="save"></a>
 
-To save and load state of the tagger, use methods:
+To save and load the state of the tagger, use methods:
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
 tagger.load(model_class, name, device=None, dataset_device=None,
@@ -203,14 +203,14 @@ tagger.load(model_class, name, device=None, dataset_device=None,
 ```
 Normally, you don't need to call the method `.save()` because the data is
 saved automatically during training. Though, there are cases when this method
-is useful. For detailed info on `.save()` and `.load()`, refer to
+could be useful. For detailed info on `.save()` and `.load()`, refer to
 [MorDL Basics: Save and Load the Internal State of the Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#save)
 chapter.
 
 ### Evaluation<a name="eval"></a>
 
-When the training has done, you may evaluate its quality using the test or
-development test corpora:
+When the training is done, you may evaluate prediction quality using the test
+or the development test corpora:
 
 ```python
 tagger.evaluate(gold, test=None, feats=None, label=None,
@@ -221,12 +221,12 @@ tagger.evaluate(gold, test=None, feats=None, label=None,
 Args:
 
 **gold**: a corpus of sentences with actual target values to score the
-tagger on. May be either a name of the file in *CoNLL-U* format or
+tagger on. May be either a name of the file in *CoNLL-U* format or a
 list/iterator of sentences in *Parsed CoNLL-U*.
 
 **test**: a corpus of sentences with predicted target values. If
 `None`, the **gold** corpus will be retagged on-the-fly, and the
-result will be used **test**.
+result will be as **test**.
 
 **feats** (`str|list([str])`): one or several feature names of the
 key-value type fields like `FEATS` or `MISC` to be evaluated.
@@ -234,7 +234,7 @@ key-value type fields like `FEATS` or `MISC` to be evaluated.
 **label** (`str`): specific label of the target feature value to be
 evaluated, e.g. `label='Inan'`. If you specify a value here, you must
 also specify the feature name as **feats** param (e.g.:
-`feats=`'Animacy'`). Note, that in that case the param **feats** must
+`feats='Animacy'`). Note, that in that case the param **feats** must
 contain only one feature name.
 
 **batch_size** (`int`): number of sentences per batch. Default
@@ -246,7 +246,7 @@ full dataset without splits.
 
 **clone_ds** (`bool`): if `True`, the dataset is cloned and
 transformed. If `False`, `transform_collate` is used without cloning
-the dataset. There is no big differences between the variants. Both
+the dataset. There is no big difference between the variants. Both
 should produce identical results.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
@@ -270,7 +270,7 @@ list/iterator of sentences in *Parsed CoNLL-U*.
 
 **with_orig** (`bool`): if `True`, instead of only a sequence with
 predicted labels, returns a sequence of tuples where the first element
-is a sentence with predicted labels and the second element is original
+is a sentence with predicted labels and the second element is the original
 sentence. `with_orig` can be `True` only if `save_to` is `None`.
 Default `with_orig=False`.
 
@@ -295,25 +295,26 @@ field.
 
 ## Separate Feats Tagger<a name="separate"></a>
 
-Aside from the joint feats tagger described above, **MorDL** contains the
-tagger that predict all features of key-value type fields separately:
+Aside from the joint feats tagger described above, **MorDL** provides a
+tagger that predicts all features of key-value type fields separately:
 ```python
 from mordl.feats_tagger import FeatsSeparateTagger
 
 tagger = FeatsSeparateTagger(field='FEATS')
 ```
 
-The tagger creates separate models for each feat and use them all serially to
+The tagger creates separate models for each feat and uses them all serially to
 fill the content of the field predicting. Obviously, it needs much more memory
 to load (if you use BERT embeddings, you will have separate BERT model for
-each feat, too) and much more time to train. By and order more. However, the
-evaluating results of it even slightly lower than of the joint tagger. Maybe,
-just a couple of separate feats have a better accuracy. Thereby, we can't find
-many reasons to use this class. However, we kept this class in the project.
+each feat, too) and much more time to train. By an order more. However, the
+evaluation results of it are slightly lower than the results of the joint
+tagger. Maybe, just a couple of separate feats would have a better accuracy.
+Thereby, we can't find many reasons to use this class. However, we kept this
+class in the project.
 
-The separate tagger has the same methods as the joint tagger. But arguments of
-the base methods are slightly differs. You can explore it with Python `help()`
-command:
+The separate tagger has the same methods as the joint tagger. But the
+arguments of the base methods slightly differ. You can explore it with Python
+`help()` command:
 ```python
 help(tagger.train)
 help(tagger.save)
@@ -326,6 +327,6 @@ or even:
 help(tagger)
 ```
 
-Also, note, that you can't change the device names of models during loading.
-If you need this (you really need, because all models together hardly can fit
-to single GPU), you have to edit configuration files of the separate models.
+Also, note that you can't change the device names of models during loading.
+If you need to do so (really need, because all models together can hardly fit
+on a single GPU), you have to edit configuration files of the separate models.
