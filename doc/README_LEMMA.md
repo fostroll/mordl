@@ -24,6 +24,8 @@ to lemmatized string.
 
 First of all, you need to create a tagger object:
 ```python
+from mordl import LemmaTagger
+
 tagger = LemmaTagger(field='LEMMA', feats_prune_coef=6)
 ```
 
@@ -62,17 +64,17 @@ sequence-to-sequence problem.
 loaded.
 
 ```python
-tagger = train(save_as,
-               device=None, epochs=None, min_epochs=0, bad_epochs=5,
-               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
-               max_grad_norm=None, tags_to_remove=None,
-               word_emb_type='bert', word_emb_model_device=None,
-               word_emb_path=None, word_emb_tune_params=None,
-               word_transform_kwargs=None, word_next_emb_params=None,
-               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-               upos_emb_dim=300, emb_out_dim=512, lstm_hidden_dim=256,
-               lstm_layers=3, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
-               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
+stat = tagger.train(save_as,
+                    device=None, epochs=None, min_epochs=0, bad_epochs=5,
+                    batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
+                    max_grad_norm=None, tags_to_remove=None,
+                    word_emb_type='bert', word_emb_model_device=None,
+                    word_emb_path=None, word_emb_tune_params=None,
+                    word_transform_kwargs=None, word_next_emb_params=None,
+                    rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
+                    upos_emb_dim=300, emb_out_dim=512, lstm_hidden_dim=256,
+                    lstm_layers=3, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
+                    bn3=True, do3=.4, seed=None, log_file=LOG_FILE)
 ```
 Creates and trains a LEMMA prediction model.
 
@@ -217,7 +219,7 @@ When the training has done, you may evaluate its quality using the test or
 development test corpora:
 ```python
 tagger.evaluate(gold, test=None, batch_size=BATCH_SIZE, split=None,
-				clone_ds=False, log_file=LOG_FILE)
+                clone_ds=False, log_file=LOG_FILE)
 ```
 Args:
 

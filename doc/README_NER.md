@@ -10,8 +10,10 @@ MISC field, such as 'Organization', 'Person', etc.
 
 ### Initialization
 
-First of all, you need to create a tagger object.
+First of all, you need to create a tagger object:
 ```python
+from mordl import NeTagger
+
 tagger = NeTagger(feats_clip_coef=6)
 ```
 

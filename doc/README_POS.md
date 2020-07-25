@@ -18,13 +18,15 @@ predictions.
 
 First of all, you need to create a tagger object:
 ```python
+from mordl import UposTagger
+
 tagger = UposTagger(field='UPOS')
 ```
 
 Args:
 
-**field**: a name of the *CoNLL-U* field, values of which you want to
-predict. With the tagger, you can predict only fields with atomic values,
+**field**: a name of the *CoNLL-U* field, values of which needs to be
+predicted. With the tagger, you can predict only fields with atomic values,
 like UPOS.
 
 Afterwards, load train and development test corpora into the tagger object
@@ -46,17 +48,17 @@ chapter.
 loaded.
 
 ```python
-tagger.train(save_as,
-             device=None, epochs=None, min_epochs=0, bad_epochs=5,
-             batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
-             max_grad_norm=None, tags_to_remove=None,
-             word_emb_type='bert', word_emb_model_device=None,
-             word_emb_path=None, word_emb_tune_params=None,
-             word_transform_kwargs=None, word_next_emb_params=None,
-             rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-             emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=3, lstm_do=0,
-             bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
-             log_file=LOG_FILE):
+stat = tagger.train(save_as,
+                    device=None, epochs=None, min_epochs=0, bad_epochs=5,
+                    batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
+                    max_grad_norm=None, tags_to_remove=None,
+                    word_emb_type='bert', word_emb_model_device=None,
+                    word_emb_path=None, word_emb_tune_params=None,
+                    word_transform_kwargs=None, word_next_emb_params=None,
+                    rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
+                    emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=3, lstm_do=0,
+                    bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
+                    log_file=LOG_FILE)
 ```
 Creates and trains the UPOS tagger model.
 

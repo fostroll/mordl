@@ -26,6 +26,8 @@ to the specific tagger documentation for detailed information:
 First of all, you need to create the tagger object. For example, to create a
 part-of-speech tagger, call:
 ```python
+from mordl import UposTagger
+
 tagger = UposTagger()
 ```
 
