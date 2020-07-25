@@ -3,11 +3,11 @@
 
 ## MorDL Supplements
 
-MorDL package contains a few additional utility methods that can be sometimes
-usful. To use supplement methods, you mostly shouldn't have a tagger object
-created. Howewer, you have to import a certain tagger class from the `mordl`
-package. Let it be `mordl.UposTagger`, although equally well it can be class
-of any other tagger:
+MorDL package contains a few additional utility methods that can be useful. To
+use supplement methods, in most cases you don't have to create a tagger
+object. Howewer, you have to import a tagger class from the `mordl` package.
+Let it be `mordl.UposTagger`, although equally well it can be a class of any
+other tagger:
 ```python
 from mordl import UposTagger
 ```
@@ -23,18 +23,18 @@ To learn more about taggers usage, refer to other chapters:
 
 ### Table of Contents
 
-1 [Load and Save CoNLL-U files](#conllu)
+1 [Load and Save CoNLL-U Files](#conllu)
 1 [Split Corpus](#split)
 1 [Remove Rare Features](#rare)
 1 [String Comparison](#diff)
 
-### Load and Save CoNLL-U files<a name="conllu"></a>
+### Load and Save CoNLL-U Files<a name="conllu"></a>
 
-Usually, we use methods of the
+Usually, we use methods of
 [***Corpuscula***](https://github.com/fostroll/corpuscula) project to work
 with [*CoNLL-U*](https://universaldependencies.org/format.html) format.
-However, for convenience, we include to our project wrappers for its
-`Conllu.load()` and `Conllu.save()` methods:
+However, for convenience, we include wrappers for Corpuscula's
+`Conllu.load()` and `Conllu.save()` methods to our project:
 
 ```python
 UposTagger.save_conllu(*args, **kwargs)
@@ -57,12 +57,12 @@ of sentences in
 [*Parsed CoNLL-U*](https://github.com/fostroll/corpuscula/blob/master/doc/README_PARSED_CONLLU.md)
 
 **split**: `list` of sizes of the necessary **corpus** parts. If values are of
-`int` type, they are interpreted as lengths of new corpora in sentences; if
-values are of `float`, they are proportions of a given **corpus**. The types
-of the **split** values can't be mixed: they are either all `int`, or all
-`float`.
+`int` type, they are interpreted as lengths of a new corpora in sentences; if
+values are of `float` type, they are proportions of a given **corpus**. The
+types of the **split** values can't be mixed: they are either all `int`, or
+all `float`.
 
-**NB:** The sum of `float` values must be less or equals to `1`; the sum of
+**NB:** The sum of `float` values must be less or equal to `1`; the sum of
 `int` values can't be greater than the lentgh of the **corpus**.
 
 **save_split_to**: `list` of file names to save the result of the **corpus**
@@ -76,14 +76,14 @@ Returns a list of new corpora.
 ### Remove Rare Features<a name="rare"></a>
 
 This method is used when you already have the tagger created (let it be the
-`tagger` variable); and before start traging you want to remove rare FEATS
-keys from already loaded train and test corpora for to denoise your training
-data.
+`tagger` variable), and if before starting traging you want to remove rare
+FEATS keys from the already loaded train and test corpora for to denoise your
+training data.
 
 **Note** that this method allows you to eliminate the whole feature, not a
-spesific rare label. For example, it will remove the whole `FEATS:Case`
-feature, if it is unfrequent in the corpus, but you **can not** remove just
-one unfrequent ergative 'Erg' case, leaving all the other cases as is.
+specific rare label. For example, it will remove the whole `FEATS:Case`
+feature, if it is infrequent in the corpus, but you **can not** remove just
+one infrequent ergative 'Erg' case, leaving all the other cases as is.
 
 ```python
 tagger.remove_rare_feats(abs_thresh=None, rel_thresh=None,
@@ -122,9 +122,9 @@ and returns concurrent and distinct parts of both **form** and
 
 Args:
 
-**lower** (`bool`): if `True` then return values will be always in
+**lower** (`bool`): if `True` then the return values will be always in
 lower case. Elsewise, we compare strings in lower case but return
-values will be in original case
+values will be in original case.
 
 Returns prefix, common part, suffix/flexion of **form**, as well as
 prefix, common part, suffix/flexion of **lemma** (tuple of 6 `str`
@@ -156,10 +156,10 @@ operation.
 
 **allow_copy** (`bool`): whether to allow **copy** edit operation.
 
-Return a tuple of edit operation that is needed to transform
+Returns a tuple of edit operations that are needed to transform
 **str_from** to **str_to**.
 
-To apply those operations to the string, call:
+To apply these operations to the string, call:
 ```python
 LemmaTagger.apply_editops(str_from, ops)
 ```
