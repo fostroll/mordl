@@ -479,10 +479,10 @@ class FeatsSeparateTagger(BaseTagger):
                         for token in sentence[0] \
                                          if isinstance(sentence, tuple) else \
                                      sentence:
-                            token[self._field] = \
-                                OrderedDict((x, y) \
-                                    for x, y in token[self._field].items() \
-                                        if x in feats
+                            token[self._field] = OrderedDict(
+                                (x, y) for x, y in token[self._field].items()
+                                           if x in feats
+                            )
 
                 res_corpus_ = deepcopy(corpus_) if with_orig else corpus_
 
