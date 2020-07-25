@@ -597,7 +597,9 @@ class LemmaTagger(BaseTagger):
             print('done.\n', file=log_file)
 
         [None if x[self._field] in key_vals else
-         x.update({self._field: ((), (), x[self._field][2])})
+         x.update({self._field: ((), (), x[self._field][2]
+                                             if x[self._field] != (None,) else
+                                         _OP_C_ASIS)})
              for x in self._test_corpus for x in x]
 
         return super().train(self._field, 'UPOS', FeatTaggerModel, 'upos',
