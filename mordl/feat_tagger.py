@@ -118,35 +118,39 @@ class FeatTagger(BaseTagger):
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
-        """Predicts tags in the specified FEAT fields for the corpus.
+        """Predicts tags in the specified feature of the FEATS field of the
+        corpus.
 
         Args:
 
-        **corpus**: input corpus which will be used for feature extraction and
-        predictions.
+        **corpus**: a corpus which will be used for feature extraction and
+        predictions. May be either a name of the file in *CoNLL-U* format or
+        list/iterator of sentences in *Parsed CoNLL-U*.
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
         is a sentence with predicted labels and the second element is original
-        sentence labels. `with_orig` can be `True` only if `save_to` is
-        `None`. Default `with_orig=False`.
+        sentence. `with_orig` can be `True` only if `save_to` is `None`.
+        Default `with_orig=False`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
 
-        **split** (`int`): number of lines in each split. Allows to split a
-        large dataset into several parts. Default `split=None`, i.e. process
+        **split** (`int`): number of lines in each split. Allows to process a
+        large dataset in pieces ("splits"). Default `split=None`, i.e. process
         full dataset without splits.
 
         **clone_ds** (`bool`): if `True`, the dataset is cloned and
         transformed. If `False`, `transform_collate` is used without cloning
-        the dataset.
+        the dataset. There is no big differences between the variants. Both
+        should produce identical results.
 
-        **save_to**: directory where the predictions will be saved.
+        **save_to**: file name where the predictions will be saved.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Returns corpus with tag predictions in the FEAT field.
+        Returns corpus with predicted values of certain feature in the FEATS
+        field.
         """
         assert self._ds is not None, \
                "ERROR: The tagger doesn't have a dataset. Call the train() " \
