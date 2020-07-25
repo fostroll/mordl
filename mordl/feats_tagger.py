@@ -22,8 +22,13 @@ from typing import Iterator
 class FeatsJointTagger(BaseTagger):
     """
     A class for joint multiple-tag FEAT feature tagging.
-    """
 
+    Args:
+
+    **field**: a name of the *CoNLL-U* field, values of which you want to
+    predict. With the tagger, you can predict only key-value type fields, like
+    FEATS.
+    """
     def __init__(self, field='FEATS'):
         super().__init__()
         self._field = field
@@ -48,35 +53,38 @@ class FeatsJointTagger(BaseTagger):
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
-        """Predicts tags in the specified fields for the corpus.
+        """Predicts feature keys and values in the FEATS field of the corpus.
 
         Args:
 
-        **corpus**: input corpus which will be used for feature extraction and
-        predictions.
+        **corpus**: a corpus which will be used for feature extraction and
+        predictions. May be either a name of the file in *CoNLL-U* format or
+        list/iterator of sentences in *Parsed CoNLL-U*.
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
         is a sentence with predicted labels and the second element is original
-        sentence labels. `with_orig` can be `True` only if `save_to` is
-        `None`. Default `with_orig=False`.
+        sentence. `with_orig` can be `True` only if `save_to` is `None`.
+        Default `with_orig=False`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
 
-        **split** (`int`): number of lines in each split. Allows to split a
-        large dataset into several parts. Default `split=None`, i.e. process
+        **split** (`int`): number of lines in each split. Allows to process a
+        large dataset in pieces ("splits"). Default `split=None`, i.e. process
         full dataset without splits.
 
         **clone_ds** (`bool`): if `True`, the dataset is cloned and
         transformed. If `False`, `transform_collate` is used without cloning
-        the dataset.
+        the dataset. There is no big differences between the variants. Both
+        should produce identical results.
 
-        **save_to**: directory where the predictions will be saved.
+        **save_to**: file name where the predictions will be saved.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Returns corpus with tag predictions in the specified field.
+        Returns corpus with feature keys and values predicted in the FEATS
+        field.
         """
         assert not with_orig or save_to is None, \
                'ERROR: `with_orig` can be True only if save_to is None'
@@ -108,39 +116,42 @@ class FeatsJointTagger(BaseTagger):
     def evaluate(self, gold, test=None, feats=None, label=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
-        """Evaluate predicitons on the development test set.
+        """Evaluate the tagger model.
 
         Args:
 
-        **gold** (`tuple(<sentences> <labels>)`): corpus with actual target
-        tags.
+        **gold**: a corpus of sentences with actual target values to score the
+        tagger on. May be either a name of the file in *CoNLL-U* format or
+        list/iterator of sentences in *Parsed CoNLL-U*.
 
-        **test** (`tuple(<sentences> <labels>)`): corpus with predicted target
-        tags. If `None`, predictions will be created on-the-fly based on the
-        `gold` corpus.
+        **test**: a corpus of sentences with predicted target values. If
+        `None`, the **gold** corpus will be retagged on-the-fly, and the
+        result will be used **test**.
 
-        **feats** (`str|list([str])`): one or several subfields of the
+        **feats** (`str|list([str])`): one or several feature names of the
         key-value type fields like `FEATS` or `MISC` to be evaluated.
 
-        **label** (`str`): specific label of the target field to be evaluated,
-        e.g. `field='UPOS'`, `label='VERB'` or `field='FEATS:Animacy'`,
-        `label='Inan'`. Note that to evaluate key-value type fields like
-        `FEATS` or `MISC`.
+        **label** (`str`): specific label of the target feature value to be
+        evaluated, e.g. `label='Inan'`. If you specify a value here, you must
+        also specify the feature name as **feats** param (e.g.:
+        `feats=`'Animacy'`). Note, that in that case the param **feats** must
+        contain only one feature name.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
 
-        **split** (`int`): number of lines in each split. Allows to split a
-        large dataset into several parts. Default `split=None`, i.e. process
+        **split** (`int`): number of lines in each split. Allows to process a
+        large dataset in pieces ("splits"). Default `split=None`, i.e. process
         full dataset without splits.
 
         **clone_ds** (`bool`): if `True`, the dataset is cloned and
         transformed. If `False`, `transform_collate` is used without cloning
-        the dataset.
+        the dataset. There is no big differences between the variants. Both
+        should produce identical results.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Prints metrics and returns evaluation accuracy.
+        The method prints metrics and returns evaluation accuracy.
         """
         assert not label or feats, \
             'ERROR: To evaluate the exact label you must specify its ' \
@@ -167,7 +178,7 @@ class FeatsJointTagger(BaseTagger):
               upos_emb_dim=200, emb_out_dim=512, lstm_hidden_dim=256,
               lstm_layers=3, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
-        """Creates and trains a feature tagger model.
+        """Creates and trains a key-value type field tagger model.
 
         During training, the best model is saved after each successful epoch.
 

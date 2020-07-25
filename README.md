@@ -26,15 +26,10 @@ outlined above.
 the taggers trained on the original *SynTagRus* corpus;
     - UPOS: `99.15%`; UFeats: `97.76%`; AllTags: `98.53`; Lemmas: `98.58%` for
 the taggers trained serially on the *SynTagRus* corpus processed by previous
-taggers (UPOS tagger for FEATS; UPOS and FEATS taggers for LEMMA). It's hard
-to explain the reduction of AllTags score while all other scores increased,
-but the script calculates 3 type of scores (Precision, Recall, F1 Score), and
-its values are always concur for each evaluated category, and, really, it is
-just accuracy. Maybe, there are another mistakes inside... E.g., "Lemmas"
-instead of "Lemmata" ^-^
+taggers (UPOS tagger for FEATS; UPOS and FEATS taggers for LEMMA).
 
-Anyhow, we include that script in our distribution, so you can use it for your
-model evaluation, too. To simplify it, we made a wrapper 
+For completeness, we included that script in our distribution, so you can use
+it for your model evaluation, too. To simplify it, we also made a wrapper 
 [`mordl.conll18_ud_eval`](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md#conll18)
 for it.
 
