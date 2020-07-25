@@ -11,6 +11,7 @@ This chapter gives an overview on ***MorDL*** taggers and the basic pipeline.
 1. [Load Train and Test Data](#data)
 1. [Usage: Training - Evaluation - Inerence](#usage)
 1. [Save and Load the Internal State of the Tagger](#save)
+1. [***MorDL*** Supplements](#suppl)
 
 ### Initialization<a name="init"></a>
 
@@ -129,7 +130,7 @@ override its previously saved value.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-### MorDL Supplements
+### MorDL Supplements<a name="init"></a>
 
 Aside from basic methods, ***MorDL*** contain several supplement utilities
 that sometimes may be helpful. You may find their description in the
