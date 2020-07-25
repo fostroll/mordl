@@ -4,7 +4,7 @@
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
-Provides joint and separate multiple-tag FEAT tagger classes.
+Provides joint and separate key-value type field tagger classes.
 """
 from copy import deepcopy
 from collections import OrderedDict
@@ -21,7 +21,8 @@ from typing import Iterator
 
 class FeatsJointTagger(BaseTagger):
     """
-    A class for joint multiple-tag FEAT feature tagging.
+    A class for prediction a content ot a key-value type field. Joint
+    implementation (predict all the content of the field at once).
 
     Args:
 
@@ -325,28 +326,29 @@ class FeatsJointTagger(BaseTagger):
 
 class FeatsSeparateTagger(BaseTagger):
     """
-    A class for separate multiple-tag FEAT feature tagging.
-    """
+    A class for prediction a content ot a key-value type field. Separate
+    implementation (for each feature, creates its own tagger).
 
+    Args:
+
+    **field**: a name of the *CoNLL-U* field, values of which you want to
+    predict. With the tagger, you can predict only key-value type fields, like
+    FEATS.
+    """
     def __init__(self, field='FEATS'):
         super().__init__()
         self._field = field
         self._feats = {}
 
     def save(self, name, log_file=LOG_FILE):
-        """Saves the internal state of the tagger.
+        """Saves the config of tagger with paths to the separate taggers'
+        storages.
 
         Args:
 
         **name**: a name to save with.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
-
-        The method creates 4 files for a tagger: two for its model (config and
-        state dict) and two for the dataset (config and the internal state).
-        All file names started with **name** and their endings are:
-        `.config.json` and `.pt` for the model; `_ds.config.json` and `_ds.pt`
-        for the dataset.
         """
         if not name.endswith(CONFIG_EXT):
             name += CONFIG_EXT
@@ -358,11 +360,12 @@ class FeatsSeparateTagger(BaseTagger):
             print('Config saved', file=log_file)
 
     def load(self, name, log_file=LOG_FILE):
-        """Loads tagger's internal state saved by its `.save()` method.
+        """Reads previously saved config and loads all taggers that it
+        contain.
 
         Args:
 
-        **name** (`str`): name of the internal state previously saved.
+        **name**: a name of the tagger's config.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
         """
@@ -386,114 +389,119 @@ class FeatsSeparateTagger(BaseTagger):
     def predict(self, corpus, feats=None, remove_excess_feats=True,
                 with_orig=False, batch_size=BATCH_SIZE, split=None,
                 clone_ds=False, save_to=None, log_file=LOG_FILE):
-        """Predicts tags in the FEATS field.
+        """Predicts feature keys and values in the FEATS field of the corpus.
 
         Args:
 
-        **corpus**: input corpus which will be used for feature extraction and
-        predictions.
+        **corpus**: a corpus which will be used for feature extraction and
+        predictions. May be either a name of the file in *CoNLL-U* format or
+        list/iterator of sentences in *Parsed CoNLL-U*.
 
         **feats** (`str|list([str)`): exact features to be predicted.
 
-        **remove_excess_feats** (`bool`): if `True`, removes unused feats from
-        the corpus. Default `remove_excess_feats=True`.
+        **remove_excess_feats** (`bool`): if `True` (default), the tagger
+        removes all unrelevant features from predicted field ("unrelevant"
+        means, that the tagger don't have a models for them). For example, if
+        you trained the tagger only for "Case" and "Gender" features, the
+        tagger predict only them (or, only one of them, if you specify it in
+        **feats** field) and remove all the rest. If
+        `remove_excess_feats=False`, all unrelevant feats will be stayed
+        intact.
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
         is a sentence with predicted labels and the second element is original
-        sentence labels. `with_orig` can be `True` only if `save_to` is
-        `None`. Default `with_orig=False`.
+        sentence. `with_orig` can be `True` only if `save_to` is `None`.
+        Default `with_orig=False`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
 
-        **split** (`int`): number of lines in each split. Allows to split a
-        large dataset into several parts. Default `split=None`, i.e. process
+        **split** (`int`): number of lines in each split. Allows to process a
+        large dataset in pieces ("splits"). Default `split=None`, i.e. process
         full dataset without splits.
 
         **clone_ds** (`bool`): if `True`, the dataset is cloned and
         transformed. If `False`, `transform_collate` is used without cloning
-        the dataset.
+        the dataset. There is no big differences between the variants. Both
+        should produce identical results.
 
-        **save_to**: directory where the predictions will be saved.
+        **save_to**: file name where the predictions will be saved.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Returns corpus with tag predictions in the specified field.
+        Returns corpus with feature keys and values predicted in the FEATS
+        field.
         """
         args, kwargs = get_func_params(FeatsSeparateTagger.predict, locals())
-        del kwargs['feat']
+        del kwargs['feats']
         del kwargs['remove_excess_feats']
 
-        if feat:
-            attrs = self._feats[feat]
-            tagger = attrs[1] if isinstance(attrs, list) > 1 else None
-            assert isinstance(tagger, FeatTagger), \
-                'ERROR: Model is not loaded. Use the .load() method prior'
-            corpus = tagger.predict(*args, **kwargs)
-
+        if feats is None:
+            feats = self._feats
         else:
-            kwargs['with_orig'] = False
-            kwargs['save_to'] = None
+            if isinstance(feats, str):
+                feats = [feats]
+            unknown_feats = []
+            for feat in sorted(feats):
+                if feat not in self._feats:
+                    unknown_feats.append(feat)
+            assert unknown_feats, \
+                'ERROR: feats {} are unknown for the tagger' \
+                    .format(unknown_feats)
 
-            def process(corpus):
-                corpus = self._get_corpus(corpus, asis=True,
-                                          log_file=log_file)
-                for start in itertools.count(step=split if split else 1):
-                    if isinstance(corpus, Iterator):
-                        if split:
-                            corpus_ = []
-                            for i, sentence in enumerate(corpus, start=1):
-                                corpus_.append(sentence)
-                                if i == split:
-                                    break
-                        else:
-                            corpus_ = list(corpus)
+        kwargs['with_orig'] = False
+        kwargs['save_to'] = None
+
+        def process(corpus):
+            corpus = self._get_corpus(corpus, asis=True,
+                                      log_file=log_file)
+            for start in itertools.count(step=split if split else 1):
+                if isinstance(corpus, Iterator):
+                    if split:
+                        corpus_ = []
+                        for i, sentence in enumerate(corpus, start=1):
+                            corpus_.append(sentence)
+                            if i == split:
+                                break
                     else:
-                        if split:
-                            corpus_ = corpus[start:start + split]
-                        else:
-                            corpus_ = corpus
-                    if not corpus_:
-                        break
-
-                    if remove_excess_feats:
-                        for sentence in corpus_:
-                            for token in sentence[0] \
-                                             if isinstance(sentence,
-                                                           tuple) else \
-                                         sentence:
-                                token[self._field] = \
-                                    OrderedDict((x, y)
-                                        for x, y in token[self._field].items()
-                                            if x in self._feats.keys())
-
-                    res_corpus_ = deepcopy(corpus_) if with_orig else corpus_
-
-                    #if remove_excess_feats:
-                    #    for sentence in res_corpus_:
-                    #        for token in sentence[0] \
-                    #                         if isinstance(sentence,
-                    #                                       tuple) else \
-                    #                     sentence:
-                    #            token[self._field] = OrderedDict()
-
-                    for attrs in self._feats.values():
-                        tagger = attrs[1] \
-                                     if isinstance(attrs, list) else \
-                                 None
-                        assert isinstance(tagger, FeatTagger), \
-                            'ERROR: Model is not loaded. Use the .load() ' \
-                            'method prior'
-                        res_corpus_ = tagger.predict(res_corpus_, **kwargs)
-
-                    if with_orig:
-                        for orig_sentence, sentence in zip(corpus_,
-                                                           res_corpus_):
-                            yield sentence, orig_sentence
+                        corpus_ = list(corpus)
+                else:
+                    if split:
+                        corpus_ = corpus[start:start + split]
                     else:
-                        for sentence in res_corpus_:
-                            yield sentence
+                        corpus_ = corpus
+                if not corpus_:
+                    break
+
+                if remove_excess_feats:
+                    for sentence in corpus_:
+                        for token in sentence[0] \
+                                         if isinstance(sentence, tuple) else \
+                                     sentence:
+                            token[self._field] = \
+                                OrderedDict((x, y)
+                                    for x, y in token[self._field].items()
+                                        if x in feats
+
+                res_corpus_ = deepcopy(corpus_) if with_orig else corpus_
+
+                for attrs in self._feats.values():
+                    tagger = attrs[1] \
+                                 if isinstance(attrs, list) else \
+                             None
+                    assert isinstance(tagger, FeatTagger), \
+                        'ERROR: Model is not loaded. Use the .load() ' \
+                        'method prior'
+                    res_corpus_ = tagger.predict(res_corpus_, **kwargs)
+
+                if with_orig:
+                    for orig_sentence, sentence in zip(corpus_,
+                                                       res_corpus_):
+                        yield sentence, orig_sentence
+                else:
+                    for sentence in res_corpus_:
+                        yield sentence
 
             corpus = process(corpus)
             if save_to:
@@ -505,39 +513,42 @@ class FeatsSeparateTagger(BaseTagger):
     def evaluate(self, gold, test=None, feats=None, label=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
-        """valuate predicitons on the development test set.
+        """Evaluate the tagger model.
 
         Args:
 
-        **gold** (`tuple(<sentences> <labels>)`): corpus with actual target
-        tags.
+        **gold**: a corpus of sentences with actual target values to score the
+        tagger on. May be either a name of the file in *CoNLL-U* format or
+        list/iterator of sentences in *Parsed CoNLL-U*.
 
-        **test** (`tuple(<sentences> <labels>)`): corpus with predicted target
-        tags. If `None`, predictions will be created on-the-fly based on the
-        `gold` corpus.
+        **test**: a corpus of sentences with predicted target values. If
+        `None`, the **gold** corpus will be retagged on-the-fly, and the
+        result will be used **test**.
 
-        **feats** (`str|list([str])`): one or several subfields of the
+        **feats** (`str|list([str])`): one or several feature names of the
         key-value type fields like `FEATS` or `MISC` to be evaluated.
 
-        **label** (`str`): specific label of the target field to be evaluated,
-        e.g. `field='UPOS'`, `label='VERB'` or `field='FEATS:Animacy'`,
-        `label='Inan'`. Note that to evaluate key-value type fields like
-        `FEATS` or `MISC`.
+        **label** (`str`): specific label of the target feature value to be
+        evaluated, e.g. `label='Inan'`. If you specify a value here, you must
+        also specify the feature name as **feats** param (e.g.:
+        `feats=`'Animacy'`). Note, that in that case the param **feats** must
+        contain only one feature name.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
 
-        **split** (`int`): number of lines in each split. Allows to split a
-        large dataset into several parts. Default `split=None`, i.e. process
+        **split** (`int`): number of lines in each split. Allows to process a
+        large dataset in pieces ("splits"). Default `split=None`, i.e. process
         full dataset without splits.
 
         **clone_ds** (`bool`): if `True`, the dataset is cloned and
         transformed. If `False`, `transform_collate` is used without cloning
-        the dataset.
+        the dataset. There is no big differences between the variants. Both
+        should produce identical results.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Prints metrics and returns evaluation accuracy.
+        The method prints metrics and returns evaluation accuracy.
         """
         assert not label or feats, \
             'ERROR: To evaluate the exact label you must specify its ' \
