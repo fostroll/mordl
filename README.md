@@ -21,7 +21,7 @@ of
 * For inference on the *SynTagRus* test corpus, when predicted fields were
 emptied and all other fields were stayed intact, the scores are the same as
 outlined above.
-* Serial inference with UPOS - FEATS - LEMMA taggers results with scores:
+* Serial inference with UPOS - FEATS - LEMMA taggers resulted with scores:
     - UPOS: `99.15%`; UFeats: `97.75%`; AllTags: `98.55`; Lemmas: `98.57%` for
 the taggers trained on the original *SynTagRus* corpus;
     - UPOS: `99.15%`; UFeats: `97.76%`; AllTags: `98.53`; Lemmas: `98.58%` for
