@@ -28,21 +28,6 @@ class LemmaTagger(BaseTagger):
     **field**: a name of the *CoNLL-U* field with values that are derivatives
     of FORM field, like `'LEMMA'` (default value).
 
-    **field** (`str`): the name of the field which needs to be predicted by
-    the training tagger. May contain up to 3 elements, separated by a colon
-    (`:`). Format is: `'<field name>:<feat name>:<replacement for None>'`. The
-    replacement is used during the training time as a filler for a fields
-    without     a value for that we could predict them, too. In the *CoNLL-U*
-    format the     replacer is `'_'` sign, so we use it, too, as a default
-    replacement. You'll hardly have a reason to change it. Examples:<br/>
-    `'UPOS'` - predict the *UPOS* field;<br/>
-    `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS
-    field;<br/>
-    `'FEATS:Animacy:_O'` - likewise the above, but if feat value is `None`, it
-    will be replaced by `'_O'` during training;<br/>
-    `'XPOS::_O'` - predict the *XPOS* field and use `'_O'` as replacement for
-    `None`.
-
     **feats_prune_coef** (`int`): feature prunning coefficient which allows to
     eliminate all features that have a low frequency. For each UPOS tag, we
     get a number of occurences of the most frequent feature from FEATS field,
@@ -316,31 +301,33 @@ class LemmaTagger(BaseTagger):
 
     def evaluate(self, gold, test=None, batch_size=BATCH_SIZE, split=None,
                  clone_ds=False, log_file=LOG_FILE):
-        """Evaluate predicitons on the development test set.
+        """Evaluate the tagger model.
 
         Args:
 
-        **gold** (`tuple(<sentences> <labels>)`): corpus with actual target
-        tags.
+        **gold**: a corpus of sentences with actual target values to score the
+        tagger on. May be either a name of the file in *CoNLL-U* format or
+        list/iterator of sentences in *Parsed CoNLL-U*.
 
-        **test** (`tuple(<sentences> <labels>)`): corpus with predicted target
-        tags. If `None`, predictions will be created on-the-fly based on the
-        `gold` corpus.
+        **test**: a corpus of sentences with predicted target values. If
+        `None`, the **gold** corpus will be retagged on-the-fly, and the
+        result will be used **test**.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
 
-        **split** (`int`): number of lines in each split. Allows to split a
-        large dataset into several parts. Default `split=None`, i.e. process
+        **split** (`int`): number of lines in each split. Allows to process a
+        large dataset in pieces ("splits"). Default `split=None`, i.e. process
         full dataset without splits.
 
         **clone_ds** (`bool`): if `True`, the dataset is cloned and
         transformed. If `False`, `transform_collate` is used without cloning
-        the dataset.
+        the dataset. There is no big differences between the variants. Both
+        should produce identical results.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Prints metrics and returns evaluation accuracy.
+        The method prints metrics and returns evaluation accuracy.
         """
         args, kwargs = get_func_params(LemmaTagger.evaluate, locals())
         return super().evaluate(self._field, *args, **kwargs)

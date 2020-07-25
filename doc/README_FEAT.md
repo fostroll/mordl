@@ -16,18 +16,17 @@ chapter.
 ### Table of Contents
 
 1. [Initialization and Data Loading](#init)
-1. [Train](#train)
-1. [Save and Load Trained Models](#save)
-1. [Evaluate](#eval)
-1. [Predict](#predict)
+1. [Training](#train)
+1. [Save and Load the Internal State of the Tagger](#save)
+1. [Evaluation](#eval)
+1. [Inference](#predict)
 
 ### Initialization and Data Loading <a name="init"></a>
 
-First of all, you need to create a tagger object.
+First of all, you need to create a tagger object:
 ```python
 tagger = FeatTagger(feat, feats_prune_coef=6)
 ```
-Creates a single-feature tagger object.
 
 Args:
 
@@ -45,8 +44,7 @@ of which is greater than that value, to improve the prediction quality.
 * `feats_prune_coef=None` means "use all feats";
 * default `feats_prune_coef=6`.
 
-**NB**: the argument is relevant only if **feat** is not from `'FEATS'`
-field.
+**NB**: the argument is relevant only if **feat** is not from FEATS field.
 
 Afterwards, load train and development test corpora into the tagger object
 created:
@@ -59,7 +57,7 @@ refer to
 [***MorDL*** Basics: Load Train and Test Data](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#data)
 chapter.
 
-### Train <a name="train"></a>
+### Training <a name="train"></a>
 
 ***MorDL*** allows you to train a custom BiLSTM single morphological feature
 prediction model.
@@ -217,41 +215,44 @@ is useful. For detailed info on `.save()` and `.load()`, refer to
 [MorDL Basics: Save and Load the Internal State of the Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#save)
 chapter.
 
-### Evaluate <a name="eval"></a>
+### Evaluation <a name="eval"></a>
 
-When predictions are ready, evaluate predicitons on the development test set
-based on the gold corpus:
+When the training has done, you may evaluate its quality using the test or
+development test corpora:
 ```python
 tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
                  split=None, clone_ds=False, log_file=LOG_FILE)
 ```
-Evaluates predicitons on the development test set.
-
 Args:
 
-**gold** (`tuple(<sentences> <labels>)`): corpus with actual target tags.
+**gold**: a corpus of sentences with actual target values to score the
+tagger on. May be either a name of the file in *CoNLL-U* format or
+list/iterator of sentences in *Parsed CoNLL-U*.
 
-**test** (`tuple(<sentences> <labels>)`): corpus with predicted target tags.
-If `None`, predictions will be created on-the-fly based on the `gold` corpus.
+**test**: a corpus of sentences with predicted target values. If
+`None`, the **gold** corpus will be retagged on-the-fly, and the
+result will be used **test**.
 
-**label** (`str`): specific label of the target field to be evaluated, e.g.
-`label='Acc'`.
+**label** (`str`): specific label of the target feat to be evaluated,
+e.g. `label='Inan'` for tagger created with `field='Animacy'` option.
 
 **batch_size** (`int`): number of sentences per batch. Default
 `batch_size=64`.
 
-**split** (`int`): number of lines in each split. Allows to split a large
-dataset into several parts. Default `split=None`, i.e. process full dataset
-without splits.
+**split** (`int`): number of lines in each split. Allows to process a
+large dataset in pieces ("splits"). Default `split=None`, i.e. process
+full dataset without splits.
 
-**clone_ds** (`bool`): if `True`, the dataset is cloned and transformed. If
-`False`, `transform_collate` is used without cloning the dataset.
+**clone_ds** (`bool`): if `True`, the dataset is cloned and
+transformed. If `False`, `transform_collate` is used without cloning
+the dataset. There is no big differences between the variants. Both
+should produce identical results.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-Prints metrics and returns evaluation accuracy.
+The method prints metrics and returns evaluation accuracy.
 
-### Predict <a name="predict"></a>
+### Inference <a name="predict"></a>
 
 Using the trained corpus, predict tags for the specified corpus:
 ```python

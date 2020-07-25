@@ -81,34 +81,36 @@ class UposTagger(BaseTagger):
 
     def evaluate(self, gold, test=None, label=None, batch_size=BATCH_SIZE,
                  split=None, clone_ds=False, log_file=LOG_FILE):
-        """Evaluate predicitons on the development test set.
+        """Evaluate the tagger model.
 
         Args:
 
-        **gold** (`tuple(<sentences> <labels>)`): corpus with actual target
-        tags.
+        **gold**: a corpus of sentences with actual target values to score the
+        tagger on. May be either a name of the file in *CoNLL-U* format or
+        list/iterator of sentences in *Parsed CoNLL-U*.
 
-        **test** (`tuple(<sentences> <labels>)`): corpus with predicted target
-        tags. If `None`, predictions will be created on-the-fly based on the
-        `gold` corpus.
+        **test**: a corpus of sentences with predicted target values. If
+        `None`, the **gold** corpus will be retagged on-the-fly, and the
+        result will be used **test**.
 
         **label** (`str`): specific label of the target field to be evaluated,
-        e.g. `field='UPOS'`, `label='VERB'`.
+        e.g. label='VERB'`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
 
-        **split** (`int`): number of lines in each split. Allows to split a
-        large dataset into several parts. Default `split=None`, i.e. process
+        **split** (`int`): number of lines in each split. Allows to process a
+        large dataset in pieces ("splits"). Default `split=None`, i.e. process
         full dataset without splits.
 
         **clone_ds** (`bool`): if `True`, the dataset is cloned and
         transformed. If `False`, `transform_collate` is used without cloning
-        the dataset.
+        the dataset. There is no big differences between the variants. Both
+        should produce identical results.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Prints metrics and returns evaluation accuracy.
+        The method prints metrics and returns evaluation accuracy.
         """
         args, kwargs = get_func_params(UposTagger.evaluate, locals())
         return super().evaluate(self._field, *args, **kwargs)
