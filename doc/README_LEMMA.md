@@ -18,7 +18,6 @@ to lemmatized string.
 1. [Save and Load the Internal State of the Tagger](#save)
 1. [Evaluation](#eval)
 1. [Inference](#predict)
-1. [Lemmatization Supplements](#lemma_suppl)
 
 ### Initialization and Data Loading<a name="init"></a>
 
@@ -284,47 +283,3 @@ should produce identical results.
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
 Returns corpus with lemmata predicted.
-
-### Lemmatization Supplements<a name="lemma_suppl"></a>
-
-As lemmatization is based on edit operations from source string to lemmatized
-string, there are several supplement methods for `LemmaTagger()`.
-
-```python
-tagger.find_affixes(form, lemma, lower=False)
-```
-Find the longest common part of the given **form** and **lemma**.
-
-Args:
-
-**lower** (`bool`): if `True` then return values will be always in lower case.
-
-Rerutns prefix, common part, suffix/flexion of **form** & prefix, common part,
-suffix/flexion of **lemma** (`str`, `str`, `str`, `str`, `str`, `str`).
-
-```python
-tagger.get_editops(str_from, str_to, allow_replace=True, allow_copy=True)
-```
-Get edit operations from `str_from` to `str_to` according to Levenstein
-distance. Supported edit operations: 'delete', 'insert', 'replace', 'copy'.
-
-Args:
-
-**str_from** (`str`): source string.
-
-**str_to** (`str`): target string.
-
-**allow_replace** (`bool`): whether to allow **replace** edit operation.
-
-**allow_copy** (`bool`): whether to allow **copy** edit operation.
-
-```python
-tagger.apply_editops(str_from, ops)
-```
-Apply edit operations to the source string.
-
-Args:
-
-**str_from** (`str`): source string to apply edit operations to.
-
-**ops** (`list([str])`): list of edit operations.

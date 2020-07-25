@@ -44,13 +44,19 @@ class LemmaTagger(BaseTagger):
 
     @staticmethod
     def find_affixes(form, lemma, lower=False):
-        """Find the longest common part of the given **form** and **lemma**.
+        """Finds the longest common part of the given **form** and **lemma**
+        and returns concurrent and distinct parts of both **form** and
+        **lemma** given.
 
-        :param lower: if `True` then return values will be always in lower
-                      case
-        :return: prefix, common part, suffix/flexion of **form**;
-                 prefix, common part, suffix/flexion of **lemma**
-        :rtype: `str`, `str`, `str`, `str`, `str`, `str`
+        Args:
+
+        **lower** (`bool`): if `True` then return values will be always in
+        lower case. Elsewise, we compare strings in lower case but return
+        values will be in original case
+
+        Returns prefix, common part, suffix/flexion of **form**, as well as
+        prefix, common part, suffix/flexion of **lemma** (tuple of 6 `str`
+        values).
         """
         if lower:
             lex = form = form.lower()
@@ -133,6 +139,9 @@ class LemmaTagger(BaseTagger):
         operation.
 
         **allow_copy** (`bool`): whether to allow **copy** edit operation.
+
+        Return a tuple of edit operation that is needed to transform
+        **str_from** to **str_to**.
         """
         res = []
         for op, idx_dst, idx_src in editops(str_from, str_to):
@@ -159,13 +168,13 @@ class LemmaTagger(BaseTagger):
 
     @staticmethod
     def apply_editops(str_from, ops):
-        """Apply edit operations to the source string.
+        """Apply edit operations to the **str_from**.
 
         Args:
 
         **str_from** (`str`): source string to apply edit operations to.
 
-        **ops** (`list([str])`): list of edit operations.
+        **ops** (`tuple([str])`): tuple or list with edit operations.
         """
         str_from = list(str_from)
         for op, idx, ch in reversed(ops):
