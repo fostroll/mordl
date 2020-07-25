@@ -728,6 +728,7 @@ class FeatsSeparateTagger(BaseTagger):
         if log_file:
             print(', '.join(feats), file=log_file)
 
+        '''
         [x.update({self._field:
                        '|'.join('='.join((y, x[self._field][y]))
                                     for y in sorted(x[self._field]))})
@@ -736,6 +737,7 @@ class FeatsSeparateTagger(BaseTagger):
                        '|'.join('='.join((y, x[self._field][y]))
                                     for y in sorted(x[self._field]))})
              for x in self._test_corpus for x in x]
+        '''
 
         res = {}
         for feat in feats:
