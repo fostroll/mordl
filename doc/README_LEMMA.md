@@ -31,19 +31,19 @@ tagger = LemmaTagger(field='LEMMA', feats_prune_coef=6)
 Args:
 
 **field**: a name of the *CoNLL-U* field with values that are derivatives
-of FORM field, like `'LEMMA'` (default value).
+of the `FORM` field, like `'LEMMA'` (default value).
 
 **feats_prune_coef** (`int`): feature prunning coefficient which allows to
 eliminate all features that have a low frequency. For each UPOS tag, we
 get a number of occurences of the most frequent feature from FEATS field,
-divide it by **feats_prune_coef** and use features, number of occurences
-of which is greater than that value, to improve the prediction quality.
+divide it by **feats_prune_coef** and use only those features, number of
+occurences of which is greater than that value, to improve the prediction
+quality.
 * `feats_prune_coef=0` means "do not use feats";
 * `feats_prune_coef=None` means "use all feats";
 * default `feats_prune_coef=6`.
 
-Afterwards, load train and development test corpora into the tagger object
-created:
+Afterwards, load train and development test corpora into the tagger object:
 ```python
 tagger.load_train_corpus(corpus, append=False, test=None, seed=None)
 tagger.load_test_corpus(corpus, append=False)
@@ -59,8 +59,8 @@ chapter.
 lemmata prediction as a sequence labelling task, rather than a
 sequence-to-sequence problem.
 
-**NB:** By this step you should have a tagger object created and training data
-loaded.
+**NB:** By this step, you should have a tagger object created and training
+data loaded.
 
 ```python
 stat = tagger.train(save_as,
@@ -81,7 +81,7 @@ During training, the best model is saved after each successful epoch.
 
 *Training's args*:
 
-**save_as** (`str`): the name using for save. Refer to the `.save()`
+**save_as** (`str`): the name used for save. Refer to the `.save()`
 method's help for the broad definition (see the **name** arg there).
 
 **device**: device for the model. E.g.: 'cuda:0'.
@@ -93,7 +93,7 @@ train until `bad_epochs` is met, but no less than `min_epochs`.
 `0`
 
 **bad_epochs** (`int`): maximum allowed number of bad epochs (epochs
-when selected **control_metric** is became not better) in a row.
+during which the selected **control_metric** does not improve) in a row.
 Default is `5`.
 
 **batch_size** (`int`): number of sentences per batch. For training,
@@ -139,8 +139,8 @@ embeddings conversion. See the `.transform()` method of
 parameters.
 
 **word_next_emb_params**: if you want to use several different
-embedding models at once, pass parameters of the additional model as a
-dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
+embedding models at once, pass the parameters of the additional model as
+a dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
 or a list of such dictionaries if you need more than one additional
 model.
 
@@ -200,7 +200,7 @@ The method returns the train statistics.
 
 ### Save and Load the Internal State of the Tagger<a name="save"></a>
 
-To save and load state of the tagger, use methods:
+To save and load the state of the tagger, use methods:
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
 tagger.load(model_class, name, device=None, dataset_device=None,
@@ -208,14 +208,14 @@ tagger.load(model_class, name, device=None, dataset_device=None,
 ```
 Normally, you don't need to call the method `.save()` because the data is
 saved automatically during training. Though, there are cases when this method
-is useful. For detailed info on `.save()` and `.load()`, refer to
+could be useful. For detailed info on `.save()` and `.load()`, refer to
 [MorDL Basics: Save and Load the Internal State of the Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#save)
 chapter.
 
 ### Evaluation<a name="eval"></a>
 
-When the training has done, you may evaluate its quality using the test or
-development test corpora:
+When the training has done, you may evaluate prediction quality using the
+test or the development test corpora:
 ```python
 tagger.evaluate(gold, test=None, batch_size=BATCH_SIZE, split=None,
                 clone_ds=False, log_file=LOG_FILE)
@@ -223,12 +223,12 @@ tagger.evaluate(gold, test=None, batch_size=BATCH_SIZE, split=None,
 Args:
 
 **gold**: a corpus of sentences with actual target values to score the
-tagger on. May be either a name of the file in *CoNLL-U* format or
+tagger on. May be either a name of the file in *CoNLL-U* format or a
 list/iterator of sentences in *Parsed CoNLL-U*.
 
 **test**: a corpus of sentences with predicted target values. If
 `None`, the **gold** corpus will be retagged on-the-fly, and the
-result will be used **test**.
+result will be used as **test**.
 
 **batch_size** (`int`): number of sentences per batch. Default
 `batch_size=64`.
@@ -262,7 +262,7 @@ list/iterator of sentences in *Parsed CoNLL-U*.
 
 **with_orig** (`bool`): if `True`, instead of only a sequence with
 predicted labels, returns a sequence of tuples where the first element
-is a sentence with predicted labels and the second element is original
+is a sentence with predicted labels and the second element is the original
 sentence. `with_orig` can be `True` only if `save_to` is `None`.
 Default `with_orig=False`.
 
