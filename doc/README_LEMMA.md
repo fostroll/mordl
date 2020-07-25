@@ -20,7 +20,7 @@ to lemmatized string.
 1. [Inference](#predict)
 1. [Lemmatization Supplements](#lemma_suppl)
 
-### Initialization and Data Loading <a name="init"></a>
+### Initialization and Data Loading<a name="init"></a>
 
 First of all, you need to create a tagger object:
 ```python
@@ -52,7 +52,7 @@ refer to
 [***MorDL*** Basics: Load Train and Test Data](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#data)
 chapter.
 
-### Training <a name="train"></a>
+### Training<a name="train"></a>
 
 ***MorDL*** allows you to train a custom lemmata prediction model. We treat
 lemmata prediction as a sequence labelling task, rather than a
@@ -197,7 +197,7 @@ need reproducibility.
 
 The method returns the train statistics.
 
-### Save and Load the Internal State of the Tagger <a name="save"></a>
+### Save and Load the Internal State of the Tagger<a name="save"></a>
 
 To save and load state of the tagger, use methods:
 ```python
@@ -211,7 +211,7 @@ is useful. For detailed info on `.save()` and `.load()`, refer to
 [MorDL Basics: Save and Load the Internal State of the Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#save)
 chapter.
 
-### Evaluation <a name="eval"></a>
+### Evaluation<a name="eval"></a>
 
 When the training has done, you may evaluate its quality using the test or
 development test corpora:
@@ -245,7 +245,7 @@ should produce identical results.
 
 The method prints metrics and returns evaluation accuracy.
 
-### Inference <a name="predict"></a>
+### Inference<a name="predict"></a>
 
 Using the trained tagger, predict lemmata for the specified corpus:
 ```python
@@ -283,7 +283,7 @@ should produce identical results.
 
 Returns corpus with lemmata predicted.
 
-### Lemmatization Supplements <a name="lemma_suppl"></a>
+### Lemmatization Supplements<a name="lemma_suppl"></a>
 
 As lemmatization is based on edit operations from source string to lemmatized
 string, there are several supplement methods for `LemmaTagger()`.

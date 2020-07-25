@@ -28,13 +28,13 @@ chapter.
 * [Evaluate](#eval)
 * [Save and Load Trained Models](#save)
 
-## Joint Feats Tagger <a name="joint"></a>
+## Joint Feats Tagger<a name="joint"></a>
 
 Joint Feats tagger implies that target classes are compiled of all different
 feature tag combinations that are present in the training set. These classes
 are predicted jointly.
 
-### Initialization and Data Loading <a name="init"></a>
+### Initialization and Data Loading<a name="init"></a>
 
 First of all, you need to create a tagger object.
 ```python
@@ -68,7 +68,7 @@ refer to
 [MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
 chapter.
 
-### Training <a name="train"></a>
+### Training<a name="train"></a>
 
 ***MorDL*** allows you to train a custom bi-based joint multiple feature
 prediction model.
@@ -200,7 +200,7 @@ reproducibility.
 
 Returns the train statistics.
 
-### Predict <a name="predict"></a>
+### Predict<a name="predict"></a>
 
 Using the trained corpus, predict POS tags for the specified corpus:
 ```python
@@ -236,12 +236,12 @@ without splits.
 
 Returns corpus with tag predictions in the `FEATS` field.
 
-## Separate Feats Tagger <a name="separate"></a>
+## Separate Feats Tagger<a name="separate"></a>
 
 Joint Feats tagger implies that each feature of the `FEATS` field is predicted
 separately.
 
-### Initialization and Data Loading <a name="init_sep"></a>
+### Initialization and Data Loading<a name="init_sep"></a>
 
 First of all, you need to create a tagger object.
 ```python
@@ -275,7 +275,7 @@ refer to
 [MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
 chapter.
 
-### Training <a name="train_sep"></a>
+### Training<a name="train_sep"></a>
 
 ***MorDL*** allows you to train a custom biLSTM-based joint multiple feature
 prediction model.
@@ -413,7 +413,7 @@ reproducibility.
 
 Returns the train statistics.
 
-### Predict <a name="predict_sep"></a>
+### Predict<a name="predict_sep"></a>
 
 Using the trained corpus, predict `FEATS` for the specified corpus:
 ```python
@@ -455,7 +455,7 @@ without splits.
 
 Returns corpus with tag predictions in the specified field.
 
-## Evaluate <a name="eval"></a>
+## Evaluate<a name="eval"></a>
 
 Evaluation step is the same for both joint and separate taggers.
 
@@ -495,7 +495,7 @@ without splits.
 
 Prints metrics and returns evaluation accuracy.
 
-### Save and Load the Internal State of the Tagger <a name="save"></a>
+### Save and Load the Internal State of the Tagger<a name="save"></a>
 
 To save and load state of the tagger, use methods:
 ```python

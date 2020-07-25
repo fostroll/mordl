@@ -12,7 +12,7 @@ This chapter gives an overview on ***MorDL*** taggers and the basic pipeline.
 1. [Usage: Training - Evaluation - Inerence](#usage)
 1. [Save and Load the Internal State of the Tagger](#save)
 
-### Initialization <a name="init"></a>
+### Initialization<a name="init"></a>
 
 Currently, ***MorDL*** has a bunch of tools for morphological tagging. Refer
 to the specific tagger documentation for detailed information:
@@ -32,7 +32,7 @@ tagger = UposTagger()
 For taggers of other types, you can find a description of their creation in
 corresponding chapters.
 
-### Load Train and Test Data <a name="data"></a>
+### Load Train and Test Data<a name="data"></a>
 
 After the tagger is initialized, we need to load train and test corpora into
 it.
@@ -70,7 +70,7 @@ sentences in *Parsed CoNLL-U*.
 
 **param append** add corpus to already loaded one(s).
 
-### Usage: Training - Evaluation - Inerence <a name="usage"></a>
+### Usage: Training - Evaluation - Inerence<a name="usage"></a>
 
 All our taggers contain 3 main methods: `.train()`, `.evaluate()` and
 `.predict()`. Parameters vary slightly for each tagger and described in the
@@ -81,7 +81,7 @@ corresponding chapters:
 * [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md#start)
 * [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md#start)
 
-### Save and Load the Internal State of the Tagger <a name="save"></a>
+### Save and Load the Internal State of the Tagger<a name="save"></a>
 
 Normally, you don't need to save the state of the tagger intentionally. During
 training, the state is saved automatically after each successful epoch.

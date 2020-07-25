@@ -24,7 +24,7 @@ chapters:
 * [Split Corpus](#split)
 * [Remove Rare Features](#rare)
 
-### Load and Save Corpora <a name="corp"></a>
+### Load and Save Corpora<a name="corp"></a>
 
 Wrappers for [***Corpuscula***](https://github.com/fostroll/corpuscula)
 `Conllu.load()` and `Conllu.save()` methods:
@@ -36,7 +36,7 @@ tagger.load_conllu(*args, **kwargs)
 **args** and **kwargs** are arguments that are passed to corresponding methods
 of the ***Corpuscula***'s `Conllu` class.
 
-### Split Corpus <a name="split"></a>
+### Split Corpus<a name="split"></a>
 
 Split a **corpus** in a given proportion:
 ```python
@@ -65,7 +65,7 @@ must be equal to the length of **split**.
 
 Returns a list of new corpora.
 
-### Remove Rare Features <a name="rare"></a>
+### Remove Rare Features<a name="rare"></a>
 
 If needed, you can remove rare features from train and test data.
 
