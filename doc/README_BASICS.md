@@ -9,7 +9,7 @@ This chapter gives an overview on ***MorDL*** taggers and the basic pipeline.
 
 1. [Initialization](#init)
 1. [Load Train and Test Data](#data)
-1. [Usage: Train - Evaluate - Predict](#pipeline)
+1. [Usage: Training - Evaluation - Inerence](#usage)
 1. [Save and Load the Internal State of the Tagger](#save)
 
 ### Initialization <a name="init"></a>
@@ -70,7 +70,7 @@ sentences in *Parsed CoNLL-U*.
 
 **param append** add corpus to already loaded one(s).
 
-### Usage: Train - Evaluate - Predict <a name="usage"></a>
+### Usage: Training - Evaluation - Inerence <a name="usage"></a>
 
 All our taggers contain 3 main methods: `.train()`, `.evaluate()` and
 `.predict()`. Parameters vary slightly for each tagger and described in the

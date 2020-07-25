@@ -31,7 +31,8 @@ class FeatTagger(BaseTagger):
     divide it by **feats_prune_coef** and use features, number of occurences
     of which is greater than that value, to improve the prediction quality.
     * `feats_prune_coef=0` means "do not use feats";
-    * `feats_prune_coef=None` means "use all feats".
+    * `feats_prune_coef=None` means "use all feats";
+    * default `feats_prune_coef=6`.
     **NB**: the argument is relevant only if **feat** is not from `'FEATS'`
     field.
     """
