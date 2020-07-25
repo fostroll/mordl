@@ -32,13 +32,13 @@ from mordl import UposTagger
 tagger = UposTagger()
 ```
 
-For taggers of other types, you can find a description of their creation in
+To find the descriptions for creation of other tagger types, refer to the
 corresponding chapters.
 
 ### Load Train and Test Data<a name="data"></a>
 
-After the tagger is initialized, we need to load train and test corpora into
-it.
+After the tagger is initialized, we need to load the train and test corpora
+into it.
 
 To load the train corpus, use:
 ```python
@@ -47,13 +47,13 @@ tagger.load_train_corpus(corpus, append=False, test=None, seed=None)
 
 Args:
 
-**corpus**: a name of the file in *CoNLL-U* format or list/iterator of
+**corpus**: a name of the file in *CoNLL-U* format or a list/iterator of
 sentences in *Parsed CoNLL-U*.
 
 **append** (`bool`): whether to add **corpus** to the already loaded one(s).
 
-**test** (`float`): if not `None`, **corpus** will be shuffled and specified
-part of it stored as test corpus.
+**test** (`float`): if not `None`, **corpus** will be shuffled and a specified
+part of it stored as a test corpus.
 
 **seed** (`int`): init value for the random number generator if you need
 reproducibility. Used only if test is not `None`.
@@ -63,21 +63,21 @@ To load the development test corpus, call:
 tagger.load_test_corpus(corpus, append=False)
 ```
 This corpus is used for validation during training iterations. It is not
-mandatory to load it, but without validation it's hard to stop training in
-time, when the quality of model is the highest.
+mandatory to load it, but without validation it's hard to stop training, when
+the quality of model is at its highest.
 
 Args:
 
-**corpus** a name of the file in *CoNLL-U* format or list/iterator o
+**corpus** a name of the file in *CoNLL-U* format or a list/iterator of
 sentences in *Parsed CoNLL-U*.
 
 **param append** add corpus to already loaded one(s).
 
-### Usage: Training - Evaluation - Inerence<a name="usage"></a>
+### Usage: Training - Evaluation - Inference<a name="usage"></a>
 
 All our taggers contain 3 main methods: `.train()`, `.evaluate()` and
-`.predict()`. Parameters vary slightly for each tagger and described in the
-corresponding chapters:
+`.predict()`. Parameters vary slightly for each tagger and are described in
+the corresponding chapters:
 * [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md#start)
 * [FEAT](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md#start)
 * [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md#start)
@@ -89,9 +89,9 @@ corresponding chapters:
 Normally, you don't need to save the state of the tagger intentionally. During
 training, the state is saved automatically after each successful epoch.
 However, you can save the state configuration at any time, if you need. For
-example, you could want to do it, if you load model or/and dataset to
-device(s) that is differ from the device(s) used during training, and wish to
-save it back with renewed parameters. You can do it with:
+example, you could want to save, if you load the model or/and the dataset to
+the device(s) that differ from the device(s) used during training, and you
+wish to save it back with renewed parameters. You can do so with:
 ```python
 tagger.save(name, log_file=LOG_FILE)
 ```
@@ -102,16 +102,16 @@ Args:
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-The method creates a directory **name** that contains 5 files: two for
-tagger's model (`model.config.json` and `model.pt`) and two for its
-dataset (`ds.config.json` and `ds.pt`). The 5th file (`cdict.pickle`)
-is an internal state of
+The method creates a directory **name** that contains 5 files: two for the
+tagger's model (`model.config.json` and `model.pt`) and two for its dataset
+(`ds.config.json` and `ds.pt`). The 5th file (`cdict.pickle`) is an internal
+state of
 [`corpuscula.CorpusDict`](https://github.com/fostroll/corpuscula/blob/master/doc/README_CDICT.md)
 object that is used by the tagger as a helper.
 
-`*.config.json` files contain parameters for objects' creation. They
-are editable, but you allowed to change only the device name. Any
-other changes most likely won't allow the tagger to load.
+`*.config.json` files contain parameters for object creation. They are
+editable, but you are allowed to change only the device name. Any other
+changes most likely won't allow the tagger to load.
 
 The saved model can be loaded back for inference with:
 ```python
@@ -130,9 +130,9 @@ override its previously saved value.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-### MorDL Supplements<a name="init"></a>
+### MorDL Supplements<a name="suppl"></a>
 
-Aside from basic methods, ***MorDL*** contain several supplement utilities
+Aside from the basic methods, ***MorDL*** contain several supplement utilities
 that sometimes may be helpful. You may find their description in the
 [MorDL Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md)
 chapter.
