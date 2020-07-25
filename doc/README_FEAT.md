@@ -5,8 +5,8 @@
 
 ***MorDL*** supports single and multiple feature taggers. In this chapter, we
 cover a single feature tagger `mordl.FeatTagger`. This class is used to
-predict only one certain feature of field with dict-type data. It can be
-useful for many purposes. For example, our Named-entity tagger is just
+predict only one certain feature of the field with dict-type data. It can be
+useful for many purposes. For example, our Named-entity tagger is just a
 descendant of this class, that predicts NE feature located in the MISC field.
 
 For multiple feature tagger, refer to
@@ -40,8 +40,9 @@ Examples: `'Animacy'`; `'MISC:NE'`.
 **feats_prune_coef** (`int`): feature prunning coefficient which allows to
 eliminate all features that have a low frequency. For each UPOS tag, we
 get a number of occurences of the most frequent feature from FEATS field,
-divide it by **feats_prune_coef** and use features, number of occurences
-of which is greater than that value, to improve the prediction quality.
+divide it by **feats_prune_coef** and use only those features, number of
+occurences of which is greater than that value, to improve the prediction
+quality.
 * `feats_prune_coef=0` means "do not use feats";
 * `feats_prune_coef=None` means "use all feats";
 * default `feats_prune_coef=6`.
@@ -49,7 +50,7 @@ of which is greater than that value, to improve the prediction quality.
 **NB**: the argument is relevant only if **feat** is not from FEATS field.
 
 <a name="load"></a>Afterwards, load train and development test corpora into
-the tagger object created:
+the tagger object:
 ```python
 tagger.load_train_corpus(corpus, append=False, test=None, seed=None)
 tagger.load_test_corpus(corpus, append=False)
@@ -64,8 +65,8 @@ chapter.
 ***MorDL*** allows you to train a custom BiLSTM single morphological feature
 prediction model.
 
-**NB:** By this step you should have a tagger object created and training data
-loaded.
+**NB:** By this step, you should have a tagger object created and training
+data loaded.
 
 ```python
 stat = tagger.train(save_as,
@@ -86,7 +87,7 @@ During training, the best model is saved after each successful epoch.
 
 *Training's args*:
 
-**save_as** (`str`): the name using for save. Refer to the `.save()`
+**save_as** (`str`): the name used for save. Refer to the `.save()`
 method's help for the broad definition (see the **name** arg there).
 
 **device**: device for the model. E.g.: 'cuda:0'.
@@ -98,7 +99,7 @@ train until `bad_epochs` is met, but no less than `min_epochs`.
 `0`
 
 **bad_epochs** (`int`): maximum allowed number of bad epochs (epochs
-when selected **control_metric** is became not better) in a row.
+during which the selected **control_metric** does not improve) in a row.
 Default is `5`.
 
 **batch_size** (`int`): number of sentences per batch. For training,
@@ -115,9 +116,9 @@ supported by the `junky.train()` method. In the moment it is:
 tags, tokens with those must be removed from the corpus. It's a `dict`
 with field names as keys and with value you want to remove. Applied
 only to fields with atomic values (like UPOS). This argument may be
-used, for example, to remove some infrequent or just excess tags from
-the corpus. Note, that we remove the tokens from the train corpus as a
-whole, not just replace those tags to `None`.
+used, for example, to remove some infrequent or excess tags from the
+corpus. Note, that we remove these tags from the train corpus as a
+whole, not just replace them to `None`.
 
 *Word embedding params*:
 
@@ -137,15 +138,15 @@ For now, only BERT embeddings finetuning is supported with
 `dict` of keyword args for this method. You can replace any except
 `test_data`.
 
-**word_transform_kwargs** (`dict`): keyword arguments for
+**word_transform_kwargs** (`dict`): keyword arguments for the
 `.transform()` method of the dataset created for sentences to word
 embeddings conversion. See the `.transform()` method of
 `junky.datasets.BertDataset` for the the description of the
 parameters.
 
 **word_next_emb_params**: if you want to use several different
-embedding models at once, pass parameters of the additional model as a
-dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
+embedding models at once, pass the parameters of the additional model as
+a dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
 or a list of such dictionaries if you need more than one additional
 model.
 
@@ -213,14 +214,14 @@ tagger.load(model_class, name, device=None, dataset_device=None,
 ```
 Normally, you don't need to call the method `.save()` because the data is
 saved automatically during training. Though, there are cases when this method
-is useful. For detailed info on `.save()` and `.load()`, refer to
+could be useful. For detailed info on `.save()` and `.load()`, refer to
 [MorDL Basics: Save and Load the Internal State of the Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#save)
 chapter.
 
 ### Evaluation<a name="eval"></a>
 
-When the training has done, you may evaluate its quality using the test or
-development test corpora:
+When the training is done, you may evaluate prediction quality using the test
+or development test corpora:
 ```python
 tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, log_file=LOG_FILE)
@@ -229,7 +230,7 @@ tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
 Args:
 
 **gold**: a corpus of sentences with actual target values to score the
-tagger on. May be either a name of the file in *CoNLL-U* format or
+tagger on. May be either a name of the file in *CoNLL-U* format or a
 list/iterator of sentences in *Parsed CoNLL-U*.
 
 **test**: a corpus of sentences with predicted target values. If
@@ -257,8 +258,8 @@ The method prints metrics and returns evaluation accuracy.
 
 ### Inference<a name="predict"></a>
 
-Using the trained tagger, for the specified corpus, predict values of certain
-feature of the FEATS field:
+Using the trained tagger, predict values of certain feature of the FEATS field
+for the specified corpus:
 ```python
 tagger.predict(corpus, with_orig=False, batch_size=BATCH_SIZE,
                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE)
@@ -267,12 +268,12 @@ tagger.predict(corpus, with_orig=False, batch_size=BATCH_SIZE,
 Args:
 
 **corpus**: a corpus which will be used for feature extraction and
-predictions. May be either a name of the file in *CoNLL-U* format or
+predictions. May be either a name of the file in *CoNLL-U* format or a
 list/iterator of sentences in *Parsed CoNLL-U*.
 
 **with_orig** (`bool`): if `True`, instead of only a sequence with
 predicted labels, returns a sequence of tuples where the first element
-is a sentence with predicted labels and the second element is original
+is a sentence with predicted labels and the second element is an original
 sentence. `with_orig` can be `True` only if `save_to` is `None`.
 Default `with_orig=False`.
 
