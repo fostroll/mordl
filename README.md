@@ -36,6 +36,7 @@ instead of "Lemmata" ^-^
 Anyhow, we include that script in our distribution, so you can use it for your
 model evaluation, too. To simplify it, we made a wrapper 
 [`mordl.conll18_ud_eval`](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md#conll18)
+for it.
 
 ## Installation
 
