@@ -61,10 +61,11 @@ This gives you access to examples that are not included in the *PyPI* package.
 ## Usage
 
 Our taggers use separate models, so they can be used independently. But to
-achieve best results FEATS tagger use UPOS tags during training. And LEMMA and
-NER taggers use both UPOS and FEATS tags. Thus, for fully untagged corpus, the
-tagging pipeline is serial applying the taggers, like this (assuming that our
-goal is NER and we already have trained taggers of all types):
+achieve best results FEATS tagger uses UPOS tags during training. And LEMMA
+and NER taggers use both UPOS and FEATS tags. Thus, for a fully untagged
+corpus, the tagging pipeline is serially applying the taggers, like shown
+below (assuming that our goal is NER and we already have trained taggers of
+all types):
 
 ```python
 from mordl import UposTagger, FeatsTagger, NeTagger
@@ -81,13 +82,13 @@ tagger_n.predict(
 )
 ```
 
-Any tagger in our pipeline may be replaced to the better one if you have it.
-The weakness or separate taggers, that they take more space. If all models
+Any tagger in our pipeline may be replaced with a better one if you have it.
+The weakness of separate taggers is that they take more space. If all models
 were created with BERT embeddings, and you load them in memory simultaneously,
-they may eat up to 9Gb on GPU. Or even more, if you use them as part of
-multiprocess server (for example, as part of *Flask* application). In that
+they may eat up to 9Gb on GPU. Or even more, if you use them as a part of a
+multiprocess server (for example, as a part of *Flask* application). In that
 case, during loading you have to use params **device** and **dataset_device**
-to distribute your models by various GPU. Alternatively, if you need just to
+to distribute your models on various GPUs. Alternatively, if you need just to
 tag some corpus once, you may load models serially:
 
 ```python
@@ -107,12 +108,12 @@ del tagger
 
 Don't use identical names for input and output file names when you call the
 `.predict()` methods. Normally, there will be no problem, because the methods
-by default load all input file in memory before tagging. But if input file is
-big, you may want to use **split** parameter for that the methods handle the
-file by parts. In that case, saving of the first part of the tagging data
-occur before loading next. So, identical names will entail the data loss.
+by default load all input file in memory before tagging. But if the input file
+is large, you may want to use **split** parameter for that the methods handle
+the file by parts. In that case, saving of the first part of the tagging data
+occurs before loading next. So, identical names will entail data loss.
 
-Training process is also simple. If you have train corpora and you don't want
+Training process is also simple. If you have a train corpus and you don't want
 any experiments, just run:
 ```python
 from mordl import UposTagger
@@ -125,13 +126,14 @@ stat = tagger.train('upos_model', device='cuda:0', word_emb_tune_params={})
 ```
 
 It is training pipeline for the UPOS tagger; pipelines for other taggers are
-identical. If you want train the model again to achieve, maybe, better
-results, and you don't need to re-train word embeddings model anew, set the
+identical. If you want to train the model again without re-training word
+embeddings anew to possibly achieve better results, set the
 **word_emb_tune_params** to `None`.
 
-For more complete understanding of ***MorDL*** toolkit usage, refer to the
+For a more complete understanding of ***MorDL*** toolkit usage, refer to the
 Python notebook with pipeline examples in the `examples` directory of the
-***MorDL*** GitHub repository. Also, the docs are available:
+***MorDL*** GitHub repository. Also, the detailed descriptions are available
+in the docs:
 
 [***MorDL*** Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#start)
 
@@ -148,7 +150,7 @@ Python notebook with pipeline examples in the `examples` directory of the
 [Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md#start)
 
 This project was developed with a focus on Russian language, but a few nuances
-we used hardly might worsen the quality of other languages processing.
+we used are unlikely to worsen the quality of processing other languages.
 
 ***MorDL's*** supports
 [*CoNLL-U*](https://universaldependencies.org/format.html) (if input/output is
