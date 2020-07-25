@@ -7,7 +7,7 @@
 
 ***MorDL*** is a tool to organize a pipeline for complete morphological
 sentence parsing (POS-tagging, lemmatization, morphological feature tagging)
-and named entity recognition.
+and Named-entity recognition.
 
 Scores (accuracy) on *SynTagRus*: UPOS: `99.15%`; FEATS: `98.28%` (tokens),
 `98.86%` (tags); LEMMA: `99.13%`. In all experiments we used `seed=42`. Some
