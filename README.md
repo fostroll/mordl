@@ -18,7 +18,7 @@ The validation with the
 [official evaluation script](http://universaldependencies.org/conll18/conll18_ud_eval.py)
 of
 [CoNLL 2018 Shared Task](https://universaldependencies.org/conll18/results.html):
-* For inference on the *SynTagRus* test corpus where predicted field was
+* For inference on the *SynTagRus* test corpus, when predicted fields were
 emptied and all other fields were stayed intact, the scores are the same as
 outlined above.
 * Serial inference with UPOS - FEATS - LEMMA taggers results with scores:
