@@ -562,10 +562,6 @@ class FeatsSeparateTagger(BaseTagger):
         if label:
             del kwargs['feats']
             field += ':' + (feats if isinstance(feats, str) else feats[0])
-        else:
-            kwargs['feats'] = \
-                sorted([x for x in self._feats.keys()
-                              if x not in feats or feats is None])
         return super().evaluate(field, *args, **kwargs)
 
     def train(self, save_as, feats=None,
