@@ -558,7 +558,7 @@ class FeatsSeparateTagger(BaseTagger):
             'ERROR: To evaluate the exact label you must specify its own ' \
             'feat only'
         args, kwargs = get_func_params(FeatsSeparateTagger.evaluate, locals())
-        field = self._orig_field
+        field = self._field
         if label:
             del kwargs['feats']
             field += ':' + (feats if isinstance(feats, str) else feats[0])
