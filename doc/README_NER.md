@@ -1,7 +1,7 @@
 <h2 align="center">MorDL: Morphological Parser (POS, lemmata, NER etc.)</h2>
 <a name="start"></a>
 
-## Named Entity Tagging
+## Named-entity Recognition
 
 With MorDL, you can create and train biLSTM-based NER models, make predictions
 and evaluate them. You can train a NER model with any custom named entities
@@ -11,7 +11,7 @@ from your training corpus.
 
 1. [Initialization and Data Loading](#init)
 1. [Train](#train)
-1. [Save and Load Trained Models](#save)
+1. [Save and Load the Internal State of the Tagger](#save)
 1. [Predict](#predict)
 1. [Evaluate](#eval)
 
@@ -63,7 +63,7 @@ chapter.
 
 ### Train <a name="train"></a>
 
-***MorDL*** allows you to train a custom biLSTM-based NER model.
+***MorDL*** allows you to train a custom NER model.
 
 **NB:** By this step you should have a tagger object created and training data
 loaded.
@@ -192,21 +192,18 @@ reproducibility.
 
 Returns the train statistics.
 
-### Save and Load Trained Models <a name="save"></a>
+### Save and Load the Internal State of the Tagger <a name="save"></a>
 
-Normally, you don't need to save the model deliberately. The model is saved
-during training after each successful epoch, but you can save model
-configuration at any time using `.save()` method.
-
-The saved model can be loaded back for inference with `.load()` method.
-
+To save and load state of the tagger, use methods:
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
 tagger.load(model_class, name, device=None, dataset_device=None,
             log_file=LOG_FILE)
 ```
-For detailed info on `.save()` and `.load()`, refer to
-[MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
+Normally, you don't need to call the method `.save()` because the data is
+saved automatically during training. Though, there are cases when this method
+is useful. For detailed info on `.save()` and `.load()`, refer to
+[MorDL Basics: Save and Load the Internal State of the Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#save)
 chapter.
 
 ### Predict <a name="predict"></a>

@@ -730,7 +730,7 @@ class BaseTagger(BaseParser):
         **model_kwargs**: keyword arguments for the model creating. Will be
         passed as is to the **model_class** constructor.
 
-        Returns the train statistics.
+        The method returns the train statistics.
         """
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 

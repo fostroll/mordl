@@ -16,16 +16,32 @@ from mordl.feat_tagger_model import FeatTaggerModel
 
 class FeatTagger(BaseTagger):
     """
-    A class for single-tag FEAT feature tagging.
+    A class of single-feature tagger.
 
-    `feats_prune_coef=0` means "not use feats"
-    `feats_prune_coef=None` means "use all feats"
+    Args:
+
+    **feat** (`str`): the name of the feat which needs to be predicted by the
+    tagger. May contains prefix, separated by a colon (`:`). In that case, the
+    prefix treat as a field name. Otherwise, we get `'FEATS'` as a field name.
+    Examples: `'Animacy'`; `'MISC:NE'`.
+
+    **feats_prune_coef** (`int`): feature prunning coefficient which allows to
+    eliminate all features that have a low frequency. For each UPOS tag, we
+    get a number of occurences of the most frequent feature from FEATS field,
+    divide it by **feats_prune_coef** and use features, number of occurences
+    of which is greater than that value, to improve the prediction quality.
+    * `feats_prune_coef=0` means "do not use feats";
+    * `feats_prune_coef=None` means "use all feats".
+    **NB**: the argument is relevant only if **feat** is not from `'FEATS'`
+    field.
     """
-    def __init__(self, field, feats_prune_coef=6):
+    def __init__(self, feat, feats_prune_coef=6):
         super().__init__()
-        if field.find(':') == -1:
-            field = 'FEATS:' + field
-        self._field = field
+        if feat.find(':') == -1:
+            feat = 'FEATS:' + feat
+        self._field = feat
+        if feat.startswith('FEATS:'):
+            feats_prune_coef = 0
         self._feats_prune_coef = feats_prune_coef
 
     def _transform_upos(self, corpus, key_vals=None):
@@ -327,7 +343,7 @@ class FeatTagger(BaseTagger):
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Returns the train statistics.
+        The method returns the train statistics.
         """
         args, kwargs = get_func_params(FeatTagger.train, locals())
 

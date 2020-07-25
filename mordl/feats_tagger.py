@@ -288,7 +288,7 @@ class FeatsJointTagger(BaseTagger):
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Returns the train statistics.
+        The method returns the train statistics.
         """
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
@@ -684,7 +684,7 @@ class FeatsSeparateTagger(BaseTagger):
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Returns the train statistics.
+        The method returns the train statistics.
         """
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 

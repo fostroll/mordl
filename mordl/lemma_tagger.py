@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# MorDL project: FEATS tagger
+# MorDL project: LEMMA generator
 #
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
-Provides a LemmaTagger class.
+Provides a class for lemmata generation.
 """
 from Levenshtein import editops
 from corpuscula import CorpusDict
@@ -21,13 +21,12 @@ _OP_C_LOWER = 'lower'
 
 class LemmaTagger(BaseTagger):
     """
-    A lemma tagger class.
+    A lemmata generation class.
 
     Args:
 
-    Creates a `LemmaTagger` object.
-
-    Args:
+    **field**: a name of the *CoNLL-U* field with values that are derivatives
+    of FORM field, like `'LEMMA'` (default value).
 
     **field** (`str`): the name of the field which needs to be predicted by
     the training tagger. May contain up to 3 elements, separated by a colon
@@ -45,11 +44,13 @@ class LemmaTagger(BaseTagger):
     `None`.
 
     **feats_prune_coef** (`int`): feature prunning coefficient which allows to
-    eliminate all features that have lower frequency than
-    `<most frequent feature frequency>` divided by `feats_prune_coef`.
-
-    `feats_prune_coef=0` means "do not use feats"
-    `feats_prune_coef=None` means "use all feats"
+    eliminate all features that have a low frequency. For each UPOS tag, we
+    get a number of occurences of the most frequent feature from FEATS field,
+    divide it by **feats_prune_coef** and use features, number of occurences
+    of which is greater than that value, to improve the prediction quality.
+    * `feats_prune_coef=0` means "do not use feats";
+    * `feats_prune_coef=None` means "use all feats";
+    * default `feats_prune_coef=6`.
     """
     def __init__(self, field='LEMMA', feats_prune_coef=6):
         super().__init__()
@@ -355,7 +356,7 @@ class LemmaTagger(BaseTagger):
               upos_emb_dim=300, emb_out_dim=512, lstm_hidden_dim=256,
               lstm_layers=3, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
-        """Creates and trains a lemma prediction model.
+        """Creates and trains a LEMMA prediction model.
 
         During training, the best model is saved after each successful epoch.
 
@@ -476,7 +477,7 @@ class LemmaTagger(BaseTagger):
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Returns the train statistics.
+        The method returns the train statistics.
         """
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 

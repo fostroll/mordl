@@ -3,16 +3,16 @@
 
 ## Part of Speech Tagging
 
-With MorDL, you can create and train biLSTM-based POS-tagger models, make
-predictions and evaluate them.
+With MorDL, you can create and train POS-tagger models, evaluate it and make
+predictions.
 
 ### Table of Contents
 
 1. [Initialization and Data Loading](#init)
 1. [Train](#train)
-1. [Save and Load Trained Models](#save)
-1. [Predict](#predict)
+1. [Save and Load the Internal State of the Tagger](#save)
 1. [Evaluate](#eval)
+1. [Predict](#predict)
 
 ### Initialization and Data Loading <a name="init"></a>
 
@@ -20,7 +20,7 @@ First of all, you need to create a tagger object.
 ```python
 tagger = UposTagger(field='UPOS')
 ```
-Creates an `UposTagger` object.
+Creates an UPOS tagger object.
 
 Args:
 
@@ -36,27 +36,28 @@ tagger.load_test_corpus(corpus, append=False)
 ```
 For detailed info on `.load_train_corpus()` and `.load_test_corpus()`,
 refer to
-[***MorDL*** Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#data)
+[***MorDL*** Basics: Load Train and Test Data](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#data)
 chapter.
 
 ### Train <a name="train"></a>
 
-***MorDL*** allows you to train a custom POS-tagging model.
+***MorDL*** allows you to train a custom BiLSTM POS-tagging model.
 
 **NB:** By this step you should have a tagger object created and training data
 loaded.
 
 ```python
-tagger.train(save_as, device=None, epochs=None, min_epochs=0, bad_epochs=5,
+tagger.train(save_as,
+             device=None, epochs=None, min_epochs=0, bad_epochs=5,
              batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
              max_grad_norm=None, tags_to_remove=None,
              word_emb_type='bert', word_emb_model_device=None,
              word_emb_path=None, word_emb_tune_params=None,
              word_transform_kwargs=None, word_next_emb_params=None,
              rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-             emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=2, lstm_do=0,
+             emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=3, lstm_do=0,
              bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
-             log_file=LOG_FILE)
+             log_file=LOG_FILE):
 ```
 Creates and trains the UPOS tagger model.
 
@@ -65,8 +66,7 @@ During training, the best model is saved after each successful epoch.
 *Training's args*:
 
 **save_as** (`str`): the name using for save. Refer to the `.save()`
-method's help of the `BaseTagger` for the broad definition (see the
-**name** arg there).
+method's help for the broad definition (see the **name** arg there).
 
 **device**: device for the model. E.g.: 'cuda:0'.
 
@@ -83,10 +83,9 @@ Default is `5`.
 **batch_size** (`int`): number of sentences per batch. For training,
 default `batch_size=32`.
 
-**control_metric** (`str`): metric to control training. Default
-`control_metric='accuracy'`. Any that is supported by the
-`junky.train()` method. In the moment it is: 'accuracy', 'f1' and
-'loss'. Default `control_metric=accuracy`.
+**control_metric** (`str`): metric to control training. Any that is
+supported by the `junky.train()` method. In the moment it is:
+'accuracy', 'f1' and 'loss'. Default `control_metric=accuracy`.
 
 **max_grad_norm** (`float`): gradient clipping parameter, used with
 `torch.nn.utils.clip_grad_norm_()`.
@@ -104,12 +103,12 @@ whole, not just replace those tags to `None`.
 **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding
 types.
 
-**word_emb_path** (`str`): path to word embeddings storage.
-
 **word_emb_model_device**: the torch device where the model of word
 embeddings are placed. Relevant only with embedding types, models of
 which use devices (currently, only 'bert'). `None` means
 **word_emb_model_device** = **device**
+
+**word_emb_path** (`str`): path to word embeddings storage.
 
 **word_emb_tune_params**: parameters for word embeddings finetuning.
 For now, only BERT embeddings finetuning is supported with
@@ -148,7 +147,7 @@ dimensionality. If `None`, the layer is skipped.
 `lstm_hidden_dim=256`.
 
 **lstm_layers** (`int`): number of Bidirectional LSTM layers. Default
-`lstm_layers=1`.
+`lstm_layers=3`.
 
 **lstm_do** (`float`): dropout between LSTM layers. Only relevant, if
 `lstm_layers` > `1`.
@@ -178,25 +177,55 @@ need reproducibility.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-Returns the train statistics.
+The method returns the train statistics.
 
-### Save and Load Trained Models <a name="save"></a>
+### Save and Load the Internal State of the Tagger <a name="save"></a>
 
-Normally, you don't need to save the model deliberately. The model is saved
-during training after each successful epoch, but you can save model
-configuration at any time using `.save()` method.
-
-The saved model can be loaded back for inference with `.load()` method.
-
+To save and load state of the tagger, use methods:
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
 tagger.load(model_class, name, device=None, dataset_device=None,
             log_file=LOG_FILE)
 ```
-For detailed info on `.save()` and `.load()`, refer to
-[MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
+Normally, you don't need to call the method `.save()` because the data is
+saved automatically during training. Though, there are cases when this method
+is useful. For detailed info on `.save()` and `.load()`, refer to
+[MorDL Basics: Save and Load the Internal State of the Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#save)
 chapter.
 
+### Evaluate <a name="eval"></a>
+
+When predictions are ready, evaluate predicitons on the development test set
+based on the gold corpus:
+```python
+tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
+                split=None, clone_ds=False, log_file=LOG_FILE)
+```
+Evaluates predicitons on the development test set.
+
+Args:
+
+**gold** (`tuple(<sentences> <labels>)`): corpus with actual target tags.
+
+**test** (`tuple(<sentences> <labels>)`): corpus with predicted target tags.
+If `None`, predictions will be created on-the-fly based on the `gold` corpus.
+
+**label** (`str`): specific label of the target field to be evaluated, e.g.
+`label='VERB'`.
+
+**batch_size** (`int`): number of sentences per batch. Default
+`batch_size=64`.
+
+**split** (`int`): number of lines in each split. Allows to split a large
+dataset into several parts. Default `split=None`, i.e. process full dataset
+without splits.
+
+**clone_ds** (`bool`): if `True`, the dataset is cloned and transformed. If
+`False`, `transform_collate` is used without cloning the dataset.
+
+**log_file**: a stream for info messages. Default is `sys.stdout`.
+
+Prints metrics and returns evaluation accuracy.
 
 ### Predict POS Tags <a name="predict"></a>
 
@@ -233,37 +262,3 @@ without splits.
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
 Returns corpus with tag predictions in the UPOS field.
-
-### Evaluate <a name="eval"></a>
-
-When predictions are ready, evaluate predicitons on the development test set
-based on the gold corpus:
-```python
-tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
-                split=None, clone_ds=False, log_file=LOG_FILE)
-```
-Evaluates predicitons on the development test set.
-
-Args:
-
-**gold** (`tuple(<sentences> <labels>)`): corpus with actual target tags.
-
-**test** (`tuple(<sentences> <labels>)`): corpus with predicted target tags.
-If `None`, predictions will be created on-the-fly based on the `gold` corpus.
-
-**label** (`str`): specific label of the target field to be evaluated, e.g.
-`label='VERB'`.
-
-**batch_size** (`int`): number of sentences per batch. Default
-`batch_size=64`.
-
-**split** (`int`): number of lines in each split. Allows to split a large
-dataset into several parts. Default `split=None`, i.e. process full dataset
-without splits.
-
-**clone_ds** (`bool`): if `True`, the dataset is cloned and transformed. If
-`False`, `transform_collate` is used without cloning the dataset.
-
-**log_file**: a stream for info messages. Default is `sys.stdout`.
-
-Prints metrics and returns evaluation accuracy.

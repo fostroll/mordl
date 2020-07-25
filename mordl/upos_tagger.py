@@ -242,7 +242,7 @@ class UposTagger(BaseTagger):
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Returns the train statistics.
+        The method returns the train statistics.
         """
         args, kwargs = get_func_params(UposTagger.train, locals())
         return super().train(self._field, None, UposTaggerModel, None,

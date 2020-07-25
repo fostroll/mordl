@@ -9,7 +9,7 @@ This chapter gives an overview on ***MorDL*** taggers and the basic pipeline.
 
 1. [Initialization](#init)
 1. [Load Train and Test Data](#data)
-1. [Usage: Train - Predict - Evaluate](#pipeline)
+1. [Usage: Train - Evaluate - Predict](#pipeline)
 1. [Save and Load the Internal State of the Tagger](#save)
 
 ### Initialization <a name="init"></a>
@@ -70,10 +70,10 @@ sentences in *Parsed CoNLL-U*.
 
 **param append** add corpus to already loaded one(s).
 
-### Usage: Train - Predict - Evaluate <a name="usage"></a>
+### Usage: Train - Evaluate - Predict <a name="usage"></a>
 
-All our taggers contain 3 main methods: `.train()`, `.predict()` and
-`.evaluate()`. Parameters vary slightly for each tagger and described in the
+All our taggers contain 3 main methods: `.train()`, `.evaluate()` and
+`.predict()`. Parameters vary slightly for each tagger and described in the
 corresponding chapters:
 * [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md#start)
 * [FEAT](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md#start)

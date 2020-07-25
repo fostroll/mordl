@@ -495,19 +495,16 @@ without splits.
 
 Prints metrics and returns evaluation accuracy.
 
-## Save and Load Trained Models <a name="save"></a>
+### Save and Load the Internal State of the Tagger <a name="save"></a>
 
-Normally, you don't need to save the model deliberately. The model is saved
-during training after each successful epoch, but you can save model
-configuration at any time using `.save()` method.
-
-The saved model can be loaded back for inference with `.load()` method.
-
+To save and load state of the tagger, use methods:
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
 tagger.load(model_class, name, device=None, dataset_device=None,
             log_file=LOG_FILE)
 ```
-For detailed info on `.save()` and `.load()`, refer to
-[MorDL Basics](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md)
+Normally, you don't need to call the method `.save()` because the data is
+saved automatically during training. Though, there are cases when this method
+is useful. For detailed info on `.save()` and `.load()`, refer to
+[MorDL Basics: Save and Load the Internal State of the Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#save)
 chapter.
