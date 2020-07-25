@@ -503,11 +503,10 @@ class FeatsSeparateTagger(BaseTagger):
                     for sentence in res_corpus_:
                         yield sentence
 
-            corpus = process(corpus)
-            if save_to:
-                self.save_conllu(corpus, save_to, log_file=None)
-                corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
-
+        corpus = process(corpus)
+        if save_to:
+            self.save_conllu(corpus, save_to, log_file=None)
+            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
     def evaluate(self, gold, test=None, feats=None, label=None,
