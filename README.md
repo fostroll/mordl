@@ -28,10 +28,10 @@ the taggers trained on the original *SynTagRus* corpus;
 the taggers trained serially on the *SynTagRus* corpus processed by previous
 taggers (UPOS tagger for FEATS; UPOS and FEATS taggers for LEMMA). It's hard
 to explain the reduction of AllTags score while all other scores increased,
-but the output of the script calculate 3 type of scores (Precision, Recall, F1
-Score), and their values are always concur for each evaluated category, and,
-really, it is just accuracy. Maybe, there are another mistakes inside... E.g.,
-"Lemmas" instead of "Lemmata" ^-^
+but the script calculates 3 type of scores (Precision, Recall, F1 Score), and
+its values are always concur for each evaluated category, and, really, it is
+just accuracy. Maybe, there are another mistakes inside... E.g., "Lemmas"
+instead of "Lemmata" ^-^
 
 Anyhow, we include that script in our distribution, so you can use it for your
 model evaluation, too. To simplify it, we made a wrapper 
