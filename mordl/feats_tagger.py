@@ -714,15 +714,6 @@ class FeatsSeparateTagger(BaseTagger):
         del kwargs['feats']
         del kwargs['word_emb_path_suffix']
 
-        [x.update({self._field:
-                       '|'.join('='.join((y, x[self._field][y]))
-                                    for y in sorted(x[self._field]))})
-             for x in self._train_corpus for x in x]
-        [x.update({self._field:
-                       '|'.join('='.join((y, x[self._field][y]))
-                                    for y in sorted(x[self._field]))})
-             for x in self._test_corpus for x in x]
-
         if log_file:
             print('###### {} TAGGER TRAINING PIPELINE ######'
                       .format(self._field), file=log_file)
@@ -736,6 +727,17 @@ class FeatsSeparateTagger(BaseTagger):
                                  for x in x[self._field].keys()))
         if log_file:
             print(', '.join(feats), file=log_file)
+
+        '''
+        [x.update({self._field:
+                       '|'.join('='.join((y, x[self._field][y]))
+                                    for y in sorted(x[self._field]))})
+             for x in self._train_corpus for x in x]
+        [x.update({self._field:
+                       '|'.join('='.join((y, x[self._field][y]))
+                                    for y in sorted(x[self._field]))})
+             for x in self._test_corpus for x in x]
+        '''
 
         res = {}
         for feat in feats:
