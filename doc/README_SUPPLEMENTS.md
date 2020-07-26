@@ -23,11 +23,11 @@ To learn more about taggers usage, refer to other chapters:
 
 ### Table of Contents
 
-1 [Load and Save CoNLL-U Files](#conllu)
-1 [Split Corpus](#split)
-1 [Remove Rare Features](#rare)
-1 [String Comparison](#diff)
-1 [Evaluation Script of CoNLL 2018](#conll18)
+1. [Load and Save CoNLL-U Files](#conllu)
+1. [Split Corpus](#split)
+1. [Remove Rare Features](#rare)
+1. [String Comparison](#diff)
+1. [Evaluation Script of CoNLL 2018](#conll18)
 
 ### Load and Save CoNLL-U Files<a name="conllu"></a>
 
@@ -185,43 +185,45 @@ we also made a wrapper for it:
 ```python
 from mordl import conll18_ud_eval
 
-conll18_ud_eval(gold_file, system_file, verbose=True, counts=False):
+conll18_ud_eval(gold_file, system_file, verbose=True, counts=False)
 ```
 
-positional arguments:<br/>
-  gold_file      Name of the CoNLL-U file with the gold data.<br/>
-  system_file    Name of the CoNLL-U file with the predicted.
+Args:
 
-optional arguments:<br/>
-  verbose        Print all metrics.<br/>
-  counts         Print raw counts of correct/gold/system/aligned words
-                 instead of prec/rec/F1 for all metrics.
+**gold_file**: Name of the CoNLL-U file with the gold data.
 
-If `verbose=False`, only the official CoNLL18 UD Shared Task
-evaluation metrics are printed.
+**system_file**: Name of the CoNLL-U file with the predicted.
+
+**verbose** (`bool`): Print all metrics.
+
+**counts** (`bool`): Print raw counts of correct/gold/system/aligned words
+instead of prec/rec/F1 for all metrics.
+
+If `verbose=False`, only the official CoNLL18 UD Shared Task evaluation
+metrics are printed.
 
 If `verbose=True` (default), more metrics are printed (as precision,
 recall, F1 score, and in case the metric is computed on aligned words
-also accuracy on these):<br/>
-  - Tokens: how well do the gold tokens match system tokens<br/>
-  - Sentences: how well do the gold sentences match system sentences<br/>
-  - Words: how well can the gold words be aligned to system words<br/>
-  - UPOS: using aligned words, how well does UPOS match<br/>
-  - XPOS: using aligned words, how well does XPOS match<br/>
-  - UFeats: using aligned words, how well does universal FEATS match<br/>
-  - AllTags: using aligned words, how well does UPOS+XPOS+FEATS match<br/>
-  - Lemmas: using aligned words, how well does LEMMA match<br/>
-  - UAS: using aligned words, how well does HEAD match<br/>
-  - LAS: using aligned words, how well does HEAD+DEPREL(ignoring subtypes)
-      match<br/>
-  - CLAS: using aligned words with content DEPREL, how well does
-      HEAD+DEPREL(ignoring subtypes) match<br/>
-  - MLAS: using aligned words with content DEPREL, how well does
-      HEAD+DEPREL(ignoring subtypes)+UPOS+UFEATS+FunctionalChildren(DEPREL+UPOS+UFEATS)
-      match<br/>
-  - BLEX: using aligned words with content DEPREL, how well does
-      HEAD+DEPREL(ignoring subtypes)+LEMMAS match
+also accuracy on these):
+- Tokens: how well do the gold tokens match system tokens.
+- Sentences: how well do the gold sentences match system sentences.
+- Words: how well can the gold words be aligned to system words.
+- UPOS: using aligned words, how well does UPOS match.
+- XPOS: using aligned words, how well does XPOS match.
+- UFeats: using aligned words, how well does universal FEATS match.
+- AllTags: using aligned words, how well does UPOS+XPOS+FEATS match.
+- Lemmas: using aligned words, how well does LEMMA match.
+- UAS: using aligned words, how well does HEAD match.
+- LAS: using aligned words, how well does HEAD+DEPREL(ignoring subtypes)
+match.
+- CLAS: using aligned words with content DEPREL, how well does
+HEAD+DEPREL(ignoring subtypes) match.
+- MLAS: using aligned words with content DEPREL, how well does
+HEAD+DEPREL(ignoring subtypes)+UPOS+UFEATS+FunctionalChildren(DEPREL+UPOS+UFEATS)
+match.
+- BLEX: using aligned words with content DEPREL, how well does
+HEAD+DEPREL(ignoring subtypes)+LEMMAS match.
 
 If `count=True`, raw counts of correct/gold_total/system_total/aligned
-  words are printed instead of precision/recall/F1/AlignedAccuracy for all
-  metrics."""
+words are printed instead of precision/recall/F1/AlignedAccuracy for all
+metrics.
