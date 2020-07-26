@@ -20,8 +20,9 @@ class NeTagger(FeatTagger):
     **feats_prune_coef** (`int`): feature prunning coefficient which allows to
     eliminate all features that have a low frequency. For each UPOS tag, we
     get a number of occurences of the most frequent feature from FEATS field,
-    divide it by **feats_prune_coef** and use features, number of occurences
-    of which is greater than that value, to improve the prediction quality.
+    divide it by **feats_prune_coef** and use only those features, number of
+    occurences of which is greater than that value, to improve the prediction
+    quality.
     * `feats_prune_coef=0` means "do not use feats";
     * `feats_prune_coef=None` means "use all feats";
     * default `feats_prune_coef=6`.

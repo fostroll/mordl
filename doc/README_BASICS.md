@@ -32,8 +32,8 @@ from mordl import UposTagger
 tagger = UposTagger()
 ```
 
-To find the descriptions for creation of other tagger types, refer to the
-corresponding chapters.
+To find the descriptions for creation of the taggers of other types, refer to
+the corresponding chapters.
 
 ### Load Train and Test Data<a name="data"></a>
 
@@ -47,16 +47,17 @@ tagger.load_train_corpus(corpus, append=False, test=None, seed=None)
 
 Args:
 
-**corpus**: a name of the file in *CoNLL-U* format or a list/iterator of
-sentences in *Parsed CoNLL-U*.
+**corpus**: a name of the file in *CoNLL-U* format or a list/iterator
+of sentences in *Parsed CoNLL-U*.
 
-**append** (`bool`): whether to add **corpus** to the already loaded one(s).
+**append** (`bool`): whether to add **corpus** to the already loaded
+one(s).
 
-**test** (`float`): if not `None`, **corpus** will be shuffled and a specified
-part of it stored as a test corpus.
+**test** (`float`): if not `None`, **corpus** will be shuffled and a
+specified part of it stored as a test corpus.
 
-**seed** (`int`): init value for the random number generator if you need
-reproducibility. Used only if test is not `None`.
+**seed** (`int`): init value for the random number generator if you
+need reproducibility. Used only if test is not `None`.
 
 To load the development test corpus, call:
 ```python
@@ -64,12 +65,12 @@ tagger.load_test_corpus(corpus, append=False)
 ```
 This corpus is used for validation during training iterations. It is not
 mandatory to load it, but without validation it's hard to stop training, when
-the quality of model is at its highest.
+the quality of the model is at its highest.
 
 Args:
 
-**corpus** a name of the file in *CoNLL-U* format or a list/iterator of
-sentences in *Parsed CoNLL-U*.
+**corpus** a name of the file in *CoNLL-U* format or a list/iterator
+of sentences in *Parsed CoNLL-U*.
 
 **param append** add corpus to already loaded one(s).
 
@@ -102,16 +103,16 @@ Args:
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-The method creates a directory **name** that contains 5 files: two for the
-tagger's model (`model.config.json` and `model.pt`) and two for its dataset
-(`ds.config.json` and `ds.pt`). The 5th file (`cdict.pickle`) is an internal
-state of
+The method creates a directory **name** that contains 5 files: two for
+the tagger's model (`model.config.json` and `model.pt`) and two for
+its dataset (`ds.config.json` and `ds.pt`). The 5th file
+(`cdict.pickle`) is an internal state of
 [`corpuscula.CorpusDict`](https://github.com/fostroll/corpuscula/blob/master/doc/README_CDICT.md)
 object that is used by the tagger as a helper.
 
-`*.config.json` files contain parameters for object creation. They are
-editable, but you are allowed to change only the device name. Any other
-changes most likely won't allow the tagger to load.
+`*.config.json` files contain parameters for creation of the objects.
+They are editable, but you are allowed to change only the device name.
+Any other changes most likely won't allow the tagger to load.
 
 The saved model can be loaded back for inference with:
 ```python

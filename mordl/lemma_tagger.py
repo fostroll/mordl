@@ -26,13 +26,14 @@ class LemmaTagger(BaseTagger):
     Args:
 
     **field**: a name of the *CoNLL-U* field with values that are derivatives
-    of FORM field, like `'LEMMA'` (default value).
+    of the FORM field, like `'LEMMA'` (default value).
 
     **feats_prune_coef** (`int`): feature prunning coefficient which allows to
     eliminate all features that have a low frequency. For each UPOS tag, we
     get a number of occurences of the most frequent feature from FEATS field,
-    divide it by **feats_prune_coef** and use features, number of occurences
-    of which is greater than that value, to improve the prediction quality.
+    divide it by **feats_prune_coef** and use only those features, number of
+    occurences of which is greater than that value, to improve the prediction
+    quality.
     * `feats_prune_coef=0` means "do not use feats";
     * `feats_prune_coef=None` means "use all feats";
     * default `feats_prune_coef=6`.
@@ -50,9 +51,9 @@ class LemmaTagger(BaseTagger):
 
         Args:
 
-        **lower** (`bool`): if `True` then return values will be always in
-        lower case. Elsewise, we compare strings in lower case but return
-        values will be in original case
+        **lower** (`bool`): if `True`, then the return values will be always
+        in lower case. Elsewise, we compare strings in lower case but return
+        values will be in original case.
 
         Returns prefix, common part, suffix/flexion of **form**, as well as
         prefix, common part, suffix/flexion of **lemma** (tuple of 6 `str`
@@ -175,6 +176,8 @@ class LemmaTagger(BaseTagger):
         **str_from** (`str`): source string to apply edit operations to.
 
         **ops** (`tuple([str])`): tuple or list with edit operations.
+
+        Returns **str_from** with **ops** applied.
         """
         str_from = list(str_from)
         for op, idx, ch in reversed(ops):
@@ -193,7 +196,7 @@ class LemmaTagger(BaseTagger):
 
         Args:
 
-        **name** (`str`): name of the internal state previously saved.
+        **name** (`str`): name of the previously saved internal state.
 
         **device**: a device for the loading model if you want to override its
         previously saved value.
@@ -218,9 +221,9 @@ class LemmaTagger(BaseTagger):
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
-        is a sentence with predicted labels and the second element is original
-        sentence. `with_orig` can be `True` only if `save_to` is `None`.
-        Default `with_orig=False`.
+        is a sentence with predicted labels and the second element is the
+        original sentence. `with_orig` can be `True` only if `save_to` is
+        `None`. Default `with_orig=False`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
@@ -317,12 +320,12 @@ class LemmaTagger(BaseTagger):
         Args:
 
         **gold**: a corpus of sentences with actual target values to score the
-        tagger on. May be either a name of the file in *CoNLL-U* format or
+        tagger on. May be either a name of the file in *CoNLL-U* format or a
         list/iterator of sentences in *Parsed CoNLL-U*.
 
         **test**: a corpus of sentences with predicted target values. If
         `None`, the **gold** corpus will be retagged on-the-fly, and the
-        result will be used **test**.
+        result will be used as **test**.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
@@ -360,7 +363,7 @@ class LemmaTagger(BaseTagger):
 
         *Training's args*:
 
-        **save_as** (`str`): the name using for save. Refer to the `.save()`
+        **save_as** (`str`): the name used for save. Refer to the `.save()`
         method's help for the broad definition (see the **name** arg there).
 
         **device**: device for the model. E.g.: 'cuda:0'.
@@ -372,8 +375,8 @@ class LemmaTagger(BaseTagger):
         `0`
 
         **bad_epochs** (`int`): maximum allowed number of bad epochs (epochs
-        when selected **control_metric** is became not better) in a row.
-        Default is `5`.
+        during which the selected **control_metric** does not improve) in a
+        row. Default is `5`.
 
         **batch_size** (`int`): number of sentences per batch. For training,
         default `batch_size=32`.
@@ -418,10 +421,10 @@ class LemmaTagger(BaseTagger):
         parameters.
 
         **word_next_emb_params**: if you want to use several different
-        embedding models at once, pass parameters of the additional model as a
-        dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
-        or a list of such dictionaries if you need more than one additional
-        model.
+        embedding models at once, pass the parameters of the additional model
+        as a dictionary with keys
+        `(emb_path, emb_model_device, transform_kwargs)`; or a list of such
+        dictionaries if you need more than one additional model.
 
         *Model hyperparameters*:
 

@@ -65,14 +65,14 @@ class BaseTagger(BaseParser):
 
         Args:
 
-        **corpus**: a name of the file in *CoNLL-U* format or list/iterator of
-        sentences in *Parsed CoNLL-U*.
+        **corpus**: a name of the file in *CoNLL-U* format or a list/iterator
+        of sentences in *Parsed CoNLL-U*.
 
         **append** (`bool`): whether to add **corpus** to the already loaded
         one(s).
 
-        **test** (`float`): if not `None`, **corpus*** will be shuffled and
-        specified part of it stored as test corpus.
+        **test** (`float`): if not `None`, **corpus** will be shuffled and a
+        specified part of it stored as a test corpus.
 
         **seed** (`int`): init value for the random number generator if you
         need reproducibility. Used only if test is not `None`.
@@ -254,14 +254,15 @@ class BaseTagger(BaseParser):
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
         The method creates a directory **name** that contains 5 files: two for
-        tagger's model (`model.config.json` and `model.pt`) and two for its
-        dataset (`ds.config.json` and `ds.pt`). The 5th file (`cdict.pickle`)
-        is an internal state of *CorpusDict* object that is used by the tagger
-        as a helper.
-        
-        `*.config.json` files contain parameters for objects' creation. They
-        are editable, but you allowed to change only the device name. Any
-        other changes most likely won't allow the tagger to load.
+        the tagger's model (`model.config.json` and `model.pt`) and two for
+        its dataset (`ds.config.json` and `ds.pt`). The 5th file
+        (`cdict.pickle`) is an internal state of
+        [`corpuscula.CorpusDict`](https://github.com/fostroll/corpuscula/blob/master/doc/README_CDICT.md)
+        object that is used by the tagger as a helper.
+
+        `*.config.json` files contain parameters for creation of the objects.
+        They are editable, but you are allowed to change only the device name.
+        Any other changes most likely won't allow the tagger to load.
         """
         assert self._ds, "ERROR: The tagger doesn't have a dataset to save"
         assert self._model, "ERROR: The tagger doesn't have a model to save"
@@ -281,7 +282,7 @@ class BaseTagger(BaseParser):
         **model_class**: a class of the model used for prediction. Must be
         descendant of `BaseTaggerModel` class.
 
-        **name** (`str`): name of the internal state previously saved.
+        **name** (`str`): name of the previously saved internal state.
 
         **device**: a device for the loading model if you want to override its
         previously saved value.

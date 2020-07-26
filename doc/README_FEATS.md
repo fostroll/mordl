@@ -35,11 +35,12 @@ tagger = FeatsTagger(field='FEATS')
 
 Args:
 
-**field** (`str`): a name of the *CoNLL-U* key-value type field, content of
-which needs to be predicted with the tagger.
+**field** (`str`): a name of the *CoNLL-U* key-value type field, content
+of which needs to be predicted. With the tagger, you can predict only
+key-value type fields, like FEATS.
 
-Afterwards, load train and development test corpora into
-the tagger object:
+Afterwards, load train and development test corpora into the created tagger
+object:
 ```python
 tagger.load_train_corpus(corpus, append=False, test=None, seed=None)
 tagger.load_test_corpus(corpus, append=False)
@@ -88,8 +89,8 @@ train until `bad_epochs` is met, but no less than `min_epochs`.
 `0`
 
 **bad_epochs** (`int`): maximum allowed number of bad epochs (epochs
-during which the selected **control_metric** does not improve) in a row.
-Default is `5`.
+during which the selected **control_metric** does not improve) in a
+row. Default is `5`.
 
 **batch_size** (`int`): number of sentences per batch. For training,
 default `batch_size=32`.
@@ -134,10 +135,10 @@ embeddings conversion. See the `.transform()` method of
 parameters.
 
 **word_next_emb_params**: if you want to use several different
-embedding models at once, pass the parameters of the additional model as
-a dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
-or a list of such dictionaries if you need more than one additional
-model.
+embedding models at once, pass the parameters of the additional model
+as a dictionary with keys
+`(emb_path, emb_model_device, transform_kwargs)`; or a list of such
+dictionaries if you need more than one additional model.
 
 *Model hyperparameters*:
 
@@ -209,9 +210,8 @@ chapter.
 
 ### Evaluation<a name="eval"></a>
 
-When the training is done, you may evaluate prediction quality using the test
+When the training is done, you may evaluate the model quality using the test
 or the development test corpora:
-
 ```python
 tagger.evaluate(gold, test=None, feats=None, label=None,
                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
@@ -226,7 +226,7 @@ list/iterator of sentences in *Parsed CoNLL-U*.
 
 **test**: a corpus of sentences with predicted target values. If
 `None`, the **gold** corpus will be retagged on-the-fly, and the
-result will be as **test**.
+result will be used as **test**.
 
 **feats** (`str|list([str])`): one or several feature names of the
 key-value type fields like `FEATS` or `MISC` to be evaluated.
@@ -270,9 +270,9 @@ list/iterator of sentences in *Parsed CoNLL-U*.
 
 **with_orig** (`bool`): if `True`, instead of only a sequence with
 predicted labels, returns a sequence of tuples where the first element
-is a sentence with predicted labels and the second element is the original
-sentence. `with_orig` can be `True` only if `save_to` is `None`.
-Default `with_orig=False`.
+is a sentence with predicted labels and the second element is the
+original sentence. `with_orig` can be `True` only if `save_to` is
+`None`. Default `with_orig=False`.
 
 **batch_size** (`int`): number of sentences per batch. Default
 `batch_size=64`.
@@ -328,5 +328,6 @@ help(tagger)
 ```
 
 Also, note that you can't change the device names of models during loading.
-If you need to do so (really need, because all models together can hardly fit
-on a single GPU), you have to edit configuration files of the separate models.
+If you need to do so (really, you need, because all models together can hardly
+fit on a single GPU), you have to edit configuration files of the separate
+models.

@@ -113,8 +113,8 @@ is large, you may want to use **split** parameter for that the methods handle
 the file by parts. In that case, saving of the first part of the tagging data
 occurs before loading next. So, identical names will entail data loss.
 
-Training process is also simple. If you have a train corpus and you don't want
-any experiments, just run:
+Training process is also simple. If you have training corpora and you don't
+want any experiments, just run:
 ```python
 from mordl import UposTagger
 

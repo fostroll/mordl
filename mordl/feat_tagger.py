@@ -28,13 +28,14 @@ class FeatTagger(BaseTagger):
     **feats_prune_coef** (`int`): feature prunning coefficient which allows to
     eliminate all features that have a low frequency. For each UPOS tag, we
     get a number of occurences of the most frequent feature from FEATS field,
-    divide it by **feats_prune_coef** and use features, number of occurences
-    of which is greater than that value, to improve the prediction quality.
+    divide it by **feats_prune_coef** and use only those features, number of
+    occurences of which is greater than that value, to improve the prediction
+    quality.
     * `feats_prune_coef=0` means "do not use feats";
     * `feats_prune_coef=None` means "use all feats";
     * default `feats_prune_coef=6`.
-    **NB**: the argument is relevant only if **feat** is not from `'FEATS'`
-    field.
+
+    **NB**: the argument is relevant only if **feat** is not from FEATS field.
     """
     def __init__(self, feat, feats_prune_coef=6):
         super().__init__()
@@ -104,7 +105,7 @@ class FeatTagger(BaseTagger):
 
         Args:
 
-        **name** (`str`): name of the internal state previously saved.
+        **name** (`str`): name of the previously saved internal state.
 
         **device**: a device for the loading model if you want to override its
         previously saved value.
@@ -125,14 +126,14 @@ class FeatTagger(BaseTagger):
         Args:
 
         **corpus**: a corpus which will be used for feature extraction and
-        predictions. May be either a name of the file in *CoNLL-U* format or
+        predictions. May be either a name of the file in *CoNLL-U* format or a
         list/iterator of sentences in *Parsed CoNLL-U*.
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
-        is a sentence with predicted labels and the second element is original
-        sentence. `with_orig` can be `True` only if `save_to` is `None`.
-        Default `with_orig=False`.
+        is a sentence with predicted labels and the second element is the
+        original sentence. `with_orig` can be `True` only if `save_to` is
+        `None`. Default `with_orig=False`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
@@ -187,12 +188,12 @@ class FeatTagger(BaseTagger):
         Args:
 
         **gold**: a corpus of sentences with actual target values to score the
-        tagger on. May be either a name of the file in *CoNLL-U* format or
+        tagger on. May be either a name of the file in *CoNLL-U* format or a
         list/iterator of sentences in *Parsed CoNLL-U*.
 
         **test**: a corpus of sentences with predicted target values. If
         `None`, the **gold** corpus will be retagged on-the-fly, and the
-        result will be used **test**.
+        result will be used as **test**.
 
         **label** (`str`): specific label of the target feat to be evaluated,
         e.g. `label='Inan'` for tagger created with `field='Animacy'` option.
@@ -206,7 +207,7 @@ class FeatTagger(BaseTagger):
 
         **clone_ds** (`bool`): if `True`, the dataset is cloned and
         transformed. If `False`, `transform_collate` is used without cloning
-        the dataset. There is no big differences between the variants. Both
+        the dataset. There is no big difference between the variants. Both
         should produce identical results.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
@@ -233,7 +234,7 @@ class FeatTagger(BaseTagger):
 
         *Training's args*:
 
-        **save_as** (`str`): the name using for save. Refer to the `.save()`
+        **save_as** (`str`): the name used for save. Refer to the `.save()`
         method's help for the broad definition (see the **name** arg there).
 
         **device**: device for the model. E.g.: 'cuda:0'.
@@ -245,7 +246,7 @@ class FeatTagger(BaseTagger):
         `0`
 
         **bad_epochs** (`int`): maximum allowed number of bad epochs (epochs
-        when selected **control_metric** is became not better) in a row.
+        during which the selected **control_metric** does not improve) in a row.
         Default is `5`.
 
         **batch_size** (`int`): number of sentences per batch. For training,
@@ -284,17 +285,17 @@ class FeatTagger(BaseTagger):
         `dict` of keyword args for this method. You can replace any except
         `test_data`.
 
-        **word_transform_kwargs** (`dict`): keyword arguments for
+        **word_transform_kwargs** (`dict`): keyword arguments for the
         `.transform()` method of the dataset created for sentences to word
         embeddings conversion. See the `.transform()` method of
         `junky.datasets.BertDataset` for the the description of the
         parameters.
 
         **word_next_emb_params**: if you want to use several different
-        embedding models at once, pass parameters of the additional model as a
-        dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
-        or a list of such dictionaries if you need more than one additional
-        model.
+        embedding models at once, pass the parameters of the additional model
+        as a dictionary with keys
+        `(emb_path, emb_model_device, transform_kwargs)`; or a list of such
+        dictionaries if you need more than one additional model.
 
         *Model hyperparameters*:
 

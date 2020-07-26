@@ -50,7 +50,7 @@ quality.
 **NB**: the argument is relevant only if **feat** is not from FEATS field.
 
 <a name="load"></a>Afterwards, load train and development test corpora into
-the tagger object:
+the created tagger object:
 ```python
 tagger.load_train_corpus(corpus, append=False, test=None, seed=None)
 tagger.load_test_corpus(corpus, append=False)
@@ -145,10 +145,10 @@ embeddings conversion. See the `.transform()` method of
 parameters.
 
 **word_next_emb_params**: if you want to use several different
-embedding models at once, pass the parameters of the additional model as
-a dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
-or a list of such dictionaries if you need more than one additional
-model.
+embedding models at once, pass the parameters of the additional model
+as a dictionary with keys
+`(emb_path, emb_model_device, transform_kwargs)`; or a list of such
+dictionaries if you need more than one additional model.
 
 *Model hyperparameters*:
 
@@ -220,7 +220,7 @@ chapter.
 
 ### Evaluation<a name="eval"></a>
 
-When the training is done, you may evaluate prediction quality using the test
+When the training is done, you may evaluate the model quality using the test
 or the development test corpora:
 ```python
 tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
@@ -273,9 +273,9 @@ list/iterator of sentences in *Parsed CoNLL-U*.
 
 **with_orig** (`bool`): if `True`, instead of only a sequence with
 predicted labels, returns a sequence of tuples where the first element
-is a sentence with predicted labels and the second element is the original
-sentence. `with_orig` can be `True` only if `save_to` is `None`.
-Default `with_orig=False`.
+is a sentence with predicted labels and the second element is the
+original sentence. `with_orig` can be `True` only if `save_to` is
+`None`. Default `with_orig=False`.
 
 **batch_size** (`int`): number of sentences per batch. Default
 `batch_size=64`.

@@ -3,8 +3,8 @@
 
 ## MorDL Supplements
 
-MorDL package contains a few additional utility methods that can be useful. To
-use supplement methods, in most cases you don't have to create a tagger
+MorDL package contains a few additional utility methods that can be helpful.
+To use supplement methods, in most cases you don't have to create a tagger
 object. Howewer, you have to import a tagger class from the `mordl` package.
 Let it be `mordl.UposTagger`, although equally well it can be a class of any
 other tagger:
@@ -33,7 +33,7 @@ To learn more about taggers usage, refer to other chapters:
 Usually, we use methods of
 [***Corpuscula***](https://github.com/fostroll/corpuscula) project to work
 with [*CoNLL-U*](https://universaldependencies.org/format.html) format.
-However, for convenience, we include wrappers for Corpuscula's
+However, for convenience, we include wrappers for ***Corpuscula***'s
 `Conllu.load()` and `Conllu.save()` methods to our project:
 
 ```python
@@ -122,8 +122,8 @@ and returns concurrent and distinct parts of both **form** and
 
 Args:
 
-**lower** (`bool`): if `True` then the return values will be always in
-lower case. Elsewise, we compare strings in lower case but return
+**lower** (`bool`): if `True`, then the return values will be always
+in lower case. Elsewise, we compare strings in lower case but return
 values will be in original case.
 
 Returns prefix, common part, suffix/flexion of **form**, as well as
@@ -161,7 +161,7 @@ Returns a tuple of edit operations that are needed to transform
 
 To apply these operations to the string, call:
 ```python
-LemmaTagger.apply_editops(str_from, ops)
+str_to = LemmaTagger.apply_editops(str_from, ops)
 ```
 
 Args:
@@ -169,3 +169,5 @@ Args:
 **str_from** (`str`): a string to apply edit operations to.
 
 **ops** (`tuple([str])`): tuple or list with edit operations.
+
+Returns **str_from** with **ops** applied.

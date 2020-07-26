@@ -26,9 +26,9 @@ class FeatsJointTagger(BaseTagger):
 
     Args:
 
-    **field**: a name of the *CoNLL-U* field, values of which you want to
-    predict. With the tagger, you can predict only key-value type fields, like
-    FEATS.
+    **field** (`str`): a name of the *CoNLL-U* key-value type field, content
+    of which needs to be predicted. With the tagger, you can predict only
+    key-value type fields, like FEATS.
     """
     def __init__(self, field='FEATS'):
         super().__init__()
@@ -39,7 +39,7 @@ class FeatsJointTagger(BaseTagger):
 
         Args:
 
-        **name** (`str`): name of the internal state previously saved.
+        **name** (`str`): name of the previously saved internal state.
 
         **device**: a device for the loading model if you want to override its
         previously saved value.
@@ -64,9 +64,9 @@ class FeatsJointTagger(BaseTagger):
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
-        is a sentence with predicted labels and the second element is original
-        sentence. `with_orig` can be `True` only if `save_to` is `None`.
-        Default `with_orig=False`.
+        is a sentence with predicted labels and the second element is the
+        original sentence. `with_orig` can be `True` only if `save_to` is
+        `None`. Default `with_orig=False`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
@@ -185,7 +185,7 @@ class FeatsJointTagger(BaseTagger):
 
         *Training's args*:
 
-        **save_as** (`str`): the name using for save. Refer to the `.save()`
+        **save_as** (`str`): the name used for save. Refer to the `.save()`
         method's help for the broad definition (see the **name** arg there).
 
         **device**: device for the model. E.g.: 'cuda:0'.
@@ -197,8 +197,8 @@ class FeatsJointTagger(BaseTagger):
         `0`
 
         **bad_epochs** (`int`): maximum allowed number of bad epochs (epochs
-        when selected **control_metric** is became not better) in a row.
-        Default is `5`.
+        during which the selected **control_metric** does not improve) in a
+        row. Default is `5`.
 
         **batch_size** (`int`): number of sentences per batch. For training,
         default `batch_size=32`.
@@ -243,10 +243,10 @@ class FeatsJointTagger(BaseTagger):
         parameters.
 
         **word_next_emb_params**: if you want to use several different
-        embedding models at once, pass parameters of the additional model as a
-        dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
-        or a list of such dictionaries if you need more than one additional
-        model.
+        embedding models at once, pass the parameters of the additional model
+        as a dictionary with keys
+        `(emb_path, emb_model_device, transform_kwargs)`; or a list of such
+        dictionaries if you need more than one additional model.
 
         *Model hyperparameters*:
 
@@ -331,9 +331,9 @@ class FeatsSeparateTagger(BaseTagger):
 
     Args:
 
-    **field**: a name of the *CoNLL-U* field, values of which you want to
-    predict. With the tagger, you can predict only key-value type fields, like
-    FEATS.
+    **field** (`str`): a name of the *CoNLL-U* key-value type field, content
+    of which needs to be predicted. With the tagger, you can predict only
+    key-value type fields, like FEATS.
     """
     def __init__(self, field='FEATS'):
         super().__init__()
@@ -410,9 +410,9 @@ class FeatsSeparateTagger(BaseTagger):
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
-        is a sentence with predicted labels and the second element is original
-        sentence. `with_orig` can be `True` only if `save_to` is `None`.
-        Default `with_orig=False`.
+        is a sentence with predicted labels and the second element is the
+        original sentence. `with_orig` can be `True` only if `save_to` is
+        `None`. Default `with_orig=False`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
@@ -517,12 +517,12 @@ class FeatsSeparateTagger(BaseTagger):
         Args:
 
         **gold**: a corpus of sentences with actual target values to score the
-        tagger on. May be either a name of the file in *CoNLL-U* format or
+        tagger on. May be either a name of the file in *CoNLL-U* format or a
         list/iterator of sentences in *Parsed CoNLL-U*.
 
         **test**: a corpus of sentences with predicted target values. If
         `None`, the **gold** corpus will be retagged on-the-fly, and the
-        result will be used **test**.
+        result will be used as **test**.
 
         **feats** (`str|list([str])`): one or several feature names of the
         key-value type fields like `FEATS` or `MISC` to be evaluated.
@@ -530,7 +530,7 @@ class FeatsSeparateTagger(BaseTagger):
         **label** (`str`): specific label of the target feature value to be
         evaluated, e.g. `label='Inan'`. If you specify a value here, you must
         also specify the feature name as **feats** param (e.g.:
-        `feats=`'Animacy'`). Note, that in that case the param **feats** must
+        `feats='Animacy'`). Note, that in that case the param **feats** must
         contain only one feature name.
 
         **batch_size** (`int`): number of sentences per batch. Default
@@ -542,7 +542,7 @@ class FeatsSeparateTagger(BaseTagger):
 
         **clone_ds** (`bool`): if `True`, the dataset is cloned and
         transformed. If `False`, `transform_collate` is used without cloning
-        the dataset. There is no big differences between the variants. Both
+        the dataset. There is no big difference between the variants. Both
         should produce identical results.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
@@ -578,9 +578,8 @@ class FeatsSeparateTagger(BaseTagger):
 
         *Training's args*:
 
-        **save_as** (`str`): the name using for save. Refer to the `.save()`
-        method's help of the `BaseTagger` for the broad definition (see the
-        **name** arg there).
+        **save_as** (`str`): the name used for save. Refer to the `.save()`
+        method's help for the broad definition (see the **name** arg there).
 
         **feats** (`str|list([str])`): train model only for predicting one or
         several subfields of the key-value type fields like FEATS or MISC.
@@ -596,8 +595,8 @@ class FeatsSeparateTagger(BaseTagger):
         `0`
 
         **bad_epochs** (`int`): maximum allowed number of bad epochs (epochs
-        when selected **control_metric** is became not better) in a row.
-        Default is `5`.
+        during which the selected **control_metric** does not improve) in a
+        row. Default is `5`.
 
         **batch_size** (`int`): number of sentences per batch. For training,
         default `batch_size=32`.
@@ -627,9 +626,7 @@ class FeatsSeparateTagger(BaseTagger):
         which use devices (currently, only 'bert'). `None` means
         **word_emb_model_device** = **device**
 
-        **word_emb_path_suffix** (`str`): path suffix to word embeddings
-        storage, from full embedding name in the format
-        `'<feat>_<word_emb_path_suffix>'`.
+        **word_emb_path** (`str`): path to word embeddings storage.
 
         **word_emb_tune_params**: parameters for word embeddings finetuning.
         For now, only BERT embeddings finetuning is supported with
@@ -644,10 +641,10 @@ class FeatsSeparateTagger(BaseTagger):
         parameters.
 
         **word_next_emb_params**: if you want to use several different
-        embedding models at once, pass parameters of the additional model as a
-        dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
-        or a list of such dictionaries if you need more than one additional
-        model.
+        embedding models at once, pass the parameters of the additional model
+        as a dictionary with keys
+        `(emb_path, emb_model_device, transform_kwargs)`; or a list of such
+        dictionaries if you need more than one additional model.
 
         *Model hyperparameters*:
 
