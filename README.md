@@ -1,8 +1,8 @@
 <h2 align="center">MorDL: Morphological Parser (POS, lemmata, NER etc.)</h2>
 <a name="start"></a>
 
-[![PyPI Version](https://img.shields.io/pypi/v/morra?color=blue)](https://pypi.org/project/mordl/)
-[![Python Version](https://img.shields.io/pypi/pyversions/morra?color=blue)](https://www.python.org/)
+[![PyPI Version](https://img.shields.io/pypi/v/mordl?color=blue)](https://pypi.org/project/mordl/)
+[![Python Version](https://img.shields.io/pypi/pyversions/mordl?color=blue)](https://www.python.org/)
 [![License: BSD-3](https://img.shields.io/badge/License-BSD-brightgreen.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 ***MorDL*** is a tool to organize a pipeline for complete morphological
