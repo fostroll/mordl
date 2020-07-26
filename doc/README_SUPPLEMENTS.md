@@ -173,8 +173,7 @@ Args:
 
 Returns **str_from** with **ops** applied.
 
-### Official Evaluation Script of CoNLL 2018 Shared Task
-<a name="conll18"></a>
+### <a name="conll18"></a>Official Evaluation Script of CoNLL 2018 Shared Task
 
 Because the official
 [CoNLL18 UD Shared Task](https://universaldependencies.org/conll18/results.html)
