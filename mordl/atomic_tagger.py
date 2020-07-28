@@ -33,5 +33,5 @@ class AtomicTagger(FeatTagger):
     **NB**: the argument is relevant only if **feat** is not from FEATS field.
     """
     def __init__(self, field, feats_prune_coef=6):
-        super().__init__(':', feats_prune_coef)
+        super().__init__(':', feats_prune_coef=feats_prune_coef)
         self._field = field
