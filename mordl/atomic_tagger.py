@@ -6,12 +6,7 @@
 """
 Provides a single-tag FEAT tagger class.
 """
-from corpuscula import CorpusDict
-from difflib import get_close_matches
-from junky import get_func_params
-from mordl.base_tagger import BaseTagger
-from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
-from mordl.feat_tagger_model import FeatTaggerModel
+from mordl import FeatTagger
 
 
 class AtomicTagger(FeatTagger):
