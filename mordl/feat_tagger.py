@@ -22,8 +22,10 @@ class FeatTagger(BaseTagger):
 
     **feat** (`str`): the name of the feat which needs to be predicted by the
     tagger. May contains prefix, separated by a colon (`:`). In that case, the
-    prefix treat as a field name. Otherwise, we get `'FEATS'` as a field name.
-    Examples: `'Animacy'`; `'MISC:NE'`.
+    prefix treat as a field name. Also, if **feat** starts with a colon, we get
+    `'FEATS'` as a field name. Otherwise, if **feat** contain no colon, the
+    field name set to **feat** inself. Examples: `'MISC:NE'`; `':Animacy'`;
+    `'DEPREL'`.
 
     **feats_prune_coef** (`int`): feature prunning coefficient which allows to
     eliminate all features that have a low frequency. For each UPOS tag, we
@@ -38,9 +40,10 @@ class FeatTagger(BaseTagger):
     **NB**: the argument is relevant only if **feat** is not from FEATS field.
     """
     def __init__(self, feat, feats_prune_coef=6):
+        assert feat != 'UPOS', 'ERROR: for UPOS field use UposTagger class'
         super().__init__()
-        if feat.find(':') == -1:
-            feat = 'FEATS:' + feat
+        if feat[0] == ':':
+            feat = 'FEATS' + feat
         self._field = feat
         if feat.startswith('FEATS:'):
             feats_prune_coef = 0

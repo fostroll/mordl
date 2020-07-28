@@ -34,8 +34,10 @@ Args:
 
 **feat** (`str`): the name of the feat which needs to be predicted by the
 tagger. May contains prefix, separated by a colon (`:`). In that case, the
-prefix treat as a field name. Otherwise, we get `'FEATS'` as a field name.
-Examples: `'Animacy'`; `'MISC:NE'`.
+prefix treat as a field name. Also, if **feat** starts with a colon, we get
+`'FEATS'` as a field name. Otherwise, if **feat** contain no colon, the
+field name set to **feat** inself. Examples: `'MISC:NE'`; `':Animacy'`;
+`'DEPREL'`.
 
 **feats_prune_coef** (`int`): feature prunning coefficient which allows to
 eliminate all features that have a low frequency. For each UPOS tag, we
