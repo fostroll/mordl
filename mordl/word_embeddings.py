@@ -25,8 +25,8 @@ from tempfile import mkstemp
 from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset, DataLoader
-from transformers import AdamW, BertConfig, BertForSentenceClassification,
-                         BertForTokenClassification, BertTokenizer,
+from transformers import AdamW, BertConfig, BertForSentenceClassification, \
+                         BertForTokenClassification, BertTokenizer, \
                          PreTrainedModel, get_linear_schedule_with_warmup
 
 _DEFAULT_BERT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
