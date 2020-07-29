@@ -598,8 +598,8 @@ class WordEmbeddings:
             config = BertConfig.from_pretrained(
                 emb_path, output_hidden_states=True
             )
-            #model = BertForTokenClassification.from_pretrained(
-            model = PreTrainedModel.from_pretrained(
+            model = BertForTokenClassification.from_pretrained(
+            #model = PreTrainedModel.from_pretrained(
                 emb_path, config=config
             )
             if emb_model_device:
