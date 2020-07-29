@@ -362,6 +362,8 @@ class FeatTagger(BaseTagger):
             self._cdict = CorpusDict(corpus=self._train_corpus,
                                      format='conllu_parsed', log_file=log_file)
             self._save_cdict(save_as + '.cdict.pickle')
+            if log_file:
+                print(file=log_file)
 
             list(self._transform_upos(self._train_corpus))
             key_vals = set(x['UPOS'] for x in self._train_corpus for x in x

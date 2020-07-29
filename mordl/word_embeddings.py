@@ -25,8 +25,9 @@ from tempfile import mkstemp
 from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset, DataLoader
-from transformers import AdamW, BertConfig, BertForTokenClassification, \
-                         BertTokenizer, get_linear_schedule_with_warmup
+from transformers import AdamW, BertConfig, BertForSentenceClassification,
+                         BertForTokenClassification, BertTokenizer,
+                         PreTrainedModel, get_linear_schedule_with_warmup
 
 _DEFAULT_BERT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
     max_len=0, batch_size=BATCH_SIZE, hidden_ids=11,
@@ -53,10 +54,10 @@ class WordEmbeddings:
         **train_sentences**: sequence of already tokenized sentences (of the
         `list([str])` format) that will be used to train the model.
 
-        **train_labels**: sequence of labels (of `str`) that will be used to
+        **train_labels**: list of labels (of `str`) that will be used to
         train the model.
 
-        **test_data** (`tuple(<sentences> <labels>)`): development test set to
+        **test_data** (`tuple(<sentences>, <labels>)`): development test set to
         validate the model during training.
 
         **model_name** (`str`): pre-trained BERT model name or path to the
@@ -101,6 +102,8 @@ class WordEmbeddings:
 
         test_sentences, test_labels = test_data if test_data else ([], [])
 
+        use_seq_labeling = train_labels and isinstance(train_labels[0], list)
+
         if seed:
             junky.enforce_reproducibility(seed)
 
@@ -114,14 +117,12 @@ class WordEmbeddings:
             **extra_labels**: any additional tokens or labels to add
             to the dictionary.
             """
-
-            seq2ix = {x: i for i, x in enumerate(sorted(set(x for x in seq
-                                                              for x in x)))}
-
+            labels = set(x for x in seq) if use_seq_labeling else \
+                     set(x for x in seq for x in x)
+            seq2ix = {x: i for i, x in enumerate(sorted(labels))}
             if extra_labels:
                 for tag in extra_labels:
                     seq2ix[tag] = len(seq2ix)
-
             return seq2ix
 
         cls_label, sep_label, pad_label = 'CLS', 'SEP', 'PAD'
@@ -295,7 +296,11 @@ class WordEmbeddings:
             print("Loading model '{}'...".format(model_name), end=' ',
                   file=log_file)
             log_file.flush()
-        model = BertForTokenClassification.from_pretrained(
+        model = BertForSentenceClassification.from_pretrained(
+            model_name, num_labels=len(t2y),
+            output_attentions = False, output_hidden_states = False
+        ) if use_seq_labeling else \
+        BertForTokenClassification.from_pretrained(
             model_name, num_labels=len(t2y),
             output_attentions = False, output_hidden_states = False
         )
@@ -593,7 +598,8 @@ class WordEmbeddings:
             config = BertConfig.from_pretrained(
                 emb_path, output_hidden_states=True
             )
-            model = BertForTokenClassification.from_pretrained(
+            #model = BertForTokenClassification.from_pretrained(
+            model = PreTrainedModel.from_pretrained(
                 emb_path, config=config
             )
             if emb_model_device:

@@ -7,7 +7,6 @@
 Provides a Named-entity tagger class.
 """
 from mordl import FeatTagger
-from mordl.defaults import LOG_FILE
 
 
 class NeTagger(FeatTagger):
