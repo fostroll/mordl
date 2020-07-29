@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
-class BaseTextClfModel(BaseModel):
+class BaseTaggerSequenceModel(BaseModel):
     """
     A base model for MorDL taggers.
 
@@ -84,8 +84,9 @@ class BaseTextClfModel(BaseModel):
     def __init__(self, labels_num, labels_pad_idx=None, vec_emb_dim=None,
                  alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,
                  cnn_emb_dim=None, cnn_kernels=[1, 2, 3, 4, 5, 6],
-                 tag_emb_params=None, emb_out_dim=512, lstm_hidden_dim=256,
-                 lstm_layers=1, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
+                 tag_emb_params=None, emb_out_dim=512,
+                 lstm_bidirectional=True, lstm_hidden_dim=256, lstm_layers=1,
+                 lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
                  bn3=True, do3=.4):
         if isinstance(cnn_kernels, Iterable):
             cnn_kernels = list(cnn_kernels)
@@ -154,16 +155,16 @@ class BaseTextClfModel(BaseModel):
         self._lstm_l = nn.LSTM(input_size=emb_out_dim,
                                hidden_size=lstm_hidden_dim,
                                num_layers=lstm_layers, batch_first=True,
-                               dropout=lstm_do, bidirectional=True)
-        self._H = nn.Linear(lstm_hidden_dim * 2, emb_out_dim)
-        self._T = nn.Linear(emb_out_dim, emb_out_dim)
-        nn.init.constant_(self._T.bias, -1)
+                               dropout=lstm_do,
+                               bidirectional=lstm_bidirectional)
+        if lstm_bidirectional:
+            lstm_hidden_dim *= 2
 
         self._bn3 = \
-            nn.BatchNorm1d(num_features=emb_out_dim) if bn3 else None
+            nn.BatchNorm1d(num_features=lstm_hidden_dim) if bn3 else None
         self._do3 = nn.Dropout(p=do3) if do3 else None
 
-        self._out_l = nn.Linear(in_features=emb_out_dim,
+        self._out_l = nn.Linear(in_features=lstm_hidden_dim,
                                 out_features=labels_num)
         self._out_masking = \
             Masking(input_size=labels_num,
@@ -218,20 +219,17 @@ class BaseTextClfModel(BaseModel):
 
         x_ = pack_padded_sequence(x, x_lens, batch_first=True,
                                   enforce_sorted=False)
-        _, (h_, _) = self._lstm_l(x_)
-        # h_.shape => [batch size, num layers * num directions, hidden size]
-        
-        h_ = torch.cat((h_[-2,:,:], h_[-1,:,:]), dim = 1)
-        # h_.shape => [batch size, hidden size*2]
-        
-        x = torch.sigmoid(self._H(h_)) # h_.shape => [batch size, hidden size]
-            
-#         gate = torch.sigmoid(self._T(x))
-#         x = x_ * gate + x * (1 - gate)
-        
+        _, (h_n, _) = self._lstm_l(x_)
+        # h_n.shape => [batch size, num layers * num directions, hidden size]
+
+        x = torch.cat((h_n[-2, :, :], h_n[-1, :, :]), dim=1) \
+                if self._lstm_l.bidirectional else \
+            h_n[-1, :, :]
+        # x.shape => [batch size, hidden size]
+
         if self._bn3:
             x = self._bn3(x)
-            
+
         if self._do3:
             x = self._do3(x)
 
