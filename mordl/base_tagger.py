@@ -318,6 +318,12 @@ class BaseTagger(BaseParser):
                 res.append(name)
         return res[0] if tostr else res
 
+    def _preprocess_corpus(corpus):
+        return corpus, restore_data
+
+    def _postprocess_corpus(corpus, restore_data):
+        return corpus
+
     def predict(self, field, add_fields, corpus, with_orig=False,
                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
                 save_to=None, log_file=LOG_FILE):
@@ -395,6 +401,8 @@ class BaseTagger(BaseParser):
                         corpus_ = corpus
                 if not corpus_:
                     break
+                orig_corpus_ = deepcopy(corpus_) if with_orig else None
+                #restore_data, corpus_ = self._preprocess_corpus(corpus_)
                 res = \
                     junky.extract_conllu_fields(
                         corpus_, fields=add_fields,
@@ -422,21 +430,15 @@ class BaseTagger(BaseParser):
                     _, pred_indices = pred.max(2)
                     preds.extend(pred_indices.cpu().numpy().tolist())
                 values = ds_y.reconstruct(preds)
+                corpus_ = list(junky.embed_conllu_fields(
+                    corpus_, field, values,
+                    empties=empties, nones=nones
+                ))
+                #corpus_ = self._postprocess_corpus(corpus_, restore_data)
                 if with_orig:
-                    res_corpus_ = deepcopy(corpus_)
-                    for orig_sentence, sentence in zip(
-                        corpus_, junky.embed_conllu_fields(
-                            res_corpus_, field, values,
-                            empties=empties, nones=nones
-                        )
-                    ):
-                        yield sentence, orig_sentence
-                else:
-                    for sentence in junky.embed_conllu_fields(
-                        corpus_, field, values,
-                        empties=empties, nones=nones
-                    ):
-                        yield sentence
+                    corpus_ = zip(orig_corpus_, corpus_)
+                for sentence in corpus_:
+                    yield sentence
 
         corpus = process(corpus)
         if save_to:
