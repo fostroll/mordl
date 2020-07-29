@@ -25,7 +25,7 @@ from tempfile import mkstemp
 from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset, DataLoader
-from transformers import AdamW, BertConfig, BertForSentenceClassification, \
+from transformers import AdamW, BertConfig, BertForSequenceClassification, \
                          BertForTokenClassification, BertTokenizer, \
                          PreTrainedModel, get_linear_schedule_with_warmup
 
