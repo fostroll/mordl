@@ -233,6 +233,7 @@ class BaseTaggerModel(BaseModel):
             x = self._do3(x)
 
         x = self._out_l(x)
-        x = self._out_masking(x, x_lens)
+        if self._out_masking:
+            x = self._out_masking(x, x_lens)
 
         return x

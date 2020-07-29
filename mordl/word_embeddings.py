@@ -102,7 +102,7 @@ class WordEmbeddings:
 
         test_sentences, test_labels = test_data if test_data else ([], [])
 
-        #use_seq_labeling = train_labels and isinstance(train_labels[0], list)
+        use_seq_labeling = train_labels and isinstance(train_labels[0], list)
 
         if seed:
             junky.enforce_reproducibility(seed)
@@ -117,8 +117,8 @@ class WordEmbeddings:
             **extra_labels**: any additional tokens or labels to add
             to the dictionary.
             """
-            #labels = set(x for x in seq) if use_seq_labeling else \
-            labels = set(x for x in seq for x in x)
+            labels = set(x for x in seq) if use_seq_labeling else \
+                     set(x for x in seq for x in x)
             seq2ix = {x: i for i, x in enumerate(sorted(labels))}
             if extra_labels:
                 for tag in extra_labels:
@@ -296,17 +296,11 @@ class WordEmbeddings:
             print("Loading model '{}'...".format(model_name), end=' ',
                   file=log_file)
             log_file.flush()
-        '''
         model = BertForSequenceClassification.from_pretrained(
             model_name, num_labels=len(t2y),
             output_attentions = False, output_hidden_states = False
         ) if use_seq_labeling else \
         BertForTokenClassification.from_pretrained(
-            model_name, num_labels=len(t2y),
-            output_attentions = False, output_hidden_states = False
-        )
-        '''
-        model = BertForTokenClassification.from_pretrained(
             model_name, num_labels=len(t2y),
             output_attentions = False, output_hidden_states = False
         )
@@ -604,8 +598,8 @@ class WordEmbeddings:
             config = BertConfig.from_pretrained(
                 emb_path, output_hidden_states=True
             )
-            model = BertForTokenClassification.from_pretrained(
-            #model = PreTrainedModel.from_pretrained(
+            #model = BertForTokenClassification.from_pretrained(
+            model = PreTrainedModel.from_pretrained(
                 emb_path, config=config
             )
             if emb_model_device:
