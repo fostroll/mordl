@@ -48,6 +48,7 @@ class FeatTagger(BaseTagger):
         if feat.startswith('FEATS:'):
             feats_prune_coef = 0
         self._feats_prune_coef = feats_prune_coef
+        self._model_class = FeatTaggerModel
 
     def _transform_upos(self, corpus, key_vals=None):
         rel_feats = {}
@@ -371,5 +372,5 @@ class FeatTagger(BaseTagger):
                                             and '-' not in x['ID'])
             list(self._transform_upos(self._test_corpus, key_vals))
 
-        return super().train(self._field, 'UPOS', FeatTaggerModel, 'upos',
+        return super().train(self._field, 'UPOS', self._model_class, 'upos',
                              *args, **kwargs)

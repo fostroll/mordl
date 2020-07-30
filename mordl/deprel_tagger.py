@@ -32,6 +32,7 @@ class DeprelTagger(FeatTagger):
     """
     def __init__(self, feats_prune_coef=6):
         super().__init__('DEPREL', feats_prune_coef=feats_prune_coef)
+        self._model_class = DeprelTaggerModel
 
     #@staticmethod
     def _preprocess_corpus(self, corpus):
@@ -229,5 +230,4 @@ class DeprelTagger(FeatTagger):
             self._test_corpus, _, _ = \
                 self._preprocess_corpus(self._test_corpus)
 
-        return super().train(self._field, 'UPOS', DeprelTaggerModel, 'upos',
-                             *args, **kwargs)
+        return super().train(*args, **kwargs)
