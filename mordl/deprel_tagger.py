@@ -46,7 +46,8 @@ class DeprelTagger(FeatTagger):
                 idx = ids[link_id]
                 token = sent[idx]
                 label = token['DEPREL']
-                s = deepcopy(upper_sent).append(token)
+                s = deepcopy(upper_sent)
+                s.append(token)
                 yield s, idx, label
                 for data_ in next_sent(sent, s, link_id, ids, chains):
                     yield data_
