@@ -84,8 +84,9 @@ class DeprelTagger(FeatTagger):
     def _prepare_corpus(cls, corpus, fields, tags_to_remove=None):
         res = super()._prepare_corpus(corpus, fields,
                                       tags_to_remove=tags_to_remove)
+        res = list(res)
         res[-1] = [x[-1] for x in res[-1]]
-        return res
+        return tuple(res)
 
     def train(self, save_as,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
