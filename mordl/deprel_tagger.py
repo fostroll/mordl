@@ -41,7 +41,7 @@ class DeprelTagger(FeatTagger):
             self.ids_ = ids
             self.chains_ = chains
             link_ids = chains.get(id_, [])
-            for link_id in link_ids:
+            for link_idx in link_ids:
                 idx = ids[link_id]
                 token = sent[idx]
                 label = token['DEPREL']
@@ -60,7 +60,7 @@ class DeprelTagger(FeatTagger):
                 if head == '0':
                     root_id, root_token = id_, token
                 ids[id_] = idx
-                chains.setdefault(head, []).append(idx)
+                chains.setdefault(head, []).append(id_)
             if root_id:
                 for s, idx, label in next_sent(sent, [root_token],
                                                root_id, ids, chains):
