@@ -80,8 +80,8 @@ class DeprelTagger(FeatTagger):
             corpus[i][idx]['DEPREL'] = label
         return corpus
 
-    @staticmethod
-    def _prepare_corpus(corpus, fields, tags_to_remove=None):
+    @classmethod
+    def _prepare_corpus(cls, corpus, fields, tags_to_remove=None):
         res = super()._prepare_corpus(corpus, fields,
                                       tags_to_remove=tags_to_remove)
         res[-1] = [x[-1] for x in res[-1]]
