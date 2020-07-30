@@ -6,6 +6,7 @@
 """
 Provides a Named-entity tagger class.
 """
+from copy import deepcopy
 from junky import get_func_params
 from mordl import FeatTagger
 from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
