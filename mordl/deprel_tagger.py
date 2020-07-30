@@ -31,8 +31,8 @@ class DeprelTagger(FeatTagger):
     def __init__(self, feats_prune_coef=6):
         super().__init__('DEPREL', feats_prune_coef=feats_prune_coef)
 
-    @staticmethod
-    def _preprocess_corpus(corpus):
+    #@staticmethod
+    def _preprocess_corpus(self, corpus):
 
         def next_sent(sent, upper_sent, id_, ids, chains):
             self.sent_ = sent
