@@ -52,6 +52,7 @@ class DeprelTagger(FeatTagger):
                 for data_ in next_sent(sent, s, link_id, ids, chains):
                     yield data_
 
+        import time
         res_corpus, labels, restore_data = [], [], []
         for i, sent in enumerate(corpus):
             if isinstance(sent, tuple):
@@ -66,6 +67,8 @@ class DeprelTagger(FeatTagger):
             if root_id:
                 for s, idx, label in next_sent(sent, [root_token],
                                                root_id, ids, chains):
+                    print(i, idx)
+                    time.sleep(1)
                     res_corpus.append(s)
                     labels.append(label)
                     restore_data.append((i, idx))
