@@ -41,7 +41,7 @@ class DeprelTagger(FeatTagger):
             self.ids_ = ids
             self.chains_ = chains
             link_ids = chains.get(id_, [])
-            for link_idx in link_ids:
+            for link_id in link_ids:
                 idx = ids[link_id]
                 token = sent[idx]
                 label = token['DEPREL']
