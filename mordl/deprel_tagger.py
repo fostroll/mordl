@@ -7,6 +7,7 @@
 Provides a Named-entity tagger class.
 """
 from mordl import FeatTagger
+from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
 
 
 class DeprelTagger(FeatTagger):
