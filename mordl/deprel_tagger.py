@@ -47,7 +47,7 @@ class DeprelTagger(FeatTagger):
 
         res_corpus, labels, restore_data = [], [], []
         for i, sent in enumerate(corpus):
-            if isinstance(sentence, tuple):
+            if isinstance(sent, tuple):
                 sent = sent[0]
             root_id, root_token, ids, chains = None, None, {}, {}
             for idx, token in enumerate(sent):
