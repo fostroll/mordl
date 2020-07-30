@@ -31,6 +31,7 @@ class DeprelTagger(FeatTagger):
     def __init__(self, feats_prune_coef=6):
         super().__init__('DEPREL', feats_prune_coef=feats_prune_coef)
 
+    @staticmethod
     def _preprocess_corpus(corpus):
 
         def next_sent(sent, upper_sent, id_, ids, chains):
@@ -64,6 +65,7 @@ class DeprelTagger(FeatTagger):
 
         return res_corpus, labels, restore_data
 
+    @staticmethod
     def _postprocess_corpus(corpus, labels, restore_data):
         for label, (i, idx) in zip(labels, restore_data):
             corpus[i][idx]['DEPREL'] = label
