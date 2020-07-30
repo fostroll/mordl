@@ -56,7 +56,7 @@ class DeprelTagger(FeatTagger):
                     root_id, root_token = id_, token
                 ids[id_] = idx
                 chains.setdefault(head, []).append(idx)
-            if root:
+            if root_id:
                 for s, idx, label in next_sent(sent, [root_token],
                                                root_id, ids, chains):
                     res_corpus.append(s)
