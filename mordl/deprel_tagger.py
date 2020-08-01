@@ -37,15 +37,18 @@ class DeprelTagger(FeatTagger):
     #@staticmethod
     def _preprocess_corpus(self, corpus):
 
+        #WINDOW_LEFT, WINDOW = 3, 5
+        #PAD_TOKEN = {'ID': '1', 'FORM' = ''}
         def next_sent(sent, upper_sent, id_, ids, chains):
             link_ids = chains.get(id_, [])
             for link_id in link_ids:
                 idx = ids[link_id]
                 token = sent[idx]
                 label = token['DEPREL']
-                #s = deepcopy(upper_sent)
-                s = upper_sent[:]
+                s = upper_sent[-2:]
                 s.append(token)
+                #s_ = ([''] * (WINDOW_LEFT - len(s)) + s \
+                #   + ([''] * (WINDOW - max(len(s), WINDOW_LEFT)))
                 yield s, idx, label
                 for data_ in next_sent(sent, s, link_id, ids, chains):
                     yield data_
