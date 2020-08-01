@@ -91,7 +91,8 @@ class BaseTaggerSequenceModel(BaseModel):
                  bn3=True, do3=.4):
         if isinstance(cnn_kernels, Iterable):
             cnn_kernels = list(cnn_kernels)
-        args, kwargs = get_func_params(BaseTextClfModel.__init__, locals())
+        args, kwargs = \
+            get_func_params(BaseTaggerSequenceModel.__init__, locals())
         super().__init__(*args, **kwargs)
 
         self.vec_emb_dim = vec_emb_dim
