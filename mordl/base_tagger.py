@@ -871,7 +871,8 @@ class BaseTagger(BaseParser):
             print('\nMODEL CREATION', file=log_file)
         ds_ = ds_train.get_dataset('y')
         model_args = [len(ds_.transform_dict)]
-        model_kwargs['labels_pad_idx'] = ds_.pad
+        if hasattr(ds_, 'pad'):
+            model_kwargs['labels_pad_idx'] = ds_.pad
         if word_emb_type:
             ds_ = ds_train.get_dataset('x')
             model_kwargs['vec_emb_dim'] = ds_.vec_size
