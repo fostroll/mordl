@@ -128,12 +128,15 @@ class WordEmbeddings:
 
         cls_label, sep_label, pad_label = 'CLS', 'SEP', 'PAD'
 
-        t2y = seq2ix(train_labels,
-                     extra_labels=[cls_label, sep_label, pad_label])
+        t2y = seq2ix(train_labels, extra_labels=None if use_seq_labeling else
+                                   [cls_label, sep_label, pad_label])
+        print(t2y) #TODO:remove
         y2t = {v:k for k, v in t2y.items()}
 
-        cls_y, sep_y, pad_y = \
-            [t2y[x] for x in [cls_label, sep_label, pad_label]]
+        if not use_seq_labeling:
+            cls_y, sep_y, pad_y = \
+                [t2y[x] for x in [cls_label, sep_label, pad_label]]
+        # undefined elsewise
 
         if log_file:
             print('Loading tokenizer...', file=log_file)
@@ -162,8 +165,9 @@ class WordEmbeddings:
                 tokenized_sentence = []
                 labels = []
 
-                for word, label in zip(sentence, text_labels):
-
+                for word, label in zip(sentence, [[]] * len(sentence)
+                                                     if use_seq_labeling else
+                                                 text_labels):
                     # Tokenize the word and count
                     # of subwords the word is broken into
                     tokenized_word = tokenizer.tokenize(word)
@@ -172,11 +176,14 @@ class WordEmbeddings:
                     # Add the tokenized word to the final tokenized word list
                     tokenized_sentence.extend(tokenized_word)
 
-                    # Add the same label to the new list
-                    # of labels `n_subwords` times
-                    labels.extend([t2y[label]] * n_subwords)
+                    if not use_seq_labeling:
+                        # Add the same label to the new list
+                        # of labels `n_subwords` times
+                        labels.extend([t2y[label]] * n_subwords)
 
-                return tokenized_sentence, labels
+                return tokenized_sentence, text_labels \
+                                               if use_seq_labeling else \
+                                           labels
 
             def apply_max_len(sents, labs, max_len):
                 """Applies max_len restriction to split input sentences
@@ -214,7 +221,8 @@ class WordEmbeddings:
                                             end = i
                                             break
                                 sents_.append(sent[start:end])
-                                labs_.append(lab[start:end])
+                                labs_.append(lab if use_seq_labeling else
+                                             lab[start:end])
                     sents, labs = sents_, labs_
                 return sents, labs
 
@@ -241,9 +249,9 @@ class WordEmbeddings:
 
             Args:
 
-            **batch**: input batch - tokenized sentences and aligned tags.
+            **batch**: input batch - tokenized sentences and aligned labels.
             """
-            sents, tags = zip(*batch)
+            sents, labels = zip(*batch)
             max_len_ = max(len(x) for x in sents)
             encoded_sents = [
                 tokenizer.encode_plus(text=sent,
@@ -262,10 +270,10 @@ class WordEmbeddings:
             input_ids = torch.cat(input_ids, dim=0)
             attention_masks = torch.cat(attention_masks, dim=0)
             lens = attention_masks.sum(dim=1) - 2
-            output_ids = torch.tensor([
-                    [cls_y] + x + [sep_y] + [pad_y] * (max_len_ - len(x))
-                 for x in tags
-            ])
+            output_ids = labels if use_seq_labeling else \
+                         torch.tensor([[cls_y] + x + [sep_y]
+                                     + [pad_y] * (max_len_ - len(x))
+                                           for x in labels])
             return input_ids, attention_masks, output_ids, lens
 
         class SubwordDataset(Dataset):
@@ -419,7 +427,7 @@ class WordEmbeddings:
                     model.zero_grad()
                     # forward pass
                     # This will return the loss (rather than the model output)
-                    # because we have provided the `labels`.
+                    # because we provide labels
                     outputs = model(
                         b_input_ids, token_type_ids=None,
                         attention_mask=b_input_mask, labels=b_labels
@@ -477,26 +485,28 @@ class WordEmbeddings:
                         # saving memory and speeding up validation
                         with torch.no_grad():
                             # Forward pass, calculate logit predictions.
-                            # This # will return the logits rather than the
-                            # loss because we have not provided labels
+                            # This will return the pred_ids rather than the
+                            # loss because we don't provide labels
                             outputs = model(
                                 b_input_ids, token_type_ids=None,
                                 attention_mask=b_input_mask, labels=b_labels
                             )
                         # Move logits and labels to CPU
-                        logits = outputs[1].detach().cpu().numpy()
-                        label_ids = b_labels.to(junky.CPU).numpy()
+                        pred_ids = outputs[1].detach().cpu().numpy()
+                        gold_ids = b_labels.to(junky.CPU).numpy()
 
                         # Calculate the accuracy for this batch of test
                         # sentences
                         eval_loss += outputs[0].mean().item()
                         pred_labels.extend(
+                            np.argmax(pred_ids, axis=1) if use_seq_labeling else
                             [list(x)[1:y + 1]
-                                 for x, y in zip(np.argmax(logits, axis=2),
+                                 for x, y in zip(np.argmax(pred_ids, axis=2),
                                                            lens)]
                         )
                         gold_labels.extend(
-                            [x[1:y + 1].tolist() for x, y in zip(label_ids,
+                            gold_ids if use_seq_labeling else
+                            [x[1:y + 1].tolist() for x, y in zip(gold_ids,
                                                                  lens)]
                         )
 
@@ -530,7 +540,7 @@ class WordEmbeddings:
                               file=log_file)
                         print('Dev: f1_score = {:.8f}'.format(f1),
                               file=log_file)
-                        print('NB: Scores may be high because of tags '
+                        print('NB: Scores may be high because of labels '
                               'stretching', file=log_file)
 
                     if accuracy > best_accuracy:
