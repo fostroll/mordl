@@ -81,8 +81,12 @@ class DeprelTagger(FeatTagger):
 
     @classmethod
     def _prepare_corpus(cls, corpus, fields, tags_to_remove=None):
+        print()
+        [print(x) for x in corpus[:5]]
         res = super()._prepare_corpus(corpus, fields,
                                       tags_to_remove=tags_to_remove)
+        print()
+        [print(x) for x in res[:5]]
         res = list(res)
         res[-1] = [x[-1] for x in res[-1]]
         return tuple(res)
