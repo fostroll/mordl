@@ -171,7 +171,8 @@ class BaseTagger(BaseParser):
                 if not WordEmbeddings.transform(
                     ds_, sentences, batch_size=batch_size,
                     loglevel=0 if log_file is None else
-                             1
+                             1 if log_file == sys.stdin else
+                             2
                 ):
                     ds_.transform(sentences)
             elif typ == 't':
