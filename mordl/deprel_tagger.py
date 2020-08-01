@@ -53,7 +53,7 @@ class DeprelTagger(FeatTagger):
                                                       chains, window_len - 1):
                         res.append([token] + window_right_)
             if not res:
-                res = [PAD_TOKEN] * window_len
+                res = [[PAD_TOKEN] * window_len]
             return res
 
         def next_sent(sent, upper_sent, id_, ids, chains):
