@@ -130,7 +130,6 @@ class WordEmbeddings:
 
         t2y = seq2ix(train_labels, extra_labels=None if use_seq_labeling else
                                    [cls_label, sep_label, pad_label])
-        print(t2y) #TODO:remove
         y2t = {v:k for k, v in t2y.items()}
 
         if not use_seq_labeling:
@@ -270,9 +269,9 @@ class WordEmbeddings:
             input_ids = torch.cat(input_ids, dim=0)
             attention_masks = torch.cat(attention_masks, dim=0)
             lens = attention_masks.sum(dim=1) - 2
-            output_ids = labels if use_seq_labeling else \
-                         torch.tensor([[cls_y] + x + [sep_y]
-                                     + [pad_y] * (max_len_ - len(x))
+            output_ids = torch.tensor(labels if use_seq_labeling else \
+                                      [[cls_y] + x + [sep_y]
+                                               + [pad_y] * (max_len_ - len(x))
                                            for x in labels])
             return input_ids, attention_masks, output_ids, lens
 
