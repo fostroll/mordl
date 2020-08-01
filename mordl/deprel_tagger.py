@@ -13,7 +13,9 @@ from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.deprel_tagger_model import DeprelTaggerModel
 
 WINDOW_LEFT, WINDOW_RIGHT = 2, 2
-PAD_TOKEN = {'ID': '0', 'FORM': '<PAD>', 'LEMMA': '', 'UPOS': '<PAD>', 'FEATS': {}, 'DEPREL': None}
+PAD = '[PAD]'
+PAD_TOKEN = {'ID': '0', 'FORM': PAD, 'LEMMA': PAD,
+                        'UPOS': PAD, 'FEATS': {}, 'DEPREL': None}
 
 
 class DeprelTagger(FeatTagger):
@@ -79,10 +81,13 @@ class DeprelTagger(FeatTagger):
             root_id, root_token, ids, chains = None, None, {}, {}
             for idx, token in enumerate(sent):
                 id_, head = token['ID'], token['HEAD']
-                if head == '0':
-                    root_id, root_token = id_, token
-                ids[id_] = idx
-                chains.setdefault(head, []).append(id_)
+                if head:
+                    if not token['FORM']:
+                        token['FORM'] = PAD
+                    if head == '0':
+                        root_id, root_token = id_, token
+                    ids[id_] = idx
+                    chains.setdefault(head, []).append(id_)
             if root_id:
                 for s, idx, label in next_sent(sent, [root_token],
                                                root_id, ids, chains):
