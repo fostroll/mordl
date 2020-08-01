@@ -89,6 +89,8 @@ class DeprelTagger(FeatTagger):
         [print(x) for x in res[:5]]
         res = list(res)
         res[-1] = [x[-1] for x in res[-1]]
+        print()
+        [print(x) for x in res[:5]]
         return tuple(res)
 
     def train(self, save_as,
