@@ -37,19 +37,20 @@ class DeprelTagger(FeatTagger):
     #@staticmethod
     def _preprocess_corpus(self, corpus):
 
-        #WINDOW_LEFT, WINDOW = 3, 5
-        #PAD_TOKEN = {'ID': '1', 'FORM' = ''}
+        WINDOW_LEFT, WINDOW = 3, 5
+        PAD_TOKEN = {'ID': '0', 'FORM': '<PAD>', 'UPOS': '<PAD>', 'DEPREL': None}
         def next_sent(sent, upper_sent, id_, ids, chains):
             link_ids = chains.get(id_, [])
             for link_id in link_ids:
                 idx = ids[link_id]
                 token = sent[idx]
                 label = token['DEPREL']
-                s = upper_sent[-2:]
+                s = upper_sent[1 - WINDOW:]
                 s.append(token)
-                #s_ = ([''] * (WINDOW_LEFT - len(s)) + s \
-                #   + ([''] * (WINDOW - max(len(s), WINDOW_LEFT)))
-                yield s, idx, label
+                s_ = ([PAD_TOKEN] * (WINDOW_LEFT - len(s))) \
+                   + s \
+                   + ([PAD_TOKEN] * (WINDOW - max(len(s), WINDOW_LEFT)))
+                yield s_, idx, label
                 for data_ in next_sent(sent, s, link_id, ids, chains):
                     yield data_
 
@@ -88,7 +89,7 @@ class DeprelTagger(FeatTagger):
         print()
         [print(list(x)) for x in zip(res[0][:5], res[1][:5], res[2][:5])]
         res = list(res)
-        res[-1] = [x[-1] for x in res[-1]]
+        res[-1] = [x[WINDOWS_LEFT] for x in res[-1]]
         print()
         [print(list(x)) for x in zip(res[0][:5], res[1][:5], res[2][:5])]
         return tuple(res)
