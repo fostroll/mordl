@@ -12,7 +12,7 @@ import itertools
 import json
 import junky
 from junky.dataset import CharDataset, DummyDataset, FrameDataset, \
-                          LenDataset, TokenDataset
+                          LabelDataset, LenDataset, TokenDataset
 from mordl import WordEmbeddings
 from morra.base_parser import BaseParser
 from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE, \
@@ -147,9 +147,13 @@ class BaseTagger(BaseParser):
                 ds.add('t_{}'.format(i), t, with_lens=False)
 
         if labels:
-            y = TokenDataset(labels, pad_token='<PAD>', transform=True,
-                             keep_empty=False)
-            ds.add('y', y, with_lens=False)
+            if isinstance(labels[0], list):
+                y = TokenDataset(labels, pad_token='<PAD>', transform=True,
+                                 keep_empty=False)
+                ds.add('y', y, with_lens=False)
+            else:
+                y = LabelDataset(labels, transform=True, keep_empty=False)
+                ds.add('y', y)
 
         if for_self:
             self._ds = ds
