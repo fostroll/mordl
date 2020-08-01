@@ -147,7 +147,7 @@ class BaseTagger(BaseParser):
                 ds.add('t_{}'.format(i), t, with_lens=False)
 
         if labels:
-            if isinstance(labels[0], list):
+            if isinstance(labels[0], tuple):
                 y = TokenDataset(labels, pad_token='<PAD>', transform=True,
                                  keep_empty=False)
                 ds.add('y', y, with_lens=False)
