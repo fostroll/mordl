@@ -12,7 +12,8 @@ from mordl import FeatTagger
 from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.deprel_tagger_model import DeprelTaggerModel
 
-WINDOW_LEFT, WINDOW = 3, 5
+WINDOW_LEFT, WINDOW_RIGHT = 2, 2
+PAD_TOKEN = {'ID': '0', 'FORM': '<PAD>', 'LEMMA': '', 'UPOS': '<PAD>', 'FEATS': {}, 'DEPREL': None}
 
 
 class DeprelTagger(FeatTagger):
@@ -39,19 +40,33 @@ class DeprelTagger(FeatTagger):
     #@staticmethod
     def _preprocess_corpus(self, corpus):
 
-        PAD_TOKEN = {'ID': '0', 'FORM': '<PAD>', 'LEMMA': '', 'UPOS': '<PAD>', 'FEATS': {}, 'DEPREL': None}
+        dew window_right(sent, id_, ids, chains, window_len):
+            link_ids = chains.get(id_, [])
+            res = []
+            for link_id in link_ids:
+                idx = ids[link_id]
+                token = sent[idx]
+                if window_len == 1:
+                    res.append([token])
+                else:
+                    for window_right_ in window_right(sent, link_id, ids,
+                                                      chains, window_len - 1):
+                        res.append([token] + window_right_)
+            if not res:
+                res = [[PAD_TOKEN] * window_len]
+            return res
+
         def next_sent(sent, upper_sent, id_, ids, chains):
             link_ids = chains.get(id_, [])
             for link_id in link_ids:
                 idx = ids[link_id]
                 token = sent[idx]
                 label = token['DEPREL']
-                s = upper_sent[1 - WINDOW:]
+                s = upper_sent[-WINDOW_LEFT:]
                 s.append(token)
-                s_ = ([PAD_TOKEN] * (WINDOW_LEFT - len(s))) \
-                   + s \
-                   + ([PAD_TOKEN] * (WINDOW - max(len(s), WINDOW_LEFT)))
-                yield s_, idx, label
+                for window_right_ in window_right(sent, link_id, ids,
+                                                  chains, WINDOW_RIGHT):
+                    yield s[:] + window_right_, idx, label
                 for data_ in next_sent(sent, s, link_id, ids, chains):
                     yield data_
 
