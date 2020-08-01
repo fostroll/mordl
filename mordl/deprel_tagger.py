@@ -66,7 +66,7 @@ class DeprelTagger(FeatTagger):
                 s.append(token)
                 for window_right_ in window_right(sent, link_id, ids,
                                                   chains, WINDOW_RIGHT):
-                    s_ = ([PAD_TOKEN] * (WINDOW_LEFT - 1 - len(s))) \
+                    s_ = ([PAD_TOKEN] * (WINDOW_LEFT + 1 - len(s))) \
                        + s[:] + window_right_
                     yield s_, idx, label
                 for data_ in next_sent(sent, s, link_id, ids, chains):
