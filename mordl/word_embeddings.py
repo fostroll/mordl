@@ -102,7 +102,8 @@ class WordEmbeddings:
 
         test_sentences, test_labels = test_data if test_data else ([], [])
 
-        use_seq_labeling = train_labels and isinstance(train_labels[0], list)
+        use_seq_labeling = train_labels and not isinstance(train_labels[0],
+                                                           list)
 
         if seed:
             junky.enforce_reproducibility(seed)
