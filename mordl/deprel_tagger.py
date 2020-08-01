@@ -40,7 +40,7 @@ class DeprelTagger(FeatTagger):
     #@staticmethod
     def _preprocess_corpus(self, corpus):
 
-        dew window_right(sent, id_, ids, chains, window_len):
+        def window_right(sent, id_, ids, chains, window_len):
             link_ids = chains.get(id_, [])
             res = []
             for link_id in link_ids:
