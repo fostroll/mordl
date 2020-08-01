@@ -180,7 +180,7 @@ class WordEmbeddings:
                         # of labels `n_subwords` times
                         labels.extend([t2y[label]] * n_subwords)
 
-                return tokenized_sentence, text_labels \
+                return tokenized_sentence, t2y[text_labels] \
                                                if use_seq_labeling else \
                                            labels
 
