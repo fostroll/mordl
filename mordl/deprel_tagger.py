@@ -12,6 +12,8 @@ from mordl import FeatTagger
 from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.deprel_tagger_model import DeprelTaggerModel
 
+WINDOW_LEFT, WINDOW = 3, 5
+
 
 class DeprelTagger(FeatTagger):
     """
@@ -37,7 +39,6 @@ class DeprelTagger(FeatTagger):
     #@staticmethod
     def _preprocess_corpus(self, corpus):
 
-        WINDOW_LEFT, WINDOW = 3, 5
         PAD_TOKEN = {'ID': '0', 'FORM': '<PAD>', 'LEMMA': '', 'UPOS': '<PAD>', 'FEATS': {}, 'DEPREL': None}
         def next_sent(sent, upper_sent, id_, ids, chains):
             link_ids = chains.get(id_, [])
