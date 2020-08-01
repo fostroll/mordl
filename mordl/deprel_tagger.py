@@ -107,7 +107,7 @@ class DeprelTagger(FeatTagger):
         print()
         [print(list(x)) for x in zip(res[0][:5], res[1][:5], res[2][:5])]
         res = list(res)
-        res[-1] = [x[WINDOW_LEFT - 1] for x in res[-1]]
+        res[-1] = [x[WINDOW_LEFT] for x in res[-1]]
         print()
         [print(list(x)) for x in zip(res[0][:5], res[1][:5], res[2][:5])]
         return tuple(res)
