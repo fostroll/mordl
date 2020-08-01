@@ -615,7 +615,7 @@ class WordEmbeddings:
             )
             assert len(config.architectures) == 1, \
                 'ERROR: BertConfig has several architectures. ' \
-                'We expect only one'.
+                'We expect only one'
             arch = config.architectures[0]
             if arch == 'BertForSequenceClassification':
                 model = BertForSequenceClassification.from_pretrained(
