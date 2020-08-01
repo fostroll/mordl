@@ -613,25 +613,24 @@ class WordEmbeddings:
             config = BertConfig.from_pretrained(
                 emb_path, output_hidden_states=True
             )
-            assert len(config.architectures) == 1,
-                'ERROR: BertConfig has several architectures. '
+            assert len(config.architectures) == 1, \
+                'ERROR: BertConfig has several architectures. ' \
                 'We expect only one'.
-                arch = config.architectures[0]
-                if arch == 'BertForSequenceClassification':
-                    model = BertForSequenceClassification.from_pretrained(
-                        emb_path, config=config
-                    )
-                elif arch == 'BertForTokenClassification':
-                    model = BertForTokenClassification.from_pretrained(
-                        emb_path, config=config
-                    )
-                else:
-                    raise RuntimeError((
-                        "ERROR: Unknown architecture '{}' in BertConfig. "
-                        "Only 'BertForSequenceClassification' and "
-                        "'BertForSequenceClassification' are allowed"
-                    ).format(arch))
+            arch = config.architectures[0]
+            if arch == 'BertForSequenceClassification':
+                model = BertForSequenceClassification.from_pretrained(
+                    emb_path, config=config
+                )
+            elif arch == 'BertForTokenClassification':
+                model = BertForTokenClassification.from_pretrained(
+                    emb_path, config=config
+                )
             else:
+                raise RuntimeError((
+                    "ERROR: Unknown architecture '{}' in BertConfig. "
+                    "Only 'BertForSequenceClassification' and "
+                    "'BertForSequenceClassification' are allowed"
+                ).format(arch))
             if emb_model_device:
                 model.to(emb_model_device)
             model.eval()
