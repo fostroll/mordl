@@ -24,9 +24,6 @@ class BaseTaggerSequenceModel(BaseModel):
 
     **labels_num** (`int`): number of target labels.
 
-    **labels_pad_idx** (`int`): index of padding element in the label
-    vocabulary.
-
     **vec_emb_dim** (`int`): word-level embedding vector space dimensionality.
     If `None`, the layer is skipped.
 
@@ -81,8 +78,7 @@ class BaseTaggerSequenceModel(BaseModel):
     **do3** (`float`): dropout rate after the third batch normalization
     layer `bn3`. Default `do3=.4`.
     """
-    def __init__(self, labels_num, #labels_pad_idx=None,
-                 vec_emb_dim=None,
+    def __init__(self, labels_num, vec_emb_dim=None,
                  alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,
                  cnn_emb_dim=None, cnn_kernels=[1, 2, 3, 4, 5, 6],
                  tag_emb_params=None, emb_out_dim=512,
@@ -168,10 +164,7 @@ class BaseTaggerSequenceModel(BaseModel):
 
         self._out_l = nn.Linear(in_features=lstm_hidden_dim,
                                 out_features=labels_num)
-        #self._out_masking = \
-        #    Masking(input_size=labels_num,
-        #            indices_to_highlight=labels_pad_idx,
-        #            batch_first=True) if labels_pad_idx is not None else None
+
         setattr(self, CONFIG_ATTR, (args, kwargs))
 
     def forward(self, x, x_lens, x_ch, x_ch_lens, *x_t):
@@ -236,6 +229,5 @@ class BaseTaggerSequenceModel(BaseModel):
             x = self._do3(x)
 
         x = self._out_l(x)
-        #x = self._out_masking(x, x_lens)
 
         return x

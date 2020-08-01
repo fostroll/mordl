@@ -169,6 +169,7 @@ class BaseTaggerModel(BaseModel):
             Masking(input_size=labels_num,
                     indices_to_highlight=labels_pad_idx,
                     batch_first=True) if labels_pad_idx is not None else None
+
         setattr(self, CONFIG_ATTR, (args, kwargs))
 
     def forward(self, x, x_lens, x_ch, x_ch_lens, *x_t):
