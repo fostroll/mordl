@@ -515,8 +515,12 @@ class WordEmbeddings:
                     eval_loss = eval_loss / nb_eval_steps
                     validation_loss_values.append(eval_loss)
 
-                    gold_labels = [x for x in gold_labels for x in x]
-                    pred_labels = [x for x in pred_labels for x in x]
+                    if use_seq_labeling:
+                        gold_labels = [x for x in gold_labels]
+                        pred_labels = [x for x in pred_labels]
+                    else:
+                        gold_labels = [x for x in gold_labels for x in x]
+                        pred_labels = [x for x in pred_labels for x in x]
 
                     accuracy = accuracy_score(gold_labels, pred_labels)
                     precision = precision_score(gold_labels, pred_labels,
