@@ -38,7 +38,7 @@ class DeprelTagger(FeatTagger):
     def _preprocess_corpus(self, corpus):
 
         WINDOW_LEFT, WINDOW = 3, 5
-        PAD_TOKEN = {'ID': '0', 'FORM': '<PAD>', 'UPOS': '<PAD>', 'DEPREL': None}
+        PAD_TOKEN = {'ID': '0', 'FORM': '<PAD>', 'LEMMA': '', 'UPOS': '<PAD>', 'FEATS': {}, 'DEPREL': None}
         def next_sent(sent, upper_sent, id_, ids, chains):
             link_ids = chains.get(id_, [])
             for link_id in link_ids:
