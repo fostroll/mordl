@@ -543,8 +543,9 @@ class WordEmbeddings:
                               file=log_file)
                         print('Dev: f1_score = {:.8f}'.format(f1),
                               file=log_file)
-                        print('NB: Scores may be high because of labels '
-                              'stretching', file=log_file)
+                        if not use_seq_labeling:
+                            print('NB: Scores may be high because of labels '
+                                  'stretching', file=log_file)
 
                     if accuracy > best_accuracy:
                         best_accuracy = accuracy
@@ -612,10 +613,25 @@ class WordEmbeddings:
             config = BertConfig.from_pretrained(
                 emb_path, output_hidden_states=True
             )
-            model = BertForTokenClassification.from_pretrained(
-            #model = PreTrainedModel.from_pretrained(
-                emb_path, config=config
-            )
+            assert len(config.architectures) == 1,
+                'ERROR: BertConfig has several architectures. '
+                'We expect only one'.
+                arch = config.architectures[0]
+                if arch == 'BertForSequenceClassification':
+                    model = BertForSequenceClassification.from_pretrained(
+                        emb_path, config=config
+                    )
+                elif arch == 'BertForTokenClassification':
+                    model = BertForTokenClassification.from_pretrained(
+                        emb_path, config=config
+                    )
+                else:
+                    raise RuntimeError((
+                        "ERROR: Unknown architecture '{}' in BertConfig. "
+                        "Only 'BertForSequenceClassification' and "
+                        "'BertForSequenceClassification' are allowed"
+                    ).format(arch))
+            else:
             if emb_model_device:
                 model.to(emb_model_device)
             model.eval()
