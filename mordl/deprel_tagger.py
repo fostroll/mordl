@@ -38,17 +38,13 @@ class DeprelTagger(FeatTagger):
     def _preprocess_corpus(self, corpus):
 
         def next_sent(sent, upper_sent, id_, ids, chains):
-            self.sent_ = sent
-            self.upper_sent_ = upper_sent
-            self.id_ = id_
-            self.ids_ = ids
-            self.chains_ = chains
             link_ids = chains.get(id_, [])
             for link_id in link_ids:
                 idx = ids[link_id]
                 token = sent[idx]
                 label = token['DEPREL']
-                s = deepcopy(upper_sent)
+                #s = deepcopy(upper_sent)
+                s = upper_sent[:]
                 s.append(token)
                 yield s, idx, label
                 for data_ in next_sent(sent, s, link_id, ids, chains):
