@@ -134,7 +134,8 @@ class DeprelTagger(FeatTagger):
         **log_file**: a stream for info messages. Default is `sys.stdout`.
         """
         args, kwargs = get_func_params(DeprelTagger.load, locals())
-        super(super(), self).load(DeprelTaggerModel, *args, **kwargs)
+        super(self.__class__.__base__, self).load(DeprelTaggerModel,
+                                                  *args, **kwargs)
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
