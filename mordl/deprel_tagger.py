@@ -105,6 +105,8 @@ class DeprelTagger(FeatTagger):
     def _postprocess_corpus(corpus, labels, restore_data):
         for label, (i, idx) in zip(labels, restore_data):
             token = corpus[i][idx]
+            if token['HEAD'] == '0':
+                token['DEPREL'] = 'root'
             if not isinstance(token['DEPREL'], list):
                 token['DEPREL'] = [label]
             else:
