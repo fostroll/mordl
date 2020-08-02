@@ -111,7 +111,7 @@ class DeprelTagger(FeatTagger):
         for sent in corpus:
             if isinstance(sent, tuple):
                 sent = sent[0]
-            for tok in x:
+            for tok in sent:
                 deprel = tok['DEPREL']
                 if isinstance(deprel, list):
                     tok['DEPREL'] = max(set(deprel), key=deprel.count)
