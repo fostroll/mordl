@@ -532,8 +532,9 @@ class BaseTagger(BaseParser):
             return n, c, nt, ct, ca, ce, cr
 
         n = c = nt = ct = ca = ce = cr = ntok = ctok = ntokt = ctokt = 0
-        i = -1
-        for i, sentences in enumerate(corpora):
+        nsent = csent = 0
+        for nsent, sentences in enumerate(corpora, start=1):
+            csent_ = 1
             for gold_token, test_token in zip(*sentences):
                 wform = gold_token['FORM']
                 if wform and '-' not in gold_token['ID']:
@@ -561,6 +562,7 @@ class BaseTagger(BaseParser):
                                             n, c, nt, ct, ca, ce, cr)
                                 if c_ == c:
                                     ctok_ = 0
+                                    csent_ = 0 
                                 else:
                                     c = c_
                             ntokt += 1
@@ -569,21 +571,26 @@ class BaseTagger(BaseParser):
                         else:
                             ctok += 1
                     elif not (isgold or istest):
-                        n, c, nt, ct, ca, ce, cr = \
+                        n, c_, nt, ct, ca, ce, cr = \
                             compare(gold_label, test_label,
                                     n, c, nt, ct, ca, ce, cr)
+                        if c_ == c:
+                            csent_ = 0 
+                        else:
+                            c = c_
                     else:
                         raise TypeError(
                             'Inconsistent field types in gold and test '
                             'corpora'
                         )
+            csent += csent_
         if test:
             try:
                 next(gold)
             except StopIteration:
                 pass
         if log_file:
-            if i < 0:
+            if nsent <= 0:
                 print('Nothing to do!', file=log_file)
             else:
                 sp = ' ' * (len(header) - 2)
@@ -618,6 +625,9 @@ class BaseTagger(BaseParser):
                                           if ntok else
                                       '',
                                       c / n if n > 0 else 1.), file=log_file)
+                print('[By sentence accuracy: {}{}]'
+                          .format('{} / '.format(csent / nsent),
+                      file=log_file)
         return ct / nt if nt > 0 else 1.
 
     def train(self, field, add_fields, model_class, tag_emb_names, save_as,
