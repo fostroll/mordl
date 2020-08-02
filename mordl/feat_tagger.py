@@ -167,9 +167,6 @@ class FeatTagger(BaseTagger):
 
         if self._feats_prune_coef != 0:
             kwargs['save_to'] = None
-
-            cdict = self._cdict
-
             key_vals = self._ds.get_dataset('t_0').transform_dict
             corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
             corpus = self._transform_upos(corpus, key_vals=key_vals)
