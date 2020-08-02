@@ -626,8 +626,7 @@ class BaseTagger(BaseParser):
                                       '',
                                       c / n if n > 0 else 1.), file=log_file)
                 print('[By sentence accuracy: {}]'
-                          .format('{} / '.format(csent / nsent)),
-                      file=log_file)
+                          .format('{}'.format(csent / nsent)), file=log_file)
         return ct / nt if nt > 0 else 1.
 
     def train(self, field, add_fields, model_class, tag_emb_names, save_as,
