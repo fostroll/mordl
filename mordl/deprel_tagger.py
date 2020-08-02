@@ -193,7 +193,7 @@ class DeprelTagger(FeatTagger):
             corpus = self._transform_upos(corpus, key_vals=key_vals)
 
         orig_corpus = corpus
-        coprus_, _, restore_data = self._preprocess_corpus(corpus)
+        corpus_, _, restore_data = self._preprocess_corpus(corpus)
 
         ###
         field = 'DEPREL'
