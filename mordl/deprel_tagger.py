@@ -31,8 +31,8 @@ class DeprelTagger0(FeatTagger):
         res = super()._prepare_corpus(corpus, fields,
                                       tags_to_remove=tags_to_remove)
         res = list(res)
-        res[-1] = tuple(['<PAD>' if x == 'root' else x for x in x]
-                             for x in res[-1])
+        res[-1] = [tuple('<PAD>' if x == 'root' else x for x in x)
+                       for x in res[-1]]
         return tuple(res)
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
