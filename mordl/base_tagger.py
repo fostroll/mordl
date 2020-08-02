@@ -424,7 +424,7 @@ class BaseTagger(BaseParser):
                     batch = junky.to_device(batch, device)
                     with torch.no_grad():
                         pred = self._model(*batch)
-                    _, pred_indices = pred.max(2)
+                    pred_indices = pred.argmax()
                     preds.extend(pred_indices.cpu().numpy().tolist())
                 values = ds_y.reconstruct(preds)
                 if with_orig:

@@ -39,8 +39,8 @@ class DeprelTagger(FeatTagger):
         super().__init__('DEPREL', feats_prune_coef=feats_prune_coef)
         self._model_class = DeprelTaggerModel
 
-    #@staticmethod
-    def _preprocess_corpus(self, corpus):
+    @staticmethod
+    def _preprocess_corpus(corpus):
 
         def window_right(sent, id_, ids, chains, window_len):
             link_ids = chains.get(id_, [])
@@ -100,16 +100,85 @@ class DeprelTagger(FeatTagger):
     @staticmethod
     def _postprocess_corpus(corpus, labels, restore_data):
         for label, (i, idx) in zip(labels, restore_data):
-            corpus[i][idx]['DEPREL'] = label
+            corpus[i][idx].setdefault('DEPREL', []).append(label)
+        for sent in corpus:
+            if isinstance(sent, tuple):
+                sent = sent[0]
+            for tok in x:
+                deprel = tok['DEPREL']
+                if isinstance(deprel, list):
+                    tok['DEPREL'] = max(set(deprel), key=deprel.count)
         return corpus
 
-    @classmethod
-    def _prepare_corpus(cls, corpus, fields, tags_to_remove=None):
+    @staticmethod
+    def _prepare_corpus(corpus, fields, tags_to_remove=None):
         res = super()._prepare_corpus(corpus, fields,
                                       tags_to_remove=tags_to_remove)
         res = list(res)
         res[-1] = [x[WINDOW_LEFT] for x in res[-1]]
         return tuple(res)
+
+    def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):
+        """Loads feature tagger and dataset.
+
+        Args:
+
+        **name** (`str`): name of the previously saved internal state.
+
+        **device**: a device for the loading model if you want to override its
+        previously saved value.
+
+        **dataset_device**: a device for the loading dataset if you want to
+        override its previously saved value.
+
+        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        """
+        args, kwargs = get_func_params(DeprelTagger.load, locals())
+        super().load(DeprelTaggerModel, *args, **kwargs)
+
+    def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
+                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
+        """Predicts tags in the specified feature of the FEATS field of the
+        corpus.
+
+        Args:
+
+        **corpus**: a corpus which will be used for feature extraction and
+        predictions. May be either a name of the file in *CoNLL-U* format or a
+        list/iterator of sentences in *Parsed CoNLL-U*.
+
+        **with_orig** (`bool`): if `True`, instead of only a sequence with
+        predicted labels, returns a sequence of tuples where the first element
+        is a sentence with predicted labels and the second element is the
+        original sentence. `with_orig` can be `True` only if `save_to` is
+        `None`. Default `with_orig=False`.
+
+        **batch_size** (`int`): number of sentences per batch. Default
+        `batch_size=64`.
+
+        **split** (`int`): number of lines in each split. Allows to process a
+        large dataset in pieces ("splits"). Default `split=None`, i.e. process
+        full dataset without splits.
+
+        **clone_ds** (`bool`): if `True`, the dataset is cloned and
+        transformed. If `False`, `transform_collate` is used without cloning
+        the dataset. There is no big differences between the variants. Both
+        should produce identical results.
+
+        **save_to**: file name where the predictions will be saved.
+
+        **log_file**: a stream for info messages. Default is `sys.stdout`.
+
+        Returns corpus with predicted values of certain feature in the FEATS
+        field.
+        """
+        args, kwargs = get_func_params(DeprelTagger.predict, locals())
+
+        coprus_, _, restore_data = self._preprocess_corpus(corpus)
+        corpus_ = super().predict(corpus_, **kwargs)
+        corpus = self._postprocess_corpus(corpus, labels, restore_data)
+
+        return corpus
 
     def train(self, save_as,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
