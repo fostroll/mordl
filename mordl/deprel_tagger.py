@@ -121,8 +121,7 @@ class DeprelTagger(FeatTagger):
                         tok['DEPREL'] = max(set(deprel), key=deprel.count)
         return corpus
 
-    @staticmethod
-    def _prepare_corpus(corpus, fields, tags_to_remove=None):
+    def _prepare_corpus(self, corpus, fields, tags_to_remove=None):
         res = super()._prepare_corpus(corpus, fields,
                                       tags_to_remove=tags_to_remove)
         res = list(res)
