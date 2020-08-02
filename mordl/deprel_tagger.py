@@ -262,7 +262,8 @@ class DeprelTagger(FeatTagger):
                     res_corpus_ = \
                         self._postprocess_corpus(orig_corpus,
                                                  values, restore_data)
-                    for orig_sentence, sentence in zip(corpus_, res_corpus_):
+                    for orig_sentence, sentence in zip(orig_corpus,
+                                                       res_corpus_):
                         yield sentence, orig_sentence
                 else:
                     res_corpus_ = \
