@@ -35,6 +35,72 @@ class DeprelTagger0(FeatTagger):
                        for x in res[-1]]
         return tuple(res)
 
+    def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
+                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
+        """Predicts tags in the specified feature of the FEATS field of the
+        corpus.
+
+        Args:
+
+        **corpus**: a corpus which will be used for feature extraction and
+        predictions. May be either a name of the file in *CoNLL-U* format or a
+        list/iterator of sentences in *Parsed CoNLL-U*.
+
+        **with_orig** (`bool`): if `True`, instead of only a sequence with
+        predicted labels, returns a sequence of tuples where the first element
+        is a sentence with predicted labels and the second element is the
+        original sentence. `with_orig` can be `True` only if `save_to` is
+        `None`. Default `with_orig=False`.
+
+        **batch_size** (`int`): number of sentences per batch. Default
+        `batch_size=64`.
+
+        **split** (`int`): number of lines in each split. Allows to process a
+        large dataset in pieces ("splits"). Default `split=None`, i.e. process
+        full dataset without splits.
+
+        **clone_ds** (`bool`): if `True`, the dataset is cloned and
+        transformed. If `False`, `transform_collate` is used without cloning
+        the dataset. There is no big differences between the variants. Both
+        should produce identical results.
+
+        **save_to**: file name where the predictions will be saved.
+
+        **log_file**: a stream for info messages. Default is `sys.stdout`.
+
+        Returns corpus with predicted values of certain feature in the FEATS
+        field.
+        """
+        assert self._ds is not None, \
+               "ERROR: The tagger doesn't have a dataset. Call the train() " \
+               'method first'
+        assert not with_orig or save_to is None, \
+               'ERROR: `with_orig` can be True only if save_to is None'
+        args, kwargs = get_func_params(FeatTagger.predict, locals())
+
+        kwargs['save_to'] = None
+
+        corpus = super().predict(args, **kwargs)
+
+        def add_root(corpus):
+            for sent in corpus:
+                if isinstance(sent, tuple):
+                    sent, sent1 = sent
+                if isinstance(sent, tuple):
+                    sent = sent1[0]
+                for tok in sent:
+                    if tok['HEAD'] == '0':
+                        tok['DEPREL'] = 'root'
+                yield sent
+
+        corpus = add_root(corpus)
+
+        if save_to:
+            self.save_conllu(corpus, save_to, log_file=None)
+            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
+
+        return corpus
+
 
 class DeprelTagger(FeatTagger):
     """
