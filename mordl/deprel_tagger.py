@@ -114,7 +114,7 @@ class DeprelTagger(FeatTagger):
                 sent = sent[0]
             for tok in sent:
                 if tok['HEAD'] == '0':
-                    token['DEPREL'] = 'root'
+                    tok['DEPREL'] = 'root'
                 else:
                     deprel = tok['DEPREL']
                     if isinstance(deprel, list):
