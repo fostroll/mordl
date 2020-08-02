@@ -24,7 +24,7 @@ PAD_TOKEN = {'ID': '0', 'FORM': PAD, 'LEMMA': PAD,
 
 class DeprelTagger0(FeatTagger):
 
-    def __init__(feats_prune_coef=6):
+    def __init__(self, feats_prune_coef=6):
         super().__init__('DEPREL', feats_prune_coef=feats_prune_coef)
 
     def _prepare_corpus(self, corpus, fields, tags_to_remove=None):
