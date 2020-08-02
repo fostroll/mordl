@@ -126,10 +126,11 @@ class WordEmbeddings:
                     seq2ix[tag] = len(seq2ix)
             return seq2ix
 
-        cls_label, sep_label, pad_label = 'CLS', 'SEP', 'PAD'
+        cls_label, sep_label, pad_label = '<CLS>', '<SEP>', '<PAD>'
 
-        t2y = seq2ix(train_labels, extra_labels=None if use_seq_labeling else
-                                   [cls_label, sep_label, pad_label])
+        t2y = seq2ix(train_labels,
+                     extra_labels=None if use_seq_labeling else
+                                  [cls_label, sep_label, pad_label])
         y2t = {v:k for k, v in t2y.items()}
 
         if not use_seq_labeling:

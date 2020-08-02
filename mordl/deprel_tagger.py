@@ -22,6 +22,20 @@ PAD_TOKEN = {'ID': '0', 'FORM': PAD, 'LEMMA': PAD,
                         'UPOS': PAD, 'FEATS': {}, 'DEPREL': None}
 
 
+class DeprelTagger0(FeatTagger):
+
+    def __init__(feats_prune_coef=6):
+        super().__init__('DEPREL', feats_prune_coef=feats_prune_coef)
+
+    def _prepare_corpus(self, corpus, fields, tags_to_remove=None):
+        res = super()._prepare_corpus(corpus, fields,
+                                      tags_to_remove=tags_to_remove)
+        res = list(res)
+        res[-1] = [['<PAD>' if x == 'root' else x for x in x]
+                       for x in res[-1]]
+        return tuple(res)
+
+
 class DeprelTagger(FeatTagger):
     """
     Named-entity tagger class. We use the feature 'NE' of MISC field as the
