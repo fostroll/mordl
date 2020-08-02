@@ -172,11 +172,112 @@ class DeprelTagger(FeatTagger):
         Returns corpus with predicted values of certain feature in the FEATS
         field.
         """
+        assert self._ds is not None, \
+               "ERROR: The tagger doesn't have a dataset. Call the train() " \
+               'method first'
+        assert self._model, \
+               "ERROR: The tagger doesn't have a model. Call the train() " \
+               'method first'
+        assert not with_orig or save_to is None, \
+               'ERROR: `with_orig` can be True only if save_to is None'
         args, kwargs = get_func_params(DeprelTagger.predict, locals())
 
+        if self._feats_prune_coef != 0:
+            kwargs['save_to'] = None
+
+            cdict = self._cdict
+
+            key_vals = self._ds.get_dataset('t_0').transform_dict
+            corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
+            corpus = self._transform_upos(corpus, key_vals=key_vals)
+
+        orig_corpus = corpus
         coprus_, _, restore_data = self._preprocess_corpus(corpus)
-        corpus_ = super().predict(corpus_, **kwargs)
-        corpus = self._postprocess_corpus(corpus, labels, restore_data)
+
+        ###
+        field = 'DEPREL'
+        add_fields = self._normalize_field_names('UPOS')
+
+        def process(corpus):
+
+            corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
+            device = next(self._model.parameters()).device or junky.CPU
+
+            ds_y = self._ds.get_dataset('y')
+            if clone_ds:
+                ds = self._ds.clone()
+                ds.remove('y')
+
+            for start in itertools.count(step=split if split else 1):
+                if isinstance(corpus, Iterator):
+                    if split:
+                        corpus_ = []
+                        for i, sentence in enumerate(corpus, start=1):
+                            corpus_.append(sentence)
+                            if i == split:
+                                break
+                    else:
+                        corpus_ = list(corpus)
+                else:
+                    if split:
+                        corpus_ = corpus[start:start + split]
+                    else:
+                        corpus_ = corpus
+                if not corpus_:
+                    break
+                res = \
+                    junky.extract_conllu_fields(
+                        corpus_, fields=add_fields,
+                        with_empty=True, return_nones=True
+                    )
+                sentences, tags, empties, nones = \
+                    res[0], res[1:-2], res[-2], res[-1]
+                if clone_ds:
+                    self._transform(
+                        sentences, tags=tags, batch_size=batch_size, ds=ds,
+                        log_file=log_file
+                    )
+                    loader = ds.create_loader(batch_size=batch_size,
+                                              shuffle=False)
+                else:
+                    loader = self._transform_collate(
+                        sentences, tags=tags, batch_size=batch_size,
+                        log_file=log_file
+                    )
+                preds = []
+                for batch in loader:
+                    batch = junky.to_device(batch, device)
+                    with torch.no_grad():
+                        pred = self._model(*batch)
+                    pred_indices = pred.argmax()
+                    preds.extend(pred_indices.cpu().numpy().tolist())
+                values = ds_y.reconstruct(preds)
+                if with_orig:
+                    res_corpus_ = deepcopy(orig_corpus)
+                    res_corpus_ = \
+                        self._postprocess_corpus(orig_corpus,
+                                                 values, restore_data)
+                    for orig_sentence, sentence in zip(corpus_, res_corpus_):
+                        yield sentence, orig_sentence
+                else:
+                    res_corpus_ = \
+                        self._postprocess_corpus(orig_corpus,
+                                                 values, restore_data)
+                    for sentence in res_corpus_:
+                        yield sentence
+
+        corpus_ = process(corpus_)
+        if save_to:
+            self.save_conllu(corpus, save_to, log_file=None)
+            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
+        ###
+
+        if self._feats_prune_coef != 0:
+            corpus = self._restore_upos(corpus)
+
+            if save_to:
+                self.save_conllu(corpus, save_to, log_file=None)
+                corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
 
         return corpus
 
