@@ -625,8 +625,8 @@ class BaseTagger(BaseParser):
                                           if ntok else
                                       '',
                                       c / n if n > 0 else 1.), file=log_file)
-                print('[By sentence accuracy: {}{}]'
-                          .format('{} / '.format(csent / nsent),
+                print('[By sentence accuracy: {}]'
+                          .format('{} / '.format(csent / nsent)),
                       file=log_file)
         return ct / nt if nt > 0 else 1.
 
