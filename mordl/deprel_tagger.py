@@ -191,15 +191,10 @@ class DeprelTagger(FeatTagger):
         args, kwargs = get_func_params(DeprelTagger.predict, locals())
 
         if self._feats_prune_coef != 0:
-            kwargs['save_to'] = None
             key_vals = self._ds.get_dataset('t_0').transform_dict
             corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
             corpus = self._transform_upos(corpus, key_vals=key_vals)
 
-        orig_corpus = corpus
-        corpus_, _, restore_data = self._preprocess_corpus(corpus)
-
-        ###
         field = 'DEPREL'
         add_fields = self._normalize_field_names('UPOS')
 
@@ -230,6 +225,10 @@ class DeprelTagger(FeatTagger):
                         corpus_ = corpus
                 if not corpus_:
                     break
+
+                orig_corpus = corpus_
+                corpus_, _, restore_data = self._preprocess_corpus(corpus_)
+                
                 res = \
                     junky.extract_conllu_fields(
                         corpus_, fields=add_fields,
@@ -254,7 +253,7 @@ class DeprelTagger(FeatTagger):
                     batch = junky.to_device(batch, device)
                     with torch.no_grad():
                         pred = self._model(*batch)
-                    pred_indices = pred.argmax()
+                    pred_indices = pred.argmax(-1)
                     preds.extend(pred_indices.cpu().numpy().tolist())
                 values = ds_y.reconstruct(preds)
                 if with_orig:
@@ -271,19 +270,14 @@ class DeprelTagger(FeatTagger):
                     for sentence in res_corpus_:
                         yield sentence
 
-        corpus_ = process(corpus_)
-        if save_to:
-            self.save_conllu(corpus, save_to, log_file=None)
-            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
-        ###
+        corpus = process(corpus)
 
         if self._feats_prune_coef != 0:
             corpus = self._restore_upos(corpus)
 
-            if save_to:
-                self.save_conllu(corpus, save_to, log_file=None)
-                corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
-
+        if save_to:
+            self.save_conllu(corpus, save_to, log_file=None)
+            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
     def train(self, save_as,
