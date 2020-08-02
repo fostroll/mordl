@@ -260,7 +260,7 @@ class DeprelTagger(FeatTagger):
                 if with_orig:
                     res_corpus_ = deepcopy(orig_corpus)
                     res_corpus_ = \
-                        self._postprocess_corpus(orig_corpus,
+                        self._postprocess_corpus(res_corpus_,
                                                  values, restore_data)
                     for orig_sentence, sentence in zip(orig_corpus,
                                                        res_corpus_):
