@@ -101,6 +101,7 @@ class DeprelTagger0(FeatTagger):
         corpus = super().predict(*args, **kwargs)
 
         def add_root(corpus):
+            roots = 0
             for sent in corpus:
                 sent0, sent1 = sent if isinstance(sent, tuple) \
                                    and not isinstance(sent[0], tuple) \
@@ -120,7 +121,6 @@ class DeprelTagger0(FeatTagger):
                     sent2 = next(corpus2)[1]
                     if isinstance(sent2, tuple):
                         sent2 = sent2[0]
-                roots = 0
                 for i, tok in enumerate(sent1):
                     for field in ['FORM', 'LEMMA', 'UPOS', 'HEAD', 'DEPREL']:
                         if tok[field] == NONE_TAG:
@@ -131,8 +131,8 @@ class DeprelTagger0(FeatTagger):
                         tok['DEPREL'] = 'root'
                     elif corpus2 and tok['DEPREL'] == 'root':
                         tok['DEPREL'] = sent2[i]['DEPREL']
-                print(roots)
                 yield sent
+            print(roots)
 
         corpus = add_root(corpus)
 
