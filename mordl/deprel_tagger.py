@@ -120,14 +120,18 @@ class DeprelTagger0(FeatTagger):
                     sent2 = next(corpus2)[1]
                     if isinstance(sent2, tuple):
                         sent2 = sent2[0]
+                roots = 0
                 for i, tok in enumerate(sent1):
                     for field in ['FORM', 'LEMMA', 'UPOS', 'HEAD', 'DEPREL']:
                         if tok[field] == NONE_TAG:
                             tok[field] = None
                     if tok['HEAD'] == '0':
+                        if tok['DEPREL'] != 'root':
+                            roots += 1
                         tok['DEPREL'] = 'root'
                     elif corpus2 and tok['DEPREL'] == 'root':
                         tok['DEPREL'] = sent2[i]['DEPREL']
+                print(roots)
                 yield sent
 
         corpus = add_root(corpus)
