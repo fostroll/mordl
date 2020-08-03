@@ -13,5 +13,6 @@ from mordl.upos_tagger import UposTagger
 from mordl.feat_tagger import FeatTagger
 from mordl.feats_tagger import FeatsJointTagger as FeatsTagger
 from mordl.lemma_tagger import LemmaTagger
+from mordl.lemma_tagger import DeprelTagger, DeprelSeqTagger
 from mordl.ne_tagger import NeTagger
 from mordl.base_tagger import conll18_ud_eval

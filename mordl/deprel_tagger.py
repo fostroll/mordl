@@ -1,47 +1,50 @@
 # -*- coding: utf-8 -*-
-# MorDL project: NE tagger
+# MorDL project: DEPREL tagger
 #
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
-Provides a Named-entity tagger class.
+Provides classes of DEPREL taggers.
 """
 from copy import deepcopy
 import itertools
 import junky
 from junky import get_func_params
 from mordl import FeatTagger
-from mordl.defaults import BATCH_SIZE, LOG_FILE, NONE_TAG, TRAIN_BATCH_SIZE
+from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.deprel_tagger_model import DeprelTaggerModel
 import torch
 from typing import Iterator
 
-WINDOW_LEFT, WINDOW_RIGHT = 2, 2
-PAD = '[PAD]'
-PAD_TOKEN = {'ID': '0', 'FORM': PAD, 'LEMMA': PAD,
-                        'UPOS': PAD, 'FEATS': {}, 'DEPREL': None}
 
+class DeprelTagger(FeatTagger):
+    """
+    A DEPREL tagger class.
 
-class DeprelTagger0(FeatTagger):
+    Args:
 
+    **feats_prune_coef** (`int`): feature prunning coefficient which allows to
+    eliminate all features that have a low frequency. For each UPOS tag, we
+    get a number of occurences of the most frequent feature from FEATS field,
+    divide it by **feats_prune_coef** and use only those features, number of
+    occurences of which is greater than that value, to improve the prediction
+    quality.
+    * `feats_prune_coef=0` means "do not use feats";
+    * `feats_prune_coef=None` means "use all feats";
+    * default `feats_prune_coef=6`.
+
+    **supp_tagger**: an object of another DEPREL tagger which method
+    `.predict()` has the same signature as `DeprelTagger.predict()` and no
+    excess `'root'` tags in the return. Object of `DeprelSeqTagger` may be
+    used here.
+    """
     def __init__(self, feats_prune_coef=6, supp_tagger=None):
         super().__init__('DEPREL', feats_prune_coef=feats_prune_coef)
         self._supp_tagger = supp_tagger
 
-    '''
-    def _prepare_corpus(self, corpus, fields, tags_to_remove=None):
-        res = super()._prepare_corpus(corpus, fields,
-                                      tags_to_remove=tags_to_remove)
-        res = list(res)
-        res[-1] = [tuple('<PAD>' if x == 'root' else x for x in x)
-                       for x in res[-1]]
-        return tuple(res)
-    '''
-
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
-        """Predicts tags in the specified feature of the FEATS field of the
-        corpus.
+        """Predicts tags in the DEPREL field of the corpus.
 
         Args:
 
@@ -71,8 +74,7 @@ class DeprelTagger0(FeatTagger):
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Returns corpus with predicted values of certain feature in the FEATS
-        field.
+        Returns corpus with tags predicted in the DEPREL field.
         """
         assert self._ds is not None, \
                "ERROR: The tagger doesn't have a dataset. Call the train() " \
@@ -119,10 +121,17 @@ class DeprelTagger0(FeatTagger):
         return corpus
 
 
-class DeprelTagger(FeatTagger):
+PAD = '[PAD]'
+PAD_TOKEN = {'ID': '0', 'FORM': PAD, 'LEMMA': PAD,
+                         'UPOS': PAD, 'FEATS': {}, 'DEPREL': None}
+
+class DeprelSeqTagger(FeatTagger):
     """
-    Named-entity tagger class. We use the feature 'NE' of MISC field as the
-    place where Named-entity tags are stored.
+    A DEPREL tagger class with sequence model.
+
+    **WARNING**: Works long, takes huge amoont of RAM, but accuracy is 
+    less than of `DeprelTagger`. But may be useful as suppplement tagger
+    for it.
 
     Args:
 
@@ -135,51 +144,56 @@ class DeprelTagger(FeatTagger):
     * `feats_prune_coef=0` means "do not use feats";
     * `feats_prune_coef=None` means "use all feats";
     * default `feats_prune_coef=6`.
+
+    **nodes_up** (`int`): a number of used nodes up by graph.
+    **nodes_down** (`int`): a number of used nodes down by graph.
     """
-    def __init__(self, feats_prune_coef=6):
+    def __init__(self, feats_prune_coef=6, nodes_up=2, nodes_down=2):
         super().__init__('DEPREL', feats_prune_coef=feats_prune_coef)
         self._model_class = DeprelTaggerModel
+        self._nodes_up = nodes_up
+        self._nodes_down = nodes_down
 
     @staticmethod
     def _preprocess_corpus(corpus):
 
-        def window_right(sent, id_, ids, chains, window_len):
-            link_ids = chains.get(id_, [])
+        def nodes_down(sent, id_, ids, nodes, span_len):
+            link_ids = nodes.get(id_, [])
             res = []
             for link_id in link_ids:
                 idx = ids[link_id]
                 token = sent[idx]
-                if window_len == 1:
+                if span_len == 1:
                     res.append([token])
                 else:
-                    for window_right_ in window_right(sent, link_id, ids,
-                                                      chains, window_len - 1):
-                        res.append([token] + window_right_)
+                    for nodes_down_ in nodes_down(sent, link_id, ids,
+                                                  nodes, span_len - 1):
+                        res.append([token] + nodes_down_)
             if not res:
-                res = [[PAD_TOKEN] * window_len]
+                res = [[PAD_TOKEN] * span_len]
             return res
 
-        def next_sent(sent, upper_sent, id_, ids, chains):
-            link_ids = chains.get(id_, [])
+        def next_sent(sent, upper_sent, id_, ids, nodes):
+            link_ids = nodes.get(id_, [])
             for link_id in link_ids:
                 idx = ids[link_id]
                 token = sent[idx]
                 label = token['DEPREL']
-                s = upper_sent[-WINDOW_LEFT:]
+                s = upper_sent[-self._nodes_up:]
                 s.append(token)
-                for window_right_ in window_right(sent, link_id, ids,
-                                                  chains, WINDOW_RIGHT):
-                    s_ = ([PAD_TOKEN] * (WINDOW_LEFT + 1 - len(s))) \
-                       + s[:] + window_right_
+                for nodes_down_ in nodes_down(sent, link_id, ids,
+                                              nodes, self._nodes_down):
+                    s_ = ([PAD_TOKEN] * (self._nodes_up + 1 - len(s))) \
+                       + s[:] + nodes_down_
                     yield s_, idx, label
-                for data_ in next_sent(sent, s, link_id, ids, chains):
+                for data_ in next_sent(sent, s, link_id, ids, nodes):
                     yield data_
 
         res_corpus, labels, restore_data = [], [], []
         for i, sent in enumerate(corpus):
             if isinstance(sent, tuple):
                 sent = sent[0]
-            root_id, root_token, ids, chains = None, None, {}, {}
+            root_id, root_token, ids, nodes = None, None, {}, {}
             for idx, token in enumerate(sent):
                 id_, head = token['ID'], token['HEAD']
                 if head:
@@ -188,10 +202,10 @@ class DeprelTagger(FeatTagger):
                     if head == '0':
                         root_id, root_token = id_, token
                     ids[id_] = idx
-                    chains.setdefault(head, []).append(id_)
+                    nodes.setdefault(head, []).append(id_)
             if root_id:
                 for s, idx, label in next_sent(sent, [root_token],
-                                               root_id, ids, chains):
+                                               root_id, ids, nodes):
                     res_corpus.append(s)
                     labels.append(label)
                     restore_data.append((i, idx))
@@ -222,7 +236,7 @@ class DeprelTagger(FeatTagger):
         res = super()._prepare_corpus(corpus, fields,
                                       tags_to_remove=tags_to_remove)
         res = list(res)
-        res[-1] = [x[WINDOW_LEFT] for x in res[-1]]
+        res[-1] = [x[self._nodes_up] for x in res[-1]]
         return tuple(res)
 
     def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):
@@ -246,8 +260,7 @@ class DeprelTagger(FeatTagger):
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
-        """Predicts tags in the specified feature of the FEATS field of the
-        corpus.
+        """Predicts tags in the DEPREL field of the corpus.
 
         Args:
 
@@ -277,8 +290,7 @@ class DeprelTagger(FeatTagger):
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Returns corpus with predicted values of certain feature in the FEATS
-        field.
+        Returns corpus with tags predicted in the DEPREL field.
         """
         assert self._ds is not None, \
                "ERROR: The tagger doesn't have a dataset. Call the train() " \
@@ -392,7 +404,7 @@ class DeprelTagger(FeatTagger):
               upos_emb_dim=300, emb_out_dim=512, lstm_hidden_dim=256,
               lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
               bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
-        """Creates and trains a feature tagger model.
+        """Creates and trains the DEPREL tagger model.
 
         During training, the best model is saved after each successful epoch.
 

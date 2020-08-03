@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# MorDL project: NE tagger
+# MorDL project: MISC:NE tagger
 #
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
