@@ -24,9 +24,9 @@ PAD_TOKEN = {'ID': '0', 'FORM': PAD, 'LEMMA': PAD,
 
 class DeprelTagger0(FeatTagger):
 
-    def __init__(self, feats_prune_coef=6, supp_model=None):
+    def __init__(self, feats_prune_coef=6, supp_tagger=None):
         super().__init__('DEPREL', feats_prune_coef=feats_prune_coef)
-        self._model2 = supp_model
+        self._supp_tagger = supp_tagger
 
     '''
     def _prepare_corpus(self, corpus, fields, tags_to_remove=None):
@@ -84,10 +84,10 @@ class DeprelTagger0(FeatTagger):
         kwargs['save_to'] = None
 
         corpus2 = None
-        if self._model2:
+        if self._supp_tagger:
             kwargs2 = kwargs.copy()
             kwargs2['with_orig'] = True
-            corpus2 = self._model2.predict(*args, **kwargs2)
+            corpus2 = self._supp_tagger.predict(*args, **kwargs2)
 
         corpus = super().predict(*args, **kwargs)
 
