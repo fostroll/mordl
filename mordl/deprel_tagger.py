@@ -94,14 +94,14 @@ class DeprelTagger0(FeatTagger):
         def add_root(corpus):
             for sent in corpus:
                 if isinstance(sent, tuple):
-                    sent, sent1 = sent
-                if isinstance(sent, tuple):
-                    sent = sent1[0]
+                    sent0, sent1 = sent
+                if isinstance(sent1, tuple):
+                    sent1 = sent1[0]
                 if corpus2:
                     sent2 = next(corpus2)[1]
                     if isinstance(sent2, tuple):
                         sent2 = sent2[0]
-                for i, tok in enumerate(sent):
+                for i, tok in enumerate(sent1):
                     if tok['HEAD'] == '0':
                         tok['DEPREL'] = 'root'
                     elif corpus2 and tok['DEPREL'] == 'root':
