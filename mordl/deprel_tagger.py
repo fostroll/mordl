@@ -24,9 +24,11 @@ PAD_TOKEN = {'ID': '0', 'FORM': PAD, 'LEMMA': PAD,
 
 class DeprelTagger0(FeatTagger):
 
-    def __init__(self, feats_prune_coef=6):
+    def __init__(self, feats_prune_coef=6, supp_model=None):
         super().__init__('DEPREL', feats_prune_coef=feats_prune_coef)
+        self._model2 = supp_model
 
+    '''
     def _prepare_corpus(self, corpus, fields, tags_to_remove=None):
         res = super()._prepare_corpus(corpus, fields,
                                       tags_to_remove=tags_to_remove)
@@ -34,6 +36,7 @@ class DeprelTagger0(FeatTagger):
         res[-1] = [tuple('<PAD>' if x == 'root' else x for x in x)
                        for x in res[-1]]
         return tuple(res)
+    '''
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
@@ -80,7 +83,13 @@ class DeprelTagger0(FeatTagger):
 
         kwargs['save_to'] = None
 
-        corpus = super().predict(args, **kwargs)
+        corpus2 = None
+        if self._model2:
+            kwargs2 = deepcopy(kwargs)
+            kwargs2['with_orig'] = True
+            corpus2 = self._model2.predict(*args, **kwargs2)
+
+        corpus = super().predict(*args, **kwargs)
 
         def add_root(corpus):
             for sent in corpus:
@@ -88,9 +97,15 @@ class DeprelTagger0(FeatTagger):
                     sent, sent1 = sent
                 if isinstance(sent, tuple):
                     sent = sent1[0]
-                for tok in sent:
+                if corpus2:
+                    sent2 = next(corpus2)[1]
+                    if isinstance(sent2, tuple):
+                        sent2 = sent2[0]
+                for i, tok in enumerate(sent):
                     if tok['HEAD'] == '0':
                         tok['DEPREL'] = 'root'
+                    elif corpus2 and tok['DEPREL'] == 'root':
+                        tok['DEPREL'] = sent2[i]['DEPREL']
                 yield sent
 
         corpus = add_root(corpus)
