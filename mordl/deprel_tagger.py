@@ -109,7 +109,7 @@ class DeprelTagger0(FeatTagger):
                 if sent0:
                     if isinstance(sent0, tuple):
                         sent0 = sent0[0]
-                    for tok in enumerate(sent0):
+                    for tok in sent0:
                         for field in ['FORM', 'LEMMA', 'UPOS',
                                       'HEAD', 'DEPREL']:
                             if tok[field] == NONE_TAG:
