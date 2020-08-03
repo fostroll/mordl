@@ -92,6 +92,8 @@ class DeprelTagger0(FeatTagger):
                             tok[field] = NONE_TAG
                 yield sent
 
+        corpus = add_none(corpus)
+
         corpus2 = None
         if self._model2:
             kwargs2 = deepcopy(kwargs)
