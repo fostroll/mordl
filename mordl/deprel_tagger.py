@@ -11,7 +11,7 @@ import itertools
 import junky
 from junky import get_func_params
 from mordl import FeatTagger
-from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
+from mordl.defaults import BATCH_SIZE, LOG_FILE, NONE_TAG, TRAIN_BATCH_SIZE
 from mordl.deprel_tagger_model import DeprelTaggerModel
 import torch
 from typing import Iterator
@@ -83,6 +83,15 @@ class DeprelTagger0(FeatTagger):
 
         kwargs['save_to'] = None
 
+        def add_none(corpus):
+            for sent in corpus:
+                sent_ = sent[0] if isinstance(sent_, tuple) else sent
+                for tok in enumerate(sent_):
+                    for field in ['FROM', 'LEMMA', 'UPOS', 'HEAD', 'DEPREL']:
+                        if not tok[field]:
+                            tok[field] = NONE_TAG
+                yield sent
+
         corpus2 = None
         if self._model2:
             kwargs2 = deepcopy(kwargs)
@@ -93,16 +102,26 @@ class DeprelTagger0(FeatTagger):
 
         def add_root(corpus):
             for sent in corpus:
-                sent_ = sent
-                if isinstance(sent_, tuple):
-                    sent_ = sent_[1]
-                if isinstance(sent_, tuple):
-                    sent_ = sent_[0]
+                sent0, sent1 = sent if isinstance(sent, tuple) else \
+                               (None, sent)
+                if sent0:
+                    if isinstance(sent0, tuple):
+                        sent0 = sent0[0]
+                    for tok in enumerate(sent0):
+                        for field in ['FROM', 'LEMMA', 'UPOS',
+                                      'HEAD', 'DEPREL']:
+                            if tok[field] == NONE_TAG:
+                                tok[field] = None
+                if isinstance(sent1, tuple):
+                    sent1 = sent1[0]
                 if corpus2:
                     sent2 = next(corpus2)[1]
                     if isinstance(sent2, tuple):
                         sent2 = sent2[0]
-                for i, tok in enumerate(sent_):
+                for i, tok in enumerate(sent1):
+                    for field in ['FROM', 'LEMMA', 'UPOS', 'HEAD', 'DEPREL']:
+                        if tok[field] == NONE_TAG:
+                            tok[field] = None
                     if tok['HEAD'] == '0':
                         tok['DEPREL'] = 'root'
                     elif corpus2 and tok['DEPREL'] == 'root':
