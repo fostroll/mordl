@@ -102,7 +102,9 @@ class DeprelTagger0(FeatTagger):
 
         def add_root(corpus):
             for sent in corpus:
-                sent0, sent1 = sent if isinstance(sent, tuple) else \
+                sent0, sent1 = sent if isinstance(sent, tuple) \
+                                   and not isinstance(sent[0], tuple) \
+                                   and not isinstance(sent[1], tuple) else \
                                (None, sent)
                 if sent0:
                     if isinstance(sent0, tuple):
