@@ -83,18 +83,6 @@ class DeprelTagger0(FeatTagger):
 
         kwargs['save_to'] = None
 
-        '''
-        def add_none(corpus):
-            for sent in corpus:
-                sent_ = sent[0] if isinstance(sent_, tuple) else sent
-                for tok in enumerate(sent_):
-                    for field in ['FORM', 'LEMMA', 'UPOS', 'HEAD', 'DEPREL']:
-                        if not tok[field]:
-                            tok[field] = NONE_TAG
-                yield sent
-
-        corpus = add_none(corpus)
-        '''
         corpus2 = None
         if self._model2:
             kwargs2 = deepcopy(kwargs)
@@ -109,14 +97,8 @@ class DeprelTagger0(FeatTagger):
                                    and not isinstance(sent[0], tuple) \
                                    and not isinstance(sent[1], tuple) else \
                                (None, sent)
-                if sent0:
-                    if isinstance(sent0, tuple):
-                        sent0 = sent0[0]
-                    #for tok in sent0:
-                    #    for field in ['FORM', 'LEMMA', 'UPOS',
-                    #                  'HEAD', 'DEPREL']:
-                    #        if tok[field] == NONE_TAG:
-                    #            tok[field] = None
+                if sent0 and isinstance(sent0, tuple):
+                    sent0 = sent0[0]
                 if isinstance(sent1, tuple):
                     sent1 = sent1[0]
                 if corpus2:
@@ -124,9 +106,6 @@ class DeprelTagger0(FeatTagger):
                     if isinstance(sent2, tuple):
                         sent2 = sent2[0]
                 for i, tok in enumerate(sent1):
-                    #for field in ['FORM', 'LEMMA', 'UPOS', 'HEAD', 'DEPREL']:
-                    #    if tok[field] == NONE_TAG:
-                    #        tok[field] = None
                     if tok['HEAD'] == '0':
                         tok['DEPREL'] = 'root'
                     elif corpus2 and tok['DEPREL'] == 'root':
