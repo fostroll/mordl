@@ -120,7 +120,7 @@ class DeprelTagger(FeatTagger):
 
         return corpus
 
-
+NODES_UP, NODES_DOWN = 3, 3
 PAD = '[PAD]'
 PAD_TOKEN = {'ID': '0', 'FORM': PAD, 'LEMMA': PAD,
                          'UPOS': PAD, 'FEATS': {}, 'DEPREL': None}
@@ -144,15 +144,10 @@ class DeprelSeqTagger(FeatTagger):
     * `feats_prune_coef=0` means "do not use feats";
     * `feats_prune_coef=None` means "use all feats";
     * default `feats_prune_coef=6`.
-
-    **nodes_up** (`int`): a number of used nodes up by graph.
-    **nodes_down** (`int`): a number of used nodes down by graph.
     """
-    def __init__(self, feats_prune_coef=6, nodes_up=2, nodes_down=2):
+    def __init__(self, feats_prune_coef=6):
         super().__init__('DEPREL', feats_prune_coef=feats_prune_coef)
         self._model_class = DeprelTaggerModel
-        self._nodes_up = nodes_up
-        self._nodes_down = nodes_down
 
     @staticmethod
     def _preprocess_corpus(corpus):
@@ -179,11 +174,11 @@ class DeprelSeqTagger(FeatTagger):
                 idx = ids[link_id]
                 token = sent[idx]
                 label = token['DEPREL']
-                s = upper_sent[-self._nodes_up:]
+                s = upper_sent[-NODES_UP:]
                 s.append(token)
                 for nodes_down_ in nodes_down(sent, link_id, ids,
-                                              nodes, self._nodes_down):
-                    s_ = ([PAD_TOKEN] * (self._nodes_up + 1 - len(s))) \
+                                              nodes, NODES_DOWN):
+                    s_ = ([PAD_TOKEN] * (NODES_UP + 1 - len(s))) \
                        + s[:] + nodes_down_
                     yield s_, idx, label
                 for data_ in next_sent(sent, s, link_id, ids, nodes):
@@ -236,7 +231,7 @@ class DeprelSeqTagger(FeatTagger):
         res = super()._prepare_corpus(corpus, fields,
                                       tags_to_remove=tags_to_remove)
         res = list(res)
-        res[-1] = [x[self._nodes_up] for x in res[-1]]
+        res[-1] = [x[NODES_UP] for x in res[-1]]
         return tuple(res)
 
     def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):
