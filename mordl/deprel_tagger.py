@@ -87,7 +87,7 @@ class DeprelTagger0(FeatTagger):
             for sent in corpus:
                 sent_ = sent[0] if isinstance(sent_, tuple) else sent
                 for tok in enumerate(sent_):
-                    for field in ['FROM', 'LEMMA', 'UPOS', 'HEAD', 'DEPREL']:
+                    for field in ['FORM', 'LEMMA', 'UPOS', 'HEAD', 'DEPREL']:
                         if not tok[field]:
                             tok[field] = NONE_TAG
                 yield sent
@@ -108,7 +108,7 @@ class DeprelTagger0(FeatTagger):
                     if isinstance(sent0, tuple):
                         sent0 = sent0[0]
                     for tok in enumerate(sent0):
-                        for field in ['FROM', 'LEMMA', 'UPOS',
+                        for field in ['FORM', 'LEMMA', 'UPOS',
                                       'HEAD', 'DEPREL']:
                             if tok[field] == NONE_TAG:
                                 tok[field] = None
@@ -119,7 +119,7 @@ class DeprelTagger0(FeatTagger):
                     if isinstance(sent2, tuple):
                         sent2 = sent2[0]
                 for i, tok in enumerate(sent1):
-                    for field in ['FROM', 'LEMMA', 'UPOS', 'HEAD', 'DEPREL']:
+                    for field in ['FORM', 'LEMMA', 'UPOS', 'HEAD', 'DEPREL']:
                         if tok[field] == NONE_TAG:
                             tok[field] = None
                     if tok['HEAD'] == '0':
