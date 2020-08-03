@@ -85,7 +85,7 @@ class DeprelTagger0(FeatTagger):
 
         corpus2 = None
         if self._model2:
-            kwargs2 = deepcopy(kwargs)
+            kwargs2 = kwargs.copy()
             kwargs2['with_orig'] = True
             corpus2 = self._model2.predict(*args, **kwargs2)
 
