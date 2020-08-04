@@ -120,7 +120,7 @@ class DeprelTagger(FeatTagger):
 
         return corpus
 
-NODES_UP, NODES_DOWN = 3, 3
+NODES_UP, NODES_DOWN = 2, 2
 PAD = '[PAD]'
 PAD_TOKEN = {'ID': '0', 'FORM': PAD, 'LEMMA': PAD,
                          'UPOS': PAD, 'FEATS': {}, 'DEPREL': None}
