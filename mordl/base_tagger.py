@@ -195,8 +195,10 @@ class BaseTagger(BaseParser):
                     loglevel=int(log_file is not None)
                 )
                 if not res_:
-                    res_ = ds_.transform_collate(sentences,
-                                                 batch_size=batch_size)
+                    res_ = ds_.transform_collate(
+                        sentences, batch_size=batch_size),
+                        collate_kwargs={'with_lens': False}
+                    )
                 res.append(res_)
             elif typ == 't':
                 res.append(ds_.transform_collate(
