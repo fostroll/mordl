@@ -196,7 +196,7 @@ class BaseTagger(BaseParser):
                 )
                 if not res_:
                     res_ = ds_.transform_collate(
-                        sentences, batch_size=batch_size),
+                        sentences, batch_size=batch_size,
                         collate_kwargs={'with_lens': False}
                     )
                 res.append(res_)
