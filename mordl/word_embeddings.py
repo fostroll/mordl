@@ -846,14 +846,14 @@ class WordEmbeddings:
                 kwargs = config.get('transform_kwargs', {})
                 if transform_kwargs:
                     kwargs.update(transform_kwargs)
-                if batch_size:
-                    kwargs['batch_size'] = batch_size
-                if loglevel is not None:
-                    kwargs['loglevel'] = loglevel
                 transform_kwargs = kwargs
         for _ in range(1):
             if isinstance(ds, BertDataset):
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
+                if batch_size:
+                    kwargs['batch_size'] = batch_size
+                if loglevel is not None:
+                    kwargs['loglevel'] = loglevel
                 if transform_kwargs:
                     kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
