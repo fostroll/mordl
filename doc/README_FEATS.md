@@ -30,7 +30,7 @@ First of all, you need to create a tagger object:
 ```python
 from mordl import FeatsTagger
 
-tagger = FeatsTagger(field='FEATS')
+tagger = FeatsTagger(field='FEATS', embs=None)
 ```
 
 Args:
@@ -38,6 +38,14 @@ Args:
 **field** (`str`): a name of the *CoNLL-U* key-value type field, content
 of which needs to be predicted. With the tagger, you can predict only
 key-value type fields, like FEATS.
+
+**embs**: `dict` with paths to the embeddings file as keys and
+corresponding embeddings models as values. If tagger needs to load any
+embeddings model, firstly, model is looked up it in that `dict`.
+
+During init, **embs** is copied to the `emb` attribute of the creating
+object, and this attribute may be used further to share already loaded
+embeddings with another taggers.
 
 Afterwards, load train and development test corpora into the created tagger
 object:
@@ -300,7 +308,7 @@ tagger that predicts all features of key-value type fields separately:
 ```python
 from mordl.feats_tagger import FeatsSeparateTagger
 
-tagger = FeatsSeparateTagger(field='FEATS')
+tagger = FeatsSeparateTagger(field='FEATS', feats_prune_coef=6, embs=None)
 ```
 
 The tagger creates separate models for each feat and uses them all serially to

@@ -27,7 +27,7 @@ First of all, you need to create a tagger object:
 ```python
 from mordl import FeatTagger
 
-tagger = FeatTagger(feat, feats_prune_coef=6)
+tagger = FeatTagger(feat, feats_prune_coef=6, embs=None)
 ```
 
 Args:
@@ -48,6 +48,14 @@ quality.
 * `feats_prune_coef=0` means "do not use feats";
 * `feats_prune_coef=None` means "use all feats";
 * default `feats_prune_coef=6`.
+
+**embs**: `dict` with paths to the embeddings file as keys and
+corresponding embeddings models as values. If tagger needs to load any
+embeddings model, firstly, model is looked up it in that `dict`.
+
+During init, **embs** is copied to the `emb` attribute of the creating
+object, and this attribute may be used further to share already loaded
+embeddings with another taggers.
 
 **NB**: the argument is relevant only if **feat** is not from FEATS field.
 

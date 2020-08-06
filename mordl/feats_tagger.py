@@ -29,6 +29,14 @@ class FeatsJointTagger(BaseTagger):
     **field** (`str`): a name of the *CoNLL-U* key-value type field, content
     of which needs to be predicted. With the tagger, you can predict only
     key-value type fields, like FEATS.
+
+    **embs**: `dict` with paths to the embeddings file as keys and
+    corresponding embeddings models as values. If tagger needs to load any
+    embeddings model, firstly, model is looked up it in that `dict`.
+
+    During init, **embs** is copied to the `emb` attribute of the creating
+    object, and this attribute may be used further to share already loaded
+    embeddings with another taggers.
     """
     def __init__(self, field='FEATS', embs=None):
         super().__init__(embs=embs)
@@ -334,10 +342,19 @@ class FeatsSeparateTagger(BaseTagger):
     **field** (`str`): a name of the *CoNLL-U* key-value type field, content
     of which needs to be predicted. With the tagger, you can predict only
     key-value type fields, like FEATS.
+
+    **embs**: `dict` with paths to the embeddings file as keys and
+    corresponding embeddings models as values. If tagger needs to load any
+    embeddings model, firstly, model is looked up it in that `dict`.
+
+    During init, **embs** is copied to the `emb` attribute of the creating
+    object, and this attribute may be used further to share already loaded
+    embeddings with another taggers.
     """
-    def __init__(self, field='FEATS', embs=None):
+    def __init__(self, field='FEATS', feats_prune_coef=6, embs=None):
         super().__init__(embs=embs)
         self._field = field
+        self._feats_prune_coef = feats_prune_coef
         self._feats = {}
 
     def save(self, name, log_file=LOG_FILE):
@@ -379,7 +396,8 @@ class FeatsSeparateTagger(BaseTagger):
             if log_file:
                 print('\n--- {}:'.format(feat), file=log_file)
             name_ = self._feats[feat]
-            tagger = FeatTagger(feat, embs=self._embs)
+            tagger = FeatTagger(feat, feats_prune_coef=self._feats_prune_coef,
+                                embs=self._embs)
             tagger.load(name_)
             self._feats[feat] = [name, tagger]
         if log_file:
@@ -729,7 +747,9 @@ class FeatsSeparateTagger(BaseTagger):
             save_as_ = '{}-{}'.format(save_as, feat.lower())
             self._feats[feat] = save_as_
 
-            tagger = FeatTagger(self._field + ':' + feat, embs=self._embs)
+            tagger = FeatTagger(self._field + ':' + feat,
+                                feats_prune_coef=self._feats_prune_coef,
+                                embs=self._embs)
             tagger._train_corpus, tagger._test_corpus = \
                 self._train_corpus, self._test_corpus
             if word_emb_path_suffix:

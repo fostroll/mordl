@@ -20,7 +20,7 @@ First of all, you need to create a tagger object:
 ```python
 from mordl import UposTagger
 
-tagger = UposTagger(field='UPOS')
+tagger = UposTagger(field='UPOS', embs=None)
 ```
 
 Args:
@@ -28,6 +28,14 @@ Args:
 **field**: a name of the *CoNLL-U* field, values of which needs to be
 predicted. With this tagger, you can predict only fields with atomic
 values, like UPOS.
+
+**embs**: `dict` with paths to the embeddings file as keys and
+corresponding embeddings models as values. If tagger needs to load any
+embeddings model, firstly, model is looked up it in that `dict`.
+
+During init, **embs** is copied to the `emb` attribute of the creating
+object, and this attribute may be used further to share already loaded
+embeddings with another taggers.
 
 Afterwards, load train and development test corpora into the created tagger
 object:

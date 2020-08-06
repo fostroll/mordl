@@ -38,6 +38,14 @@ class FeatTagger(BaseTagger):
     * default `feats_prune_coef=6`.
 
     **NB**: the argument is relevant only if **feat** is not from FEATS field.
+
+    **embs**: `dict` with paths to the embeddings file as keys and
+    corresponding embeddings models as values. If tagger needs to load any
+    embeddings model, firstly, model is looked up it in that `dict`.
+
+    During init, **embs** is copied to the `emb` attribute of the creating
+    object, and this attribute may be used further to share already loaded
+    embeddings with another taggers.
     """
     def __init__(self, feat, feats_prune_coef=6, embs=None):
         assert feat != 'UPOS', 'ERROR: for UPOS field use UposTagger class'

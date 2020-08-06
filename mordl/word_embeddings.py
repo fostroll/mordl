@@ -590,12 +590,12 @@ class WordEmbeddings:
                 'f1s': f1s}
 
     @staticmethod
-    def load(emb_type, emb_path, emb_model_device=None, embs=None):  # TODO embs
-        """Method to load pretrained embeddings model.
+    def load(emb_type, emb_path, emb_model_device=None, embs=None):
+        """Method to load pretrained embeddings model from **emb_path**.
 
         Args:
 
-        **emb_type**: (`str`) one of the supported embedding types. Allowed
+        **emb_type**: (`str`) one of the supported embeddings types. Allowed
         values: 'bert' for BERT, 'ft' for FastText, 'glove' for Glove, 'w2v'
         for Word2vec.
 
@@ -604,9 +604,13 @@ class WordEmbeddings:
         **emb_model_device**: relevant with `emb_type='bert'`. The device
         where the BERT model will be loaded to.
 
-        Returns the loaded embeddings model.
+        **embs**: `dict` with paths to the embeddings file as keys and
+        corresponding embeddings models as values. If **emb_path** is in
+        **embs**, the method just return the corresponding model.
+
+        Returns the embeddings model.
         """
-        if emb_path in embs:
+        if embs and emb_path in embs:
             model = embs[emb_path]
         else:
             if emb_type == 'bert':
@@ -682,7 +686,7 @@ class WordEmbeddings:
     @classmethod
     def create_dataset(cls, sentences, emb_type='ft', emb_path=None,
                        emb_model_device=None, transform_kwargs=None,
-                       next_emb_params=None, embs=None, loglevel=2):  #TODO embs
+                       next_emb_params=None, embs=None, loglevel=2):
         """Creates dataset with embedded sequences.
 
         Args:
@@ -711,7 +715,13 @@ class WordEmbeddings:
         or a list of such dictionaries if you need more than one additional
         models.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **embs**: `dict` with paths to the embeddings file as keys and
+        corresponding embeddings models as values. If **emb_path** is in
+        **embs**, the method don't load the corresponding model and use
+        already loaded one.
+
+        **loglevel**: param for dataset's `.transform()`. Relevant with
+        `emb_type='bert'`.
 
         Returns a loaded dataset.
         """
@@ -947,7 +957,7 @@ class WordEmbeddings:
         ds.save(f, with_data=False)
 
     @classmethod
-    def load_dataset(cls, f, config_f=True, device=None, embs=None):  # TODO: embs
+    def load_dataset(cls, f, config_f=True, device=None, embs=None):
         """Loads previously saved dataset with embedded tokens.
 
         Args:
@@ -958,6 +968,11 @@ class WordEmbeddings:
 
         **device**: a device for the loading dataset if you want to override
         its previously saved value.
+
+        **embs**: `dict` with paths to the embeddings file as keys and
+        corresponding embeddings models as values. If value of `emb_path` from
+        **config_f** is in **embs**, the method don't load the corresponding
+        model and use already loaded one.
 
         Returns a loaded dataset.
         """
@@ -991,7 +1006,7 @@ class WordEmbeddings:
         return ds
 
     @classmethod
-    def apply_config(cls, ds, config, device=None, embs=None):  # TODO embs
+    def apply_config(cls, ds, config, device=None, embs=None):
         """Apply config file to the dataset.
 
         Args:
@@ -1002,6 +1017,11 @@ class WordEmbeddings:
 
         **device**: a device for the loading dataset if you want to override
         its previously saved value.
+
+        **embs**: `dict` with paths to the embeddings file as keys and
+        corresponding embeddings models as values. If value of `emb_path` from
+        **config** is in **embs**, the method don't load the corresponding
+        model and use already loaded one.
         """
         if isinstance(config, dict):
             config = [config]

@@ -33,6 +33,16 @@ _CDICT_FN = 'cdict.pickle'
 class BaseTagger(BaseParser):
     """
     A base class for the project's taggers.
+
+    Args:
+
+    **embs**: `dict` with paths to the embeddings file as keys and
+    corresponding embeddings models as values. If tagger needs to load any
+    embeddings model, firstly, model is looked up it in that `dict`.
+
+    During init, **embs** is copied to the `emb` attribute of the creating
+    object, and this attribute may be used further to share already loaded
+    embeddings with another taggers.
     """
 
     def __err_hideattr(self, name):
@@ -56,10 +66,10 @@ class BaseTagger(BaseParser):
         property(lambda self: self.__err_hideattr(self, '_train_done'))
 
     @property
-    def embs(self):  # TODO
+    def embs(self):
         return self._embs
 
-    def __init__(self, embs=None):  # TODO embs
+    def __init__(self, embs=None):
         super().__init__()
         self._model = None
         self._ds = None

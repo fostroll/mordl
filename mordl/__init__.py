@@ -16,3 +16,5 @@ from mordl.lemma_tagger import LemmaTagger
 from mordl.deprel_tagger import DeprelTagger, DeprelSeqTagger
 from mordl.ne_tagger import NeTagger
 from mordl.base_tagger import conll18_ud_eval
+
+load_word_embeddings = WordEmbeddings.load

@@ -21,6 +21,14 @@ class UposTagger(BaseTagger):
     **field**: a name of the *CoNLL-U* field, values of which needs to be
     predicted. With this tagger, you can predict only fields with atomic
     values, like UPOS.
+
+    **embs**: `dict` with paths to the embeddings file as keys and
+    corresponding embeddings models as values. If tagger needs to load any
+    embeddings model, firstly, model is looked up it in that `dict`.
+
+    During init, **embs** is copied to the `emb` attribute of the creating
+    object, and this attribute may be used further to share already loaded
+    embeddings with another taggers.
     """
     def __init__(self, field='UPOS', embs=None):
         super().__init__(embs=embs)
