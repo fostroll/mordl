@@ -55,11 +55,15 @@ class BaseTagger(BaseParser):
     _train_done = \
         property(lambda self: self.__err_hideattr(self, '_train_done'))
 
+    @property
+    def embs(self):  # TODO
+        return self._embs
+
     def __init__(self, embs=None):  # TODO embs
         super().__init__()
         self._model = None
         self._ds = None
-        self._embs = {} if embs is None else embs
+        self._embs = {} if embs is None else embs.copy()
 
     def load_train_corpus(self, corpus, append=False, test=None, seed=None):
         """Loads the train corpus.
@@ -122,7 +126,7 @@ class BaseTagger(BaseParser):
                 sentences, emb_type=word_emb_type, emb_path=word_emb_path,
                 emb_model_device=word_emb_model_device,
                 transform_kwargs=word_transform_kwargs,
-                next_emb_params=word_next_emb_params,
+                next_emb_params=word_next_emb_params, embs=self._embs,
                 loglevel=0 if log_file is None else
                          1 if log_file == sys.stdin else
                          2

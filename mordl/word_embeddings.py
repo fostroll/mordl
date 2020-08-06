@@ -678,8 +678,7 @@ class WordEmbeddings:
     @classmethod
     def create_dataset(cls, sentences, emb_type='ft', emb_path=None,
                        emb_model_device=None, transform_kwargs=None,
-                       next_emb_params=None, embs=None, batch_size=BATCH_SIZE,  #TODO embs
-                       loglevel=2):
+                       next_emb_params=None, embs=None, loglevel=2):  #TODO embs
         """Creates dataset with embedded sequences.
 
         Args:
@@ -707,10 +706,6 @@ class WordEmbeddings:
         dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
         or a list of such dictionaries if you need more than one additional
         models.
-
-        **batch_size**: number of sentences per batch. If not `None`,
-        overwrites `batch_size` parameter from `transform_kwargs`.
-        By default, `batch size=64`.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
@@ -771,8 +766,6 @@ class WordEmbeddings:
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
                 if transform_kwargs:
                     kwargs.update(transform_kwargs)
-                if batch_size:
-                    kwargs['batch_size'] = batch_size
                 if loglevel is not None:
                     kwargs['loglevel'] = loglevel
                 transform_kwargs = kwargs
