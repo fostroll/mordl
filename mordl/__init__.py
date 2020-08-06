@@ -20,3 +20,4 @@ from mordl.base_tagger import conll18_ud_eval
 save_conllu = UposTagger.save_conllu
 load_conllu = UposTagger.load_conllu
 load_word_embeddings = WordEmbeddings.load
+remove_rare_feats = UposTagger.remove_rare_feats

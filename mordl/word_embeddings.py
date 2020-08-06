@@ -680,7 +680,8 @@ class WordEmbeddings:
                                  "'bert' for BERT, 'glove' for GloVe, "
                                  "'ft' for fastText, 'w2v' for Word2vec")
 
-            embs[emb_path] = model
+            if embs is not None:
+                embs[emb_path] = model
         return model
 
     @classmethod

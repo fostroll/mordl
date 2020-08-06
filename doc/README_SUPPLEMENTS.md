@@ -77,8 +77,8 @@ Returns the embeddings model.
 
 Split a **corpus** in a given proportion:
 ```python
-tagger.split_corpus(corpus, split=[.8, .1, .1], save_split_to=None,
-                    seed=None, silent=False)
+mordl.split_corpus(corpus, split=[.8, .1, .1], save_split_to=None,
+                   seed=None, silent=False)
 ```
 Here, **corpus** is a name of the file in *CoNLL-U* format or a list/iterator
 of sentences in
