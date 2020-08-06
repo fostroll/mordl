@@ -606,73 +606,77 @@ class WordEmbeddings:
 
         Returns the loaded embeddings model.
         """
-
-        if emb_type == 'bert':
-            tokenizer = BertTokenizer.from_pretrained(
-                emb_path, do_lower_case=False
-            )
-            config = BertConfig.from_pretrained(
-                emb_path, output_hidden_states=True
-            )
-            assert len(config.architectures) == 1, \
-                'ERROR: BertConfig has several architectures. ' \
-                'We expect only one'
-            arch = config.architectures[0]
-            if arch == 'BertForSequenceClassification':
-                model = BertForSequenceClassification.from_pretrained(
-                    emb_path, config=config
+        if emb_path in embs:
+            model = embs[emb_path]
+        else:
+            if emb_type == 'bert':
+                tokenizer = BertTokenizer.from_pretrained(
+                    emb_path, do_lower_case=False
                 )
-            elif arch == 'BertForTokenClassification':
-                model = BertForTokenClassification.from_pretrained(
-                    emb_path, config=config
+                config = BertConfig.from_pretrained(
+                    emb_path, output_hidden_states=True
                 )
-            else:
-                raise RuntimeError((
-                    "ERROR: Unknown architecture '{}' in BertConfig. "
-                    "Only 'BertForSequenceClassification' and "
-                    "'BertForSequenceClassification' are allowed"
-                ).format(arch))
-            if emb_model_device:
-                model.to(emb_model_device)
-            model.eval()
-            model = model, tokenizer
+                assert len(config.architectures) == 1, \
+                    'ERROR: BertConfig has several architectures. ' \
+                    'We expect only one'
+                arch = config.architectures[0]
+                if arch == 'BertForSequenceClassification':
+                    model = BertForSequenceClassification.from_pretrained(
+                        emb_path, config=config
+                    )
+                elif arch == 'BertForTokenClassification':
+                    model = BertForTokenClassification.from_pretrained(
+                        emb_path, config=config
+                    )
+                else:
+                    raise RuntimeError((
+                        "ERROR: Unknown architecture '{}' in BertConfig. "
+                        "Only 'BertForSequenceClassification' and "
+                        "'BertForSequenceClassification' are allowed"
+                    ).format(arch))
+                if emb_model_device:
+                    model.to(emb_model_device)
+                model.eval()
+                model = model, tokenizer
 
-        elif emb_type == 'glove':
-            try:
-                model = KeyedVectors.load_word2vec_format(emb_path,
-                                                          binary=False)
-            except ValueError:
-                fn = os.path.basename(emb_path)
-                pref, suff = os.path.splitext(fn)
-                dn = get_root_dir()
-                f, fn = mkstemp(suffix=suff, prefix=pref, dir=nd)
-                f.close()
-                glove2word2vec(emb_path, fn)
-                os.remove(fn)
-                model = KeyedVectors.load_word2vec_format(fn, binary=False)
-            model = {x: model.vectors[y.index]
-                         for x, y in model.vocab.items()}
-
-        elif emb_type in 'ft':
-            model = load_facebook_model(emb_path).wv
-
-        elif emb_type in 'w2v':
-            try:
-                model = KeyedVectors.load_word2vec_format(emb_path,
-                                                          binary=False)
-            except UnicodeDecodeError:
+            elif emb_type == 'glove':
                 try:
                     model = KeyedVectors.load_word2vec_format(emb_path,
-                                                              binary=True)
-                except UnicodeDecodeError:
-                    model = load_facebook_model(emb_path).wv
-            model = {x: model.vectors[y.index]
-                         for x, y in model.vocab.items()}
+                                                              binary=False)
+                except ValueError:
+                    fn = os.path.basename(emb_path)
+                    pref, suff = os.path.splitext(fn)
+                    dn = get_root_dir()
+                    f, fn = mkstemp(suffix=suff, prefix=pref, dir=nd)
+                    f.close()
+                    glove2word2vec(emb_path, fn)
+                    os.remove(fn)
+                    model = KeyedVectors.load_word2vec_format(fn, binary=False)
+                model = {x: model.vectors[y.index]
+                             for x, y in model.vocab.items()}
 
-        else:
-            raise ValueError('ERROR: Unknown emb_type. Allowed values: '
-                             "'bert' for BERT, 'glove' for GloVe, "
-                             "'ft' for fastText, 'w2v' for Word2vec")
+            elif emb_type in 'ft':
+                model = load_facebook_model(emb_path).wv
+
+            elif emb_type in 'w2v':
+                try:
+                    model = KeyedVectors.load_word2vec_format(emb_path,
+                                                              binary=False)
+                except UnicodeDecodeError:
+                    try:
+                        model = KeyedVectors.load_word2vec_format(emb_path,
+                                                                  binary=True)
+                    except UnicodeDecodeError:
+                        model = load_facebook_model(emb_path).wv
+                model = {x: model.vectors[y.index]
+                             for x, y in model.vocab.items()}
+
+            else:
+                raise ValueError('ERROR: Unknown emb_type. Allowed values: '
+                                 "'bert' for BERT, 'glove' for GloVe, "
+                                 "'ft' for fastText, 'w2v' for Word2vec")
+
+            embs[emb_path] = model
         return model
 
     @classmethod
@@ -1011,12 +1015,9 @@ class WordEmbeddings:
             emb_model_device = device if device else \
                                cfg.get('emb_model_device')
             transform_kwargs = cfg.get('transform_kwargs', {})
-            if emb_path in embs:
-                model = embs[emb_path]
-            else:
-                model = cls.load(emb_type, emb_path,
-                                 emb_model_device=emb_model_device)
-                embs[emb_path] = model
+            model = cls.load(emb_type, emb_path,
+                             emb_model_device=emb_model_device,
+                             embs=embs)
             xtrn.append(model)
 
         if len(xtrn) == 1:
