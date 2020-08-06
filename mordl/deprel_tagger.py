@@ -40,8 +40,9 @@ class DeprelTagger(FeatTagger):
     excess `'root'` tags in the return. Object of `DeprelSeqTagger` may be
     used here.
     """
-    def __init__(self, feats_prune_coef=6, supp_tagger=None):
-        super().__init__('DEPREL', feats_prune_coef=feats_prune_coef)
+    def __init__(self, feats_prune_coef=6, supp_tagger=None, embs=None):
+        super().__init__('DEPREL', feats_prune_coef=feats_prune_coef,
+                         embs=embs)
         self._supp_tagger = supp_tagger
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,

@@ -39,9 +39,9 @@ class FeatTagger(BaseTagger):
 
     **NB**: the argument is relevant only if **feat** is not from FEATS field.
     """
-    def __init__(self, feat, feats_prune_coef=6):
+    def __init__(self, feat, feats_prune_coef=6, embs=None):
         assert feat != 'UPOS', 'ERROR: for UPOS field use UposTagger class'
-        super().__init__()
+        super().__init__(embs=embs)
         if feat[0] == ':':
             feat = 'FEATS' + feat
         self._field = feat

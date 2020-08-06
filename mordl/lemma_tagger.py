@@ -38,8 +38,8 @@ class LemmaTagger(BaseTagger):
     * `feats_prune_coef=None` means "use all feats";
     * default `feats_prune_coef=6`.
     """
-    def __init__(self, field='LEMMA', feats_prune_coef=6):
-        super().__init__()
+    def __init__(self, field='LEMMA', feats_prune_coef=6, embs=None):
+        super().__init__(embs=embs)
         self._field = field
         self._feats_prune_coef = feats_prune_coef
 

@@ -55,10 +55,11 @@ class BaseTagger(BaseParser):
     _train_done = \
         property(lambda self: self.__err_hideattr(self, '_train_done'))
 
-    def __init__(self):
+    def __init__(self, embs=None):  # TODO embs
         super().__init__()
         self._model = None
         self._ds = None
+        self._embs = {} if embs is None else embs
 
     def load_train_corpus(self, corpus, append=False, test=None, seed=None):
         """Loads the train corpus.

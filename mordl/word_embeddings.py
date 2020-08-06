@@ -590,7 +590,7 @@ class WordEmbeddings:
                 'f1s': f1s}
 
     @staticmethod
-    def load(emb_type, emb_path, emb_model_device=None):
+    def load(emb_type, emb_path, emb_model_device=None, embs=None):  # TODO embs
         """Method to load pretrained embeddings model.
 
         Args:
@@ -678,7 +678,7 @@ class WordEmbeddings:
     @classmethod
     def create_dataset(cls, sentences, emb_type='ft', emb_path=None,
                        emb_model_device=None, transform_kwargs=None,
-                       next_emb_params=None, batch_size=BATCH_SIZE,
+                       next_emb_params=None, embs=None, batch_size=BATCH_SIZE,  #TODO embs
                        loglevel=2):
         """Creates dataset with embedded sequences.
 
@@ -765,7 +765,7 @@ class WordEmbeddings:
                 transform_kwargs = {}
 
             emb_model = cls.load(emb_type, emb_path,
-                                 emb_model_device=emb_model_device)
+                                 emb_model_device=emb_model_device, embs=embs)
 
             if emb_type == 'bert':
                 kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
@@ -950,7 +950,7 @@ class WordEmbeddings:
         ds.save(f, with_data=False)
 
     @classmethod
-    def load_dataset(cls, f, config_f=True):
+    def load_dataset(cls, f, config_f=True, device=None, embs=None):  # TODO: embs
         """Loads previously saved dataset with embedded tokens.
 
         Args:
@@ -959,8 +959,12 @@ class WordEmbeddings:
 
         **config_f** (`str` : `file`): json config file.
 
+        **device**: a device for the loading dataset if you want to override
+        its previously saved value.
+
         Returns a loaded dataset.
         """
+        #ds = BaseDataset.load()
         ds = WordDataset.load(f)  # sic!
 
         if config_f is True:
@@ -983,11 +987,14 @@ class WordEmbeddings:
         else:
             config = getattr(ds, CONFIG_ATTR, ())
 
-        cls.apply_config(ds, config)
+        if device:
+            config['emb_model_device'] = device
+
+        cls.apply_config(ds, config, embs=embs)
         return ds
 
     @classmethod
-    def apply_config(cls, ds, config, device=None):
+    def apply_config(cls, ds, config, device=None, embs=None):  # TODO embs
         """Apply config file to the dataset.
 
         Args:
@@ -1005,7 +1012,7 @@ class WordEmbeddings:
         assert len(config) == 1 or len(config) == len(ds.list()), \
                'ERROR: f and config_f have incompatible data'
 
-        embs, xtrn = {}, []
+        embs, xtrn = {} if embs is None else embs, []
         for cfg in config:
             emb_type, emb_path = cfg['emb_type'], cfg['emb_path']
             emb_model_device = device if device else \
@@ -1024,3 +1031,5 @@ class WordEmbeddings:
         else:
             xtrn = {x: y for x, y in zip(ds.list(), xtrn)}
         ds._push_xtrn(xtrn)
+
+        return embs

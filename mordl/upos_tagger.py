@@ -22,8 +22,8 @@ class UposTagger(BaseTagger):
     predicted. With this tagger, you can predict only fields with atomic
     values, like UPOS.
     """
-    def __init__(self, field='UPOS'):
-        super().__init__()
+    def __init__(self, field='UPOS', embs=None):
+        super().__init__(embs=embs)
         self._field = field
 
     def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):

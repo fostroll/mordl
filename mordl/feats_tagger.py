@@ -30,8 +30,8 @@ class FeatsJointTagger(BaseTagger):
     of which needs to be predicted. With the tagger, you can predict only
     key-value type fields, like FEATS.
     """
-    def __init__(self, field='FEATS'):
-        super().__init__()
+    def __init__(self, field='FEATS', embs=None):
+        super().__init__(embs=embs)
         self._field = field
 
     def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):
@@ -335,8 +335,8 @@ class FeatsSeparateTagger(BaseTagger):
     of which needs to be predicted. With the tagger, you can predict only
     key-value type fields, like FEATS.
     """
-    def __init__(self, field='FEATS'):
-        super().__init__()
+    def __init__(self, field='FEATS', embs=None):
+        super().__init__(embs=embs)
         self._field = field
         self._feats = {}
 
@@ -379,7 +379,7 @@ class FeatsSeparateTagger(BaseTagger):
             if log_file:
                 print('\n--- {}:'.format(feat), file=log_file)
             name_ = self._feats[feat]
-            tagger = FeatTagger(feat)
+            tagger = FeatTagger(feat, embs=self._embs)
             tagger.load(name_)
             self._feats[feat] = [name, tagger]
         if log_file:
@@ -729,7 +729,7 @@ class FeatsSeparateTagger(BaseTagger):
             save_as_ = '{}-{}'.format(save_as, feat.lower())
             self._feats[feat] = save_as_
 
-            tagger = FeatTagger(self._field + ':' + feat)
+            tagger = FeatTagger(self._field + ':' + feat, embs=self._embs)
             tagger._train_corpus, tagger._test_corpus = \
                 self._train_corpus, self._test_corpus
             if word_emb_path_suffix:

@@ -26,5 +26,6 @@ class NeTagger(FeatTagger):
     * `feats_prune_coef=None` means "use all feats";
     * default `feats_prune_coef=6`.
     """
-    def __init__(self, feats_prune_coef=6):
-        super().__init__('MISC:NE', feats_prune_coef=feats_prune_coef)
+    def __init__(self, feats_prune_coef=6, embs=None):
+        super().__init__('MISC:NE', feats_prune_coef=feats_prune_coef,
+                         embs=embs)
