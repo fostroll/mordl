@@ -136,7 +136,7 @@ class BaseTagger(BaseParser):
                 sentences, emb_type=word_emb_type, emb_path=word_emb_path,
                 emb_model_device=word_emb_model_device,
                 transform_kwargs=word_transform_kwargs,
-                next_emb_params=word_next_emb_params, embs=self._embs,
+                next_emb_params=word_next_emb_params, embs=self.embs,
                 loglevel=0 if log_file is None else
                          1 if log_file == sys.stdin else
                          2
@@ -259,7 +259,7 @@ class BaseTagger(BaseParser):
             config = json.loads(f.read())
             for name, cfg in config.items():
                 WordEmbeddings.apply_config(ds.get_dataset(name), cfg,
-                                            device=device)
+                                            device=device, embs=self.embs)
         if log_file:
             print('done.', file=log_file)
         if for_self:
