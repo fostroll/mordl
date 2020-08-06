@@ -17,4 +17,6 @@ from mordl.deprel_tagger import DeprelTagger, DeprelSeqTagger
 from mordl.ne_tagger import NeTagger
 from mordl.base_tagger import conll18_ud_eval
 
+save_conllu = UposTagger.save_conllu
+load_conllu = UposTagger.load_conllu
 load_word_embeddings = WordEmbeddings.load

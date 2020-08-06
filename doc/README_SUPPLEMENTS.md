@@ -24,6 +24,7 @@ To learn more about taggers usage, refer to other chapters:
 ### Table of Contents
 
 1. [Load and Save CoNLL-U Files](#conllu)
+1. [Load Word Embeddings](#embs)
 1. [Split Corpus](#split)
 1. [Remove Rare Features](#rare)
 1. [String Comparison](#diff)
@@ -38,13 +39,39 @@ However, for convenience, we include wrappers for ***Corpuscula***'s
 `Conllu.load()` and `Conllu.save()` methods to our project:
 
 ```python
-UposTagger.save_conllu(*args, **kwargs)
-UposTagger.load_conllu(*args, **kwargs)
+mordl.save_conllu(*args, **kwargs)
+mordl.load_conllu(*args, **kwargs)
 ```
 **args** and **kwargs** are arguments that are passed to corresponding methods
 of the
 [`corpuscula.Conllu`](https://github.com/fostroll/corpuscula/blob/master/doc/README_CONLLU.md)
 class.
+
+### Load Word Embeddings<a name="embs" />
+
+The package has a method for loading pretrained embeddings model of any
+supported type:
+```python
+emb_model = mordl.load_word_embeddings(emb_type, emb_path,
+                                       emb_model_device=None, embs=None)
+```
+
+Args:
+
+**emb_type**: (`str`) one of the supported embeddings types. Allowed
+values: 'bert' for BERT, 'ft' for FastText, 'glove' for Glove, 'w2v'
+for Word2vec.
+
+**emb_path**: path to the embeddings file.
+
+**emb_model_device**: relevant with `emb_type='bert'`. The device
+where the BERT model will be loaded to.
+
+**embs**: `dict` with paths to the embeddings file as keys and
+corresponding embeddings models as values. If **emb_path** is in
+**embs**, the method just return the corresponding model.
+
+Returns the embeddings model.
 
 ### Split Corpus<a name="split"></a>
 
