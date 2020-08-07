@@ -365,8 +365,11 @@ class FeatTagger(BaseTagger):
         if self._feats_prune_coef != 0:
             [x.update({'LEMMA': x['FORM']})
                  for x in self._train_corpus for x in x]
-            self._cdict = CorpusDict(corpus=self._train_corpus,
-                                     format='conllu_parsed', log_file=log_file)
+            self._cdict = CorpusDict(
+                corpus=self._train_corpus
+                     + (self._dev_corpus if self._dev_corpus else []),
+                format='conllu_parsed', log_file=log_file
+            )
             self._save_cdict(save_as + '.cdict.pickle')
             if log_file:
                 print(file=log_file)

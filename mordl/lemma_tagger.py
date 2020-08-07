@@ -484,8 +484,11 @@ class LemmaTagger(BaseTagger):
 
         args, kwargs = get_func_params(LemmaTagger.train, locals())
 
-        self._cdict = CorpusDict(corpus=self._train_corpus,
-                                 format='conllu_parsed', log_file=log_file)
+        self._cdict = CorpusDict(
+            corpus=self._train_corpus
+                 + (self._dev_corpus if self._dev_corpus else []),
+            format='conllu_parsed', log_file=log_file
+        )
 
         if log_file:
             print('\nPreliminary trainset preparation:', file=log_file)
