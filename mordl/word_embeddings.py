@@ -617,9 +617,6 @@ class WordEmbeddings:
         if embs and emb_path in embs:
             model = embs[emb_path]
         else:
-            assert os.path.isfile(emb_path), \
-                'ERROR: File "{}" is not found'.format(emb_path)
-
             if emb_type in ['bert', 'BERT']:
                 tokenizer = BertTokenizer.from_pretrained(
                     emb_path, do_lower_case=False
