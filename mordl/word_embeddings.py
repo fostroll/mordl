@@ -19,7 +19,6 @@ from junky.dataset import BertDataset, WordCatDataset, WordDataset
 from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE
 import numpy as np
 import os
-import pickle
 from sklearn.metrics import accuracy_score, confusion_matrix, \
                             f1_score, precision_score, recall_score
 import sys
@@ -659,20 +658,11 @@ class WordEmbeddings:
                     f, fn = mkstemp(suffix=suff, prefix=pref, dir=nd)
                     f.close()
                     glove2word2vec(emb_path, fn)
-                    model = KeyedVectors.load_word2vec_format(fn, binary=False)
+                    model = KeyedVectors.load_word2vec_format(fn,
+                                                              binary=False)
                     os.remove(fn)
                 except UnicodeDecodeError:
-                    with open(emb_path, 'rb') as f:
-                        try:
-                            model = pickle.load(f)
-                            if not (isinstance(model,
-                                               FastTextKeyedVectors) \
-                                 or isinstance(model, KeyedVectors)):
-                                raise ValueError('ERROR: '
-                                                 'Unknown file format')
-                        except:
-                            raise ValueError('ERROR: '
-                                             'Unknown file format')
+                    model = KeyedVectors.load(emb_path)
                 model = {x: model.vectors[y.index]
                              for x, y in model.vocab.items()}
 
@@ -680,20 +670,10 @@ class WordEmbeddings:
                 try:
                     model = load_facebook_model(emb_path).wv
                 except NotImplementedError:
-                    with open(emb_path, 'rb') as f:
-                        try:
-                            model = pickle.load(f)
-                            if not isinstance(model, FastTextKeyedVectors):
-                                raise \
-                                    ValueError(
-                                        'ERROR: Unable to download Word2vec '
-                                        'vectors as FastText'
-                                    ) if isinstance(model,
-                                                    KeyedVectors) else \
-                                    NotImplementedError()
-                        except BaseException as e:
-                            raise e if isinstance(e, ValueError) else \
-                                  ValueError('ERROR: Unknown file format')
+                    model = KeyedVectors.load(emb_path)
+                    if not isinstance(model, FastTextKeyedVectors):
+                        raise ValueError('ERROR: Unable to download '
+                                         'Word2vec vectors as FastText')
 
             elif emb_type in ['w2v', 'word2vec', 'Word2vec']:
                 try:
@@ -707,16 +687,7 @@ class WordEmbeddings:
                         try:
                             model = load_facebook_model(emb_path).wv
                         except NotImplementedError:
-                            with open(emb_path, 'rb') as f:
-                                try:
-                                    model = pickle.load(f)
-                                    if not (isinstance(model,
-                                                       FastTextKeyedVectors) \
-                                         or isinstance(model, KeyedVectors)):
-                                        raise ValueError()
-                                except:
-                                    raise ValueError('ERROR: '
-                                                     'Unknown file format')
+                            model = KeyedVectors.load(emb_path)
                 model = {x: model.vectors[y.index]
                              for x, y in model.vocab.items()}
 
