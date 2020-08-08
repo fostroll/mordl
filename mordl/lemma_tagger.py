@@ -209,8 +209,9 @@ class LemmaTagger(BaseTagger):
         args, kwargs = get_func_params(LemmaTagger.load, locals())
         super().load(FeatTaggerModel, *args, **kwargs)
 
-    def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
-                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
+    def predict(self, corpus, min_cdict_coef=.99, with_orig=False,
+                batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                save_to=None, log_file=LOG_FILE):
         """Predicts tags in the LEMMA field of the corpus.
 
         Args:
@@ -218,6 +219,10 @@ class LemmaTagger(BaseTagger):
         **corpus**: a corpus which will be used for feature extraction and
         predictions. May be either a name of the file in *CoNLL-U* format or
         list/iterator of sentences in *Parsed CoNLL-U*.
+
+        **min_cdict_coef** (`float`): min coef when
+        `corpuscula.CorpusDict.predict_lemma()` method is treated as relevant.
+        If `None`, then it's not used. Default is `min_cdict_coef=.99`.
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
@@ -258,11 +263,15 @@ class LemmaTagger(BaseTagger):
 
         def apply_editops(str_from, upos, ops_t, isfirst):
             if str_from and ops_t not in [None, (None,)]:
-                str_from_, coef = \
-                    cdict.predict_lemma(str_from, upos, isfirst=isfirst)
-                if coef >= .99:
-                    str_from = str_from_
-                else:
+                str_from_ = None
+                if min_cdict_coef is not None:
+                    str_from_, coef = \
+                        cdict.predict_lemma(str_from, upos, isfirst=isfirst)
+                    if coef >= min_cdict_coef:
+                        str_from = str_from_
+                    else:
+                        str_from_ = None
+                if str_from_ is None:
                     try:
                         ops_p, ops_s, ops_c = ops_t
                         str_from_ = ''.join(reversed(
