@@ -12,12 +12,14 @@ from corpuscula.corpus_utils import get_root_dir
 from gensim.models.fasttext import load_facebook_model
 from gensim.scripts.glove2word2vec import glove2word2vec
 from gensim.models import KeyedVectors
+from gensim.models.keyedvectors import FastTextKeyedVectors
 import json
 import junky
 from junky.dataset import BertDataset, WordCatDataset, WordDataset
 from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE
 import numpy as np
 import os
+import pickle
 from sklearn.metrics import accuracy_score, confusion_matrix, \
                             f1_score, precision_score, recall_score
 import sys
@@ -596,8 +598,8 @@ class WordEmbeddings:
         Args:
 
         **emb_type**: (`str`) one of the supported embeddings types. Allowed
-        values: 'bert' for BERT, 'ft' for FastText, 'glove' for Glove, 'w2v'
-        for Word2vec.
+        values: 'bert' for *BERT*, 'ft' for *FastText*, 'glove' for *Glove*,
+        'w2v' for *Word2vec*.
 
         **emb_path**: path to the embeddings file.
 
@@ -613,7 +615,10 @@ class WordEmbeddings:
         if embs and emb_path in embs:
             model = embs[emb_path]
         else:
-            if emb_type == 'bert':
+            assert os.path.isfile(emb_path), \
+                'ERROR: File "{}" is not found'.format(emb_path)
+
+            if emb_type in ['bert', 'BERT']:
                 tokenizer = BertTokenizer.from_pretrained(
                     emb_path, do_lower_case=False
                 )
@@ -643,7 +648,7 @@ class WordEmbeddings:
                 model.eval()
                 model = model, tokenizer
 
-            elif emb_type == 'glove':
+            elif emb_type == ['glove', 'Glove']:
                 try:
                     model = KeyedVectors.load_word2vec_format(emb_path,
                                                               binary=False)
@@ -654,15 +659,43 @@ class WordEmbeddings:
                     f, fn = mkstemp(suffix=suff, prefix=pref, dir=nd)
                     f.close()
                     glove2word2vec(emb_path, fn)
-                    os.remove(fn)
                     model = KeyedVectors.load_word2vec_format(fn, binary=False)
+                    os.remove(fn)
+                except UnicodeDecodeError:
+                    with open(emb_path, 'rb') as f:
+                        try:
+                            model = pickle.load(emb_path)
+                            if not (isinstance(model,
+                                               FastTextKeyedVectors) \
+                                 or isinstance(model, KeyedVectors)):
+                                raise ValueError('ERROR: '
+                                                 'Unknown file format')
+                        except:
+                            raise ValueError('ERROR: '
+                                             'Unknown file format')
                 model = {x: model.vectors[y.index]
                              for x, y in model.vocab.items()}
 
-            elif emb_type in 'ft':
-                model = load_facebook_model(emb_path).wv
+            elif emb_type in ['ft', 'fasttext', 'FastText']:
+                try:
+                    model = load_facebook_model(emb_path).wv
+                except NotImplementedError:
+                    with open(emb_path, 'rb') as f:
+                        try:
+                            model = pickle.load(emb_path)
+                            if not isinstance(model, FastTextKeyedVectors):
+                                raise \
+                                    ValueError(
+                                        'ERROR: Unable to download Word2vec '
+                                        'vectors as FastText'
+                                    ) if isinstance(model,
+                                                    KeyedVectors) else \
+                                    NotImplementedError()
+                        except Error as e:
+                            raise e if isinstance(e, ValueError) else \
+                                  ValueError('ERROR: Unknown file format')
 
-            elif emb_type in 'w2v':
+            elif emb_type in ['w2v', 'word2vec', 'Word2vec']:
                 try:
                     model = KeyedVectors.load_word2vec_format(emb_path,
                                                               binary=False)
@@ -671,7 +704,19 @@ class WordEmbeddings:
                         model = KeyedVectors.load_word2vec_format(emb_path,
                                                                   binary=True)
                     except UnicodeDecodeError:
-                        model = load_facebook_model(emb_path).wv
+                        try:
+                            model = load_facebook_model(emb_path).wv
+                        except NotImplementedError:
+                            with open(emb_path, 'rb') as f:
+                                try:
+                                    model = pickle.load(emb_path)
+                                    if not (isinstance(model,
+                                                       FastTextKeyedVectors) \
+                                         or isinstance(model, KeyedVectors)):
+                                        raise ValueError()
+                                except:
+                                    raise ValueError('ERROR: '
+                                                     'Unknown file format')
                 model = {x: model.vectors[y.index]
                              for x, y in model.vocab.items()}
 

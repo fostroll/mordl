@@ -59,8 +59,8 @@ emb_model = mordl.load_word_embeddings(emb_type, emb_path,
 Args:
 
 **emb_type**: (`str`) one of the supported embeddings types. Allowed
-values: 'bert' for BERT, 'ft' for FastText, 'glove' for Glove, 'w2v'
-for Word2vec.
+values: 'bert' for *BERT*, 'ft' for *FastText*, 'glove' for *Glove*, 'w2v'
+for *Word2vec*.
 
 **emb_path**: path to the embeddings file.
 

@@ -109,8 +109,8 @@ whole, not just replace those tags to `None`.
 
 *Word embedding params*:
 
-**word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v')
-embedding types.
+**word_emb_type** (`str`): one of (`'bert'`|`'glove'`|`'ft'`|`'w2v'`)
+embedding types. Default is `'bert'`.
 
 **word_emb_model_device**: the torch device where the model of word
 embeddings are placed. Relevant only with embedding types, models of
