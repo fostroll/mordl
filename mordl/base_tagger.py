@@ -202,7 +202,7 @@ class BaseTagger(BaseParser):
             ds = self._ds
         res = []
         for name in self._ds.list():
-            ds_ = self._ds.get_dataset(name)
+            ds_, collate_kwargs = self._ds.get(name)
             name_ = name.split('_', maxsplit=1)
             typ, idx = name_[0], name_[1] if len(name_) > 1 else None
             if typ == 'x':
@@ -213,18 +213,18 @@ class BaseTagger(BaseParser):
                 if not res_:
                     res_ = ds_.transform_collate(
                         sentences, batch_size=batch_size,
-                        collate_kwargs={'with_lens': False}
+                        collate_kwargs=collate_kwargs
                     )
                 res.append(res_)
             elif typ == 't':
                 res.append(ds_.transform_collate(
                     tags[int(idx)], batch_size=batch_size,
-                    collate_kwargs={'with_lens': False}
+                    collate_kwargs=collate_kwargs
                 ))
             elif labels and typ == 'y':
                 res.append(ds_.transform_collate(
                     labels, batch_size=batch_size,
-                    collate_kwargs={'with_lens': False}
+                    collate_kwargs=collate_kwargs
                 ))
         for batch in zip(*res):
             batch_ = []
