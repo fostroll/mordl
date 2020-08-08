@@ -226,9 +226,10 @@ chapter.
 When the training has done, you may evaluate the model quality using the test
 or the development test corpora:
 ```python
-tagger.evaluate(gold, test=None, batch_size=BATCH_SIZE, split=None,
-                clone_ds=False, log_file=LOG_FILE)
+tagger.evaluate(gold, test=None, min_cdict_coef=.99, batch_size=BATCH_SIZE,
+                split=None, clone_ds=False, log_file=LOG_FILE)
 ```
+
 Args:
 
 **gold**: a corpus of sentences with actual target values to score the
@@ -238,6 +239,10 @@ list/iterator of sentences in *Parsed CoNLL-U*.
 **test**: a corpus of sentences with predicted target values. If
 `None`, the **gold** corpus will be retagged on-the-fly, and the
 result will be used as **test**.
+
+**min_cdict_coef** (`float`): min coef when
+`corpuscula.CorpusDict.predict_lemma()` method is treated as relevant.
+If `None`, then it's not used. Default is `min_cdict_coef=.99`.
 
 **batch_size** (`int`): number of sentences per batch. Default
 `batch_size=64`.
@@ -259,8 +264,9 @@ The method prints metrics and returns evaluation accuracy.
 
 Using the trained tagger, predict lemmata for the specified corpus:
 ```python
-tagger.predict(corpus, with_orig=False, batch_size=BATCH_SIZE,
-               split=None, clone_ds=False, save_to=None, log_file=LOG_FILE)
+tagger.predict(corpus, min_cdict_coef=.99, with_orig=False,
+               batch_size=BATCH_SIZE, split=None, clone_ds=False,
+               save_to=None, log_file=LOG_FILE)
 ```
 
 Args:
@@ -268,6 +274,10 @@ Args:
 **corpus**: a corpus which will be used for feature extraction and
 predictions. May be either a name of the file in *CoNLL-U* format or
 list/iterator of sentences in *Parsed CoNLL-U*.
+
+**min_cdict_coef** (`float`): min coef when
+`corpuscula.CorpusDict.predict_lemma()` method is treated as relevant.
+If `None`, then it's not used. Default is `min_cdict_coef=.99`.
 
 **with_orig** (`bool`): if `True`, instead of only a sequence with
 predicted labels, returns a sequence of tuples where the first element

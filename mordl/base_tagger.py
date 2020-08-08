@@ -469,7 +469,7 @@ class BaseTagger(BaseParser):
 
     def evaluate(self, field, gold, test=None, feats=None, label=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                 log_file=LOG_FILE):
+                 log_file=LOG_FILE, **ext_predict_kwargs):
         """Evaluate the tagger model.
 
         Args:
@@ -506,6 +506,9 @@ class BaseTagger(BaseParser):
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
+        **\*\*ext_predict_kwargs**: extended keyword arguments for the
+        `.predict()` method. Will be passed as is.
+
         The method prints metrics and returns evaluation accuracy.
         """
         if isinstance(feats, str):
@@ -515,7 +518,8 @@ class BaseTagger(BaseParser):
                       if test else \
                   self.predict(gold, with_orig=True,
                                batch_size=batch_size, split=split,
-                               clone_ds=clone_ds, log_file=log_file)
+                               clone_ds=clone_ds, log_file=log_file,
+                               **ext_predict_kwargs)
         self._normalize_field_names(field)
         header = field.split(':')[:2]
         if len(header) == 2 and not header[1]:
@@ -767,8 +771,8 @@ class BaseTagger(BaseParser):
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        **model_kwargs**: keyword arguments for the model creating. Will be
-        passed as is to the **model_class** constructor.
+        **\*\*model_kwargs**: keyword arguments for the model creating. Will
+        be passed as is to the **model_class** constructor.
 
         The method returns the train statistics.
         """

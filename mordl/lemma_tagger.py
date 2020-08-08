@@ -323,8 +323,9 @@ class LemmaTagger(BaseTagger):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
-    def evaluate(self, gold, test=None, batch_size=BATCH_SIZE, split=None,
-                 clone_ds=False, log_file=LOG_FILE):
+    def evaluate(self, gold, test=None, min_cdict_coef=.99,
+                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                 log_file=LOG_FILE):
         """Evaluate the tagger model.
 
         Args:
@@ -336,6 +337,10 @@ class LemmaTagger(BaseTagger):
         **test**: a corpus of sentences with predicted target values. If
         `None`, the **gold** corpus will be retagged on-the-fly, and the
         result will be used as **test**.
+
+        **min_cdict_coef** (`float`): min coef when
+        `corpuscula.CorpusDict.predict_lemma()` method is treated as relevant.
+        If `None`, then it's not used. Default is `min_cdict_coef=.99`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
@@ -354,7 +359,9 @@ class LemmaTagger(BaseTagger):
         The method prints metrics and returns evaluation accuracy.
         """
         args, kwargs = get_func_params(LemmaTagger.evaluate, locals())
-        return super().evaluate(self._field, *args, **kwargs)
+        del kwargs['min_predict_kwargs']
+        return super().evaluate(self._field, *args, **kwargs,
+                                min_predict_kwargs=min_predict_kwargs)
 
     def train(self, save_as,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
