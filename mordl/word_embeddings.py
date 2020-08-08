@@ -35,6 +35,9 @@ _DEFAULT_BERT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
     aggregate_hiddens_op='cat', aggregate_subtokens_op='max',
     to=junky.CPU, loglevel=1
 )
+_DEFAULT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
+    check_lower=True
+)
 _MAX_BAD_EPOCHS = 0
 
 
@@ -803,6 +806,10 @@ class WordEmbeddings:
                 model, tokenizer = emb_model
                 x = BertDataset(model, tokenizer)
             else:
+                kwargs = deepcopy(_DEFAULT_DATASET_TRANSFORM_KWARGS)
+                if transform_kwargs:
+                    kwargs.update(transform_kwargs)
+                transform_kwargs = kwargs
                 x = WordDataset(
                     emb_model=emb_model,
                     vec_size=len(next(iter(emb_model.values())))
@@ -882,7 +889,10 @@ class WordEmbeddings:
                     kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
             elif isinstance(ds, WordDataset):
-                pass
+                kwargs = deepcopy(_DEFAULT_DATASET_TRANSFORM_KWARGS)
+                if transform_kwargs:
+                    kwargs.update(transform_kwargs)
+                transform_kwargs = kwargs
             else:
                 break
             junky.clear_tqdm()
@@ -935,7 +945,11 @@ class WordEmbeddings:
                     kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
             elif isinstance(ds, WordDataset):
-                loglevel = transform_kwargs.pop('loglevel', loglevel)
+                kwargs = deepcopy(_DEFAULT_DATASET_TRANSFORM_KWARGS)
+                if transform_kwargs:
+                    loglevel = transform_kwargs.pop('loglevel', loglevel)
+                    kwargs.update(transform_kwargs)
+                transform_kwargs = kwargs
             else:
                 break
             junky.clear_tqdm()
