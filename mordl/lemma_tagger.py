@@ -260,7 +260,7 @@ class LemmaTagger(BaseTagger):
             if str_from and ops_t not in [None, (None,)]:
                 str_from_, coef = \
                     cdict.predict_lemma(str_from, upos, isfirst=isfirst)
-                if coef >= .9:
+                if coef >= .99:
                     str_from = str_from_
                 else:
                     try:
