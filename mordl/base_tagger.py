@@ -139,7 +139,7 @@ class BaseTagger(BaseParser):
                 transform_kwargs=word_transform_kwargs,
                 next_emb_params=word_next_emb_params, embs=self.embs,
                 loglevel=0 if log_file is None else
-                         1 if log_file == sys.stdin else
+                         1 if log_file == sys.stdout else
                          2
             )
             ds.add('x', x)
@@ -187,7 +187,7 @@ class BaseTagger(BaseParser):
                 if not WordEmbeddings.transform(
                     ds_, sentences, batch_size=batch_size,
                     loglevel=0 if log_file is None else
-                             1 if log_file == sys.stdin else
+                             1 if log_file == sys.stdout else
                              2
                 ):
                     ds_.transform(sentences)
