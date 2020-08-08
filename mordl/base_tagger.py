@@ -984,7 +984,6 @@ class BaseTagger(BaseParser):
                 + 'Total time: {} ===\n'
                       .format(seconds_to_strtime(time.time - start_time)),
                   file=log_file)
-              file=log_file)
             print(("Use the `.load('{}')` method to start working "
                    'with the {} tagger.').format(save_as, header),
                       file=log_file)
