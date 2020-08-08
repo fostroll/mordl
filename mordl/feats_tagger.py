@@ -774,7 +774,7 @@ class FeatsSeparateTagger(BaseTagger):
             print('\n###### {} TAGGER TRAINING HAS FINISHED ### '
                       .format(self._field)
                 + 'Total time: {} ######\n'
-                      .format(seconds_to_strtime(time.time - start_time)),
+                      .format(seconds_to_strtime(time.time() - start_time)),
                   file=log_file)
             print(("Now, check the separate {} models' and datasets' "
                    'config files and consider to change some device names '
