@@ -664,7 +664,7 @@ class WordEmbeddings:
                 except UnicodeDecodeError:
                     with open(emb_path, 'rb') as f:
                         try:
-                            model = pickle.load(emb_path)
+                            model = pickle.load(f)
                             if not (isinstance(model,
                                                FastTextKeyedVectors) \
                                  or isinstance(model, KeyedVectors)):
@@ -682,7 +682,7 @@ class WordEmbeddings:
                 except NotImplementedError:
                     with open(emb_path, 'rb') as f:
                         try:
-                            model = pickle.load(emb_path)
+                            model = pickle.load(f)
                             if not isinstance(model, FastTextKeyedVectors):
                                 raise \
                                     ValueError(
@@ -709,7 +709,7 @@ class WordEmbeddings:
                         except NotImplementedError:
                             with open(emb_path, 'rb') as f:
                                 try:
-                                    model = pickle.load(emb_path)
+                                    model = pickle.load(f)
                                     if not (isinstance(model,
                                                        FastTextKeyedVectors) \
                                          or isinstance(model, KeyedVectors)):
