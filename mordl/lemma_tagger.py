@@ -252,8 +252,8 @@ class LemmaTagger(BaseTagger):
         kwargs['save_to'] = None
 
         cdict = self._cdict
-        yof = len([x for x in cdict._wforms if 'ё' in x])
-        yol = len([x for x in cdict._lemmata if 'ё' in x])
+        yof = len([x for x in cdict._wforms if 'ё' in x or 'Ё' in x])
+        yol = len([x for x in cdict._lemmata if 'ё' in x or 'Ё' in x])
         remove_yo = yol / yof < 10
 
         def apply_editops(str_from, upos, ops_t, isfirst):
@@ -272,9 +272,10 @@ class LemmaTagger(BaseTagger):
                         ))
                         if str_from_:
                             str_from = str_from_
-                            if 'ё' in str_from:
+                            if 'ё' in str_from or 'Ё' in str_from:
                                 if not cdict.lemma_isknown(str_from, upos):
-                                    str_from_ = str_from.replace('ё', 'е')
+                                    str_from_ = str_from.replace('ё', 'е') \
+                                                        .replace('Ё', 'Е')
                                     if remove_yo \
                                     or cdict.lemma_isknown(str_from_, upos):
                                         str_from = str_from_
