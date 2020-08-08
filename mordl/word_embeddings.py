@@ -691,7 +691,7 @@ class WordEmbeddings:
                                     ) if isinstance(model,
                                                     KeyedVectors) else \
                                     NotImplementedError()
-                        except Error as e:
+                        except BaseException as e:
                             raise e if isinstance(e, ValueError) else \
                                   ValueError('ERROR: Unknown file format')
 
