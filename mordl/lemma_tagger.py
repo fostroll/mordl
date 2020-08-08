@@ -254,6 +254,7 @@ class LemmaTagger(BaseTagger):
         assert not with_orig or save_to is None, \
                'ERROR: `with_orig` can be True only if save_to is None'
         args, kwargs = get_func_params(LemmaTagger.predict, locals())
+        del kwargs['min_cdict_coef']
         kwargs['save_to'] = None
 
         cdict = self._cdict
