@@ -982,7 +982,8 @@ class BaseTagger(BaseParser):
         if log_file:
             print('\n=== {} TAGGER TRAINING HAS FINISHED === '.format(header)
                 + 'Total time: {} ===\n'
-                      .format(seconds_to_strtime(time.time() - start_time)),
+                      .format(junky.seconds_to_strtime(time.time()
+                                                     - start_time)),
                   file=log_file)
             print(("Use the `.load('{}')` method to start working "
                    'with the {} tagger.').format(save_as, header),
