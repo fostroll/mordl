@@ -16,6 +16,7 @@ from mordl import FeatTagger
 from mordl.base_tagger import BaseTagger
 from mordl.defaults import BATCH_SIZE, CONFIG_EXT, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.feat_tagger_model import FeatTaggerModel
+import time
 from typing import Iterator
 
 
@@ -186,7 +187,8 @@ class FeatsJointTagger(BaseTagger):
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
               upos_emb_dim=200, emb_out_dim=512, lstm_hidden_dim=256,
               lstm_layers=3, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
-              bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
+              bn3=True, do3=.4, seed=None, start_time=None,
+              log_file=LOG_FILE):
         """Creates and trains a key-value type field tagger model.
 
         During training, the best model is saved after each successful epoch.
@@ -306,12 +308,17 @@ class FeatsJointTagger(BaseTagger):
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.
 
+        **start_time** (`float`): result of `time.time()` to start with. If
+        `None` (default), the arg will be init anew.
+
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
         The method returns the train statistics.
         """
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
+        if not start_time:
+            start_time = time.time()
         args, kwargs = get_func_params(FeatsJointTagger.train, locals())
 
         [x.update({self._field: '|'.join('='.join((y, x[self._field][y]))
@@ -720,6 +727,7 @@ class FeatsSeparateTagger(BaseTagger):
         """
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
+        start_time = time.time()
         args, kwargs = get_func_params(FeatsSeparateTagger.train, locals())
         del kwargs['feats']
         del kwargs['word_emb_path_suffix']
@@ -740,6 +748,7 @@ class FeatsSeparateTagger(BaseTagger):
 
         res = {}
         for feat in feats:
+            start_time_ = time.time()
             if log_file:
                 print(file=log_file)
                 clear_tqdm()
@@ -756,14 +765,17 @@ class FeatsSeparateTagger(BaseTagger):
                 kwargs['word_emb_path'] = \
                     '{}-{}_{}'.format(self._field.lower(), feat.lower(),
                                       word_emb_path_suffix)
-            res[feat] = tagger.train(save_as_, **kwargs)
-
+            res[feat] = tagger.train(save_as_, **kwargs,
+                                     start_time=start_time_)
             del tagger
 
         self.save(save_as, log_file=log_file)
         if log_file:
-            print('\n###### {} TAGGER TRAINING HAS FINISHED ######\n'
-                      .format(self._field), file=log_file)
+            print('\n###### {} TAGGER TRAINING HAS FINISHED ### '
+                      .format(self._field)
+                + 'Total time: {} ######\n'
+                      .format(seconds_to_strtime(time.time - start_time)),
+                  file=log_file)
             print(("Now, check the separate {} models' and datasets' "
                    'config files and consider to change some device names '
                    'to be able load all the models jointly. You can find '

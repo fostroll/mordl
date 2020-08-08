@@ -12,6 +12,7 @@ from junky import get_func_params
 from mordl.base_tagger import BaseTagger
 from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.feat_tagger_model import FeatTaggerModel
+import time
 
 
 class FeatTagger(BaseTagger):
@@ -236,7 +237,8 @@ class FeatTagger(BaseTagger):
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
               upos_emb_dim=300, emb_out_dim=512, lstm_hidden_dim=256,
               lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
-              bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
+              bn3=True, do3=.4, seed=None, start_time=None,
+              log_file=LOG_FILE):
         """Creates and trains a feature tagger model.
 
         During training, the best model is saved after each successful epoch.
@@ -353,6 +355,9 @@ class FeatTagger(BaseTagger):
 
         *Other options*:
 
+        **start_time** (`float`): result of `time.time()` to start with. If
+        `None` (default), the arg will be init anew.
+
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.
 
@@ -360,6 +365,8 @@ class FeatTagger(BaseTagger):
 
         The method returns the train statistics.
         """
+        if not start_time:
+            start_time = time.time()
         args, kwargs = get_func_params(FeatTagger.train, locals())
 
         if self._feats_prune_coef != 0:

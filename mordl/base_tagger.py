@@ -20,6 +20,7 @@ from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE, \
 from mordl.lib.conll18_ud_eval import main as _conll18_ud_eval
 import os
 import sys
+import time
 import torch
 from typing import Iterator
 
@@ -658,7 +659,7 @@ class BaseTagger(BaseParser):
               word_emb_type='bert', word_emb_path=None,
               word_emb_model_device=None, word_emb_tune_params=None,
               word_transform_kwargs=None, word_next_emb_params=None,
-              seed=None, log_file=LOG_FILE, **model_kwargs):
+              seed=None, start_time=None, log_file=LOG_FILE, **model_kwargs):
         """Creates and trains the tagger model.
 
         We assume all positional argumets but **save_as** are for internal use
@@ -769,6 +770,9 @@ class BaseTagger(BaseParser):
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.
 
+        **start_time** (`float`): result of `time.time()` to start with. If
+        `None` (default), the arg will be init anew.
+
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
         **\*\*model_kwargs**: keyword arguments for the model creating. Will
@@ -777,6 +781,9 @@ class BaseTagger(BaseParser):
         The method returns the train statistics.
         """
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
+
+        if not start_time:
+            start_time = time.time()
 
         if isinstance(tag_emb_names, str):
             tag_emb_names = [tag_emb_names]
@@ -972,10 +979,12 @@ class BaseTagger(BaseParser):
                     res[key][:best_epoch] = value
 
         del model, ds_train, ds_test
-
         if log_file:
-            print('\n=== {} TAGGER TRAINING HAS FINISHED ===\n'
-                      .format(header), file=log_file)
+            print('\n=== {} TAGGER TRAINING HAS FINISHED === '.format(header)
+                + 'Total time: {} ===\n'
+                      .format(seconds_to_strtime(time.time - start_time)),
+                  file=log_file)
+              file=log_file)
             print(("Use the `.load('{}')` method to start working "
                    'with the {} tagger.').format(save_as, header),
                       file=log_file)

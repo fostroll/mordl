@@ -64,9 +64,9 @@ stat = tagger.train(save_as,
                     word_emb_path=None, word_emb_tune_params=None,
                     word_transform_kwargs=None, word_next_emb_params=None,
                     rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-                    emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=3, lstm_do=0,
-                    bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
-                    log_file=LOG_FILE)
+                    emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=3,
+                    lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5, bn3=True,
+                    do3=.4, start_time=None, seed=None, log_file=LOG_FILE)
 ```
 Creates and trains the UPOS tagger model.
 
@@ -183,6 +183,9 @@ layer `bn3`. Default `do3=.4`.
 
 **seed** (`int`): init value for the random number generator if you
 need reproducibility.
+
+**start_time** (`float`): result of `time.time()` to start with. If
+`None` (default), the arg will be init anew.
 
 **log_file**: a stream for info messages. Default is `sys.stdout`.
 

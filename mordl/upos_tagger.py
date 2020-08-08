@@ -10,6 +10,7 @@ from junky import get_func_params
 from mordl.base_tagger import BaseTagger
 from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.upos_tagger_model import UposTaggerModel
+import time
 
 
 class UposTagger(BaseTagger):
@@ -135,7 +136,7 @@ class UposTagger(BaseTagger):
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
               emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=3, lstm_do=0,
               bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
-              log_file=LOG_FILE):
+              start_time=None, log_file=LOG_FILE):
         """Creates and trains the UPOS tagger model.
 
         During training, the best model is saved after each successful epoch.
@@ -252,10 +253,15 @@ class UposTagger(BaseTagger):
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.
 
+        **start_time** (`float`): result of `time.time()` to start with. If
+        `None` (default), the arg will be init anew.
+
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
         The method returns the train statistics.
         """
+        if not start_time:
+            start_time = time.time()
         args, kwargs = get_func_params(UposTagger.train, locals())
         return super().train(self._field, None, UposTaggerModel, None,
                              *args, **kwargs)

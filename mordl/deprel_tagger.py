@@ -13,6 +13,7 @@ from junky import get_func_params
 from mordl import FeatTagger
 from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.deprel_tagger_model import DeprelTaggerModel
+import time
 import torch
 from typing import Iterator
 
@@ -409,7 +410,8 @@ class DeprelSeqTagger(FeatTagger):
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
               upos_emb_dim=300, emb_out_dim=512, lstm_hidden_dim=256,
               lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
-              bn3=True, do3=.4, seed=None, log_file=LOG_FILE):
+              bn3=True, do3=.4, seed=None, start_time=None,
+              log_file=LOG_FILE):
         """Creates and trains the DEPREL tagger model.
 
         During training, the best model is saved after each successful epoch.
@@ -529,10 +531,15 @@ class DeprelSeqTagger(FeatTagger):
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.
 
+        **start_time** (`float`): result of `time.time()` to start with. If
+        `None` (default), the arg will be init anew.
+
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
         The method returns the train statistics.
         """
+        if not start_time:
+            start_time = time.time()
         args, kwargs = get_func_params(DeprelTagger.train, locals())
 
         if self._train_corpus:
