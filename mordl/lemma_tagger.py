@@ -359,9 +359,9 @@ class LemmaTagger(BaseTagger):
         The method prints metrics and returns evaluation accuracy.
         """
         args, kwargs = get_func_params(LemmaTagger.evaluate, locals())
-        del kwargs['min_predict_kwargs']
+        del kwargs['min_cdict_coef']
         return super().evaluate(self._field, *args, **kwargs,
-                                min_predict_kwargs=min_predict_kwargs)
+                                min_cdict_coef=min_cdict_coef)
 
     def train(self, save_as,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
