@@ -414,9 +414,9 @@ class WordEmbeddings:
                 # Reset the total loss for this epoch.
                 total_loss = 0
 
-                progress_bar = tqdm(total=len(train_loader.dataset),
-                                    desc='Epoch {}'.format(epoch),
-                                    file=log_file) \
+                progress_bar = tqdm(desc='Epoch {}'.format(epoch),
+                                    total=len(train_loader.dataset),
+                                    mininterval=2, file=log_file) \
                                    if log_file else \
                                None
 
