@@ -157,6 +157,8 @@ class BaseTaggerSequenceModel(BaseModel):
                                bidirectional=lstm_bidirectional)
         if lstm_bidirectional:
             lstm_hidden_dim *= 2
+        self._T = nn.Linear(emb_out_dim, lstm_hidden_dim)
+        nn.init.constant_(self._T.bias, -1)
 
         self._bn3 = \
             nn.BatchNorm1d(num_features=lstm_hidden_dim) if bn3 else None
@@ -214,17 +216,34 @@ class BaseTaggerSequenceModel(BaseModel):
 
         x_ = pack_padded_sequence(x, x_lens, batch_first=True,
                                   enforce_sorted=False)
-        _, (h_n, _) = self._lstm_l(x_)
+        ## 1. if we want to use h_n:
+        output, (h_n, c_n) = self._lstm_l(x_)
         # h_n.shape => [batch size, num layers * num directions, hidden size]
 
-        x = torch.cat((h_n[-2, :, :], h_n[-1, :, :]), dim=1) \
-                if self._lstm_l.bidirectional else \
-            h_n[-1, :, :]
-        # x.shape => [batch size, hidden size]
+        x_ = torch.cat((h_n[-2, :, :], h_n[-1, :, :]), dim=1) \
+                 if self._lstm_l.bidirectional else \
+             h_n[-1, :, :]
+        # x_.shape => [batch size, hidden size]
+        #####
+
+        '''
+        ## 2. if we want to use output:
+        x_, _ = pad_packed_sequence(output, batch_first=True)
+        x_ = x_[:, -1, :]
+        # or
+        x_ = torch.max(x_, dim=1)[0]
+        # or
+        x_ = torch.mean(x_, dim=1)
+        # or
+        x_ = torch.sum(x_, dim=1)
+        #####
+        '''
+
+        gate = torch.sigmoid(self._T(x))
+        x = x_ * gate + x * (1 - gate)
 
         if self._bn3:
             x = self._bn3(x)
-
         if self._do3:
             x = self._do3(x)
 
