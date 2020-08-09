@@ -23,6 +23,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, \
                             f1_score, precision_score, recall_score
 import sys
 from tempfile import mkstemp
+import time
 from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -409,18 +410,19 @@ class WordEmbeddings:
                 # ========================================
                 # Perform one full pass over the training set.
 
-                # Put the model into training mode.
-                model.train()
                 # Reset the total loss for this epoch.
                 total_loss = 0
 
                 progress_bar = tqdm(desc='Epoch {}'.format(epoch),
                                     total=len(train_loader.dataset),
-                                    mininterval=2, file=log_file) \
+                                    file=log_file) \
                                    if log_file else \
                                None
 
+                # Put the model into training mode.
+                model.train()
                 # Training loop
+                start_time, n_update = time.time(), 0
                 for step, batch in enumerate(train_loader):
                     if device:
                         # move batch to the specified device
@@ -453,10 +455,19 @@ class WordEmbeddings:
                     # Update the learning rate
                     scheduler.step()
 
-                    progress_bar.set_postfix(train_loss = loss.item())
-                    progress_bar.update(b_input_ids.shape[0])
+                    if log_file:
+                        t = time.time()
+                        n_update += b_input_ids.shape[0]
+                        if t - start_time >= 2:
+                            start_time = t
+                            progress_bar.set_postfix(train_loss=loss.item())
+                            progress_bar.update(n_update)
+                            n_update = 0
 
-                progress_bar.close()
+                if log_file:
+                    if n_update:
+                        progress_bar.update(n_update)
+                    progress_bar.close()
 
                 # Calculate the average loss over the training data
                 avg_train_loss = total_loss / len(train_loader)
