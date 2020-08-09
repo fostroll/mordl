@@ -230,7 +230,7 @@ chapter.
 When the training has done, you may evaluate the model quality using the test
 or the development test corpora:
 ```python
-tagger.evaluate(gold, test=None, min_cdict_coef=None, batch_size=BATCH_SIZE,
+tagger.evaluate(gold, test=None, use_cdict_coef=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, log_file=LOG_FILE)
 ```
 
@@ -244,9 +244,11 @@ list/iterator of sentences in *Parsed CoNLL-U*.
 `None`, the **gold** corpus will be retagged on-the-fly, and the
 result will be used as **test**.
 
-**min_cdict_coef** (`float`): min coef when
-`corpuscula.CorpusDict.predict_lemma()` method is treated as relevant.
-If `None` (default), then `CorpusDict` is not used for predictions.
+**use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
+prediction only. Elsewise, we replace our prediction to the value
+returned by the `corpuscula.CorpusDict.predict_lemma()` method if its
+`coef` >= `.99`. Also, you may specify your own threshold as the value
+of the param. Relevant if **test** is not `None`.
 
 **batch_size** (`int`): number of sentences per batch. Default
 `batch_size=64`.
@@ -268,7 +270,7 @@ The method prints metrics and returns evaluation accuracy.
 
 Using the trained tagger, predict lemmata for the specified corpus:
 ```python
-tagger.predict(corpus, min_cdict_coef=None, with_orig=False,
+tagger.predict(corpus, use_cdict_coef=False, with_orig=False,
                batch_size=BATCH_SIZE, split=None, clone_ds=False,
                save_to=None, log_file=LOG_FILE)
 ```
@@ -279,9 +281,11 @@ Args:
 predictions. May be either a name of the file in *CoNLL-U* format or
 list/iterator of sentences in *Parsed CoNLL-U*.
 
-**min_cdict_coef** (`float`): min coef when
-`corpuscula.CorpusDict.predict_lemma()` method is treated as relevant.
-If `None` (default), then `CorpusDict` is not used for predictions.
+**use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
+prediction only. Elsewise, we replace our prediction to the value
+returned by the `corpuscula.CorpusDict.predict_lemma()` method if its
+`coef` >= `.99`. Also, you may specify your own threshold as the value
+of the param.
 
 **with_orig** (`bool`): if `True`, instead of only a sequence with
 predicted labels, returns a sequence of tuples where the first element

@@ -321,19 +321,27 @@ class FeatsJointTagger(BaseTagger):
             start_time = time.time()
         args, kwargs = get_func_params(FeatsJointTagger.train, locals())
 
-        [x.update({self._field: '|'.join('='.join((y, x[self._field][y]))
-                                    for y in sorted(x[self._field]))})
-             for x in self._train_corpus for x in x]
+        for _ in (
+            x.update({self._field: '|'.join('='.join((y, x[self._field][y]))
+                                       for y in sorted(x[self._field]))})
+                for x in [self._train_corpus,
+                          self._test_corpus if self._test_corpus else []]
+                for x in x
+                for x in x
+        ):
+            pass
 
-        [x.update({self._field: '|'.join('='.join((y, x[self._field][y]))
-                                    for y in sorted(x[self._field]))})
-             for x in self._test_corpus for x in x]
-
-        key_vals = set(x[self._field] for x in self._train_corpus for x in x)
-        [None if x[self._field] in key_vals else
-         x.update({self._field: [*get_close_matches(x[self._field],
-                                                    key_vals, n=1), ''][0]})
-             for x in self._test_corpus for x in x]
+        if self._test_corpus:
+            key_vals = set(x[self._field] for x in self._train_corpus
+                                          for x in x)
+            for _ in (
+                None if x[self._field] in key_vals else
+                x.update({self._field: [*get_close_matches(x[self._field],
+                                                           key_vals, n=1),
+                                        ''][0]})
+                    for x in self._test_corpus for x in x
+            ):
+                pass
 
         return super().train(self._field, 'UPOS', FeatTaggerModel, 'upos',
                              *args, **kwargs)

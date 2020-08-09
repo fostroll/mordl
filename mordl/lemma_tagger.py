@@ -18,6 +18,7 @@ import time
 _OP_C_ASIS = 'asis'
 _OP_C_TITLE = 'title'
 _OP_C_LOWER = 'lower'
+_CDICT_COEF_THRESH = .99
 
 
 class LemmaTagger(BaseTagger):
@@ -210,7 +211,7 @@ class LemmaTagger(BaseTagger):
         args, kwargs = get_func_params(LemmaTagger.load, locals())
         super().load(FeatTaggerModel, *args, **kwargs)
 
-    def predict(self, corpus, min_cdict_coef=None, with_orig=False,
+    def predict(self, corpus, use_cdict_coef=False, with_orig=False,
                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
                 save_to=None, log_file=LOG_FILE):
         """Predicts tags in the LEMMA field of the corpus.
@@ -221,9 +222,11 @@ class LemmaTagger(BaseTagger):
         predictions. May be either a name of the file in *CoNLL-U* format or
         list/iterator of sentences in *Parsed CoNLL-U*.
 
-        **min_cdict_coef** (`float`): min coef when
-        `corpuscula.CorpusDict.predict_lemma()` method is treated as relevant.
-        If `None` (default), then `CorpusDict` is not used for predictions.
+        **use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
+        prediction only. Elsewise, we replace our prediction to the value
+        returned by the `corpuscula.CorpusDict.predict_lemma()` method if its
+        `coef` >= `.99`. Also, you may specify your own threshold as the value
+        of the param.
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
@@ -255,7 +258,7 @@ class LemmaTagger(BaseTagger):
         assert not with_orig or save_to is None, \
                'ERROR: `with_orig` can be True only if save_to is None'
         args, kwargs = get_func_params(LemmaTagger.predict, locals())
-        del kwargs['min_cdict_coef']
+        del kwargs['use_cdict_coef']
         kwargs['save_to'] = None
 
         cdict = self._cdict
@@ -266,10 +269,12 @@ class LemmaTagger(BaseTagger):
         def apply_editops(str_from, upos, ops_t, isfirst):
             if str_from and ops_t not in [None, (None,)]:
                 str_from_ = None
-                if min_cdict_coef is not None:
+                if use_cdict_coef not in [None, False]:
                     str_from_, coef = \
                         cdict.predict_lemma(str_from, upos, isfirst=isfirst)
-                    if coef >= min_cdict_coef:
+                    if coef >= _CDICT_COEF_THRESH \
+                                   if use_cdict_coef is True else \
+                               use_cdict_coef:
                         str_from = str_from_
                     else:
                         str_from_ = None
@@ -325,7 +330,7 @@ class LemmaTagger(BaseTagger):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
-    def evaluate(self, gold, test=None, min_cdict_coef=None,
+    def evaluate(self, gold, test=None, use_cdict_coef=False,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
         """Evaluate the tagger model.
@@ -340,9 +345,11 @@ class LemmaTagger(BaseTagger):
         `None`, the **gold** corpus will be retagged on-the-fly, and the
         result will be used as **test**.
 
-        **min_cdict_coef** (`float`): min coef when
-        `corpuscula.CorpusDict.predict_lemma()` method is treated as relevant.
-        If `None` (default), then `CorpusDict` is not used for predictions.
+        **use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
+        prediction only. Elsewise, we replace our prediction to the value
+        returned by the `corpuscula.CorpusDict.predict_lemma()` method if its
+        `coef` >= `.99`. Also, you may specify your own threshold as the value
+        of the param. Relevant if **test** is not `None`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
@@ -361,9 +368,9 @@ class LemmaTagger(BaseTagger):
         The method prints metrics and returns evaluation accuracy.
         """
         args, kwargs = get_func_params(LemmaTagger.evaluate, locals())
-        del kwargs['min_cdict_coef']
+        del kwargs['use_cdict_coef']
         return super().evaluate(self._field, *args, **kwargs,
-                                min_cdict_coef=min_cdict_coef)
+                                use_cdict_coef=use_cdict_coef)
 
     def train(self, save_as,
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
@@ -510,8 +517,10 @@ class LemmaTagger(BaseTagger):
         args, kwargs = get_func_params(LemmaTagger.train, locals())
 
         self._cdict = CorpusDict(
-            corpus=self._train_corpus
-                 + (self._test_corpus if self._test_corpus else []),
+            corpus=(x for x in [self._train_corpus,
+                                self._test_corpus if self._test_corpus else
+                                []]
+                      for x in x),
             format='conllu_parsed', log_file=log_file
         )
 
@@ -528,16 +537,23 @@ class LemmaTagger(BaseTagger):
                 res = None,
             return lemma, res
 
-        [x.update({self._field: find_affixes(x['FORM'], x[self._field])})
-             for x in self._train_corpus for x in x]
+        for _ in (
+            x.update({self._field: find_affixes(x['FORM'], x[self._field])})
+                for x in [self._train_corpus,
+                          self._test_corpus if self._test_corpus else []]
+                for x in x
+                for x in x
+        ):
+            pass
 
-        [x.update({self._field: find_affixes(x['FORM'], x[self._field])})
-             for x in self._test_corpus for x in x]
-
-        list(self._transform_upos(self._train_corpus))
-        key_vals = set(x['UPOS'] for x in self._train_corpus for x in x
-                           if x['FORM'] and x['UPOS'] and '-' not in x['ID'])
-        list(self._transform_upos(self._test_corpus, key_vals))
+        if self._test_corpus:
+            for _ in self._transform_upos(self._train_corpus):
+                pass
+            key_vals = set(x['UPOS'] for x in self._train_corpus for x in x
+                               if x['FORM'] and x['UPOS']
+                                            and '-' not in x['ID'])
+            for _ in self._transform_upos(self._test_corpus, key_vals):
+                pass
 
         if log_file:
             print('done.', file=log_file)
@@ -627,11 +643,15 @@ class LemmaTagger(BaseTagger):
         if log_file:
             print('done.\n', file=log_file)
 
-        [None if x[self._field] in key_vals else
-         x.update({self._field: ((), (), x[self._field][2]
-                                             if x[self._field] != (None,) else
-                                         _OP_C_ASIS)})
-             for x in self._test_corpus for x in x]
+        for _ in (
+            None if x[self._field] in key_vals else
+            x.update({self._field: ((), (),
+                                    x[self._field][2]
+                                        if x[self._field] != (None,) else
+                                    _OP_C_ASIS)})
+                for x in self._test_corpus for x in x
+        ):
+            pass
 
         return super().train(self._field, 'UPOS', FeatTaggerModel, 'upos',
                              *args, **kwargs)

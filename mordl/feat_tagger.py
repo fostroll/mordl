@@ -370,22 +370,34 @@ class FeatTagger(BaseTagger):
         args, kwargs = get_func_params(FeatTagger.train, locals())
 
         if self._feats_prune_coef != 0:
-            corpus = self._train_corpus + (self._test_corpus
-                                               if self._test_corpus else
-                                           [])
-            [x.update({'LEMMA': x['FORM']}) for x in corpus for x in x]
-            self._cdict = CorpusDict(corpus=corpus,
+            for _ in (
+                x.update({'LEMMA': x['FORM']})
+                    for x in [self._train_corpus,
+                              self._test_corpus if self._test_corpus else []]
+                    for x in x
+                    for x in x
+            ):
+                pass
+            self._cdict = CorpusDict(
+                corpus=(x for x in [self._train_corpus,
+                                    self._test_corpus if self._test_corpus else
+                                    []]
+                          for x in x),
                 format='conllu_parsed', log_file=log_file
             )
             self._save_cdict(save_as + '.cdict.pickle')
             if log_file:
                 print(file=log_file)
 
-            list(self._transform_upos(self._train_corpus))
-            key_vals = set(x['UPOS'] for x in self._train_corpus for x in x
-                               if x['FORM'] and x['UPOS']
-                                            and '-' not in x['ID'])
-            list(self._transform_upos(self._test_corpus, key_vals))
+            if self._test_corpus:
+                for _ in self._transform_upos(self._train_corpus):
+                    pass
+                key_vals = set(x['UPOS'] for x in self._train_corpus
+                                         for x in x
+                                   if x['FORM'] and x['UPOS']
+                                                and '-' not in x['ID'])
+                for _ in self._transform_upos(self._test_corpus, key_vals):
+                    pass
 
         return super().train(self._field, 'UPOS', self._model_class, 'upos',
                              *args, **kwargs)

@@ -288,7 +288,7 @@ class BaseTagger(BaseParser):
         Any other changes most likely won't allow the tagger to load.
         """
         assert self._ds is not None, \
-               "ERROR: The tagger doesn't have a dataset to save"
+            "ERROR: The tagger doesn't have a dataset to save"
         assert self._model, "ERROR: The tagger doesn't have a model to save"
         self._save_dataset(name)
         model_config_fn, model_fn, _, _, cdict_fn = \
