@@ -210,7 +210,7 @@ class LemmaTagger(BaseTagger):
         args, kwargs = get_func_params(LemmaTagger.load, locals())
         super().load(FeatTaggerModel, *args, **kwargs)
 
-    def predict(self, corpus, min_cdict_coef=.99, with_orig=False,
+    def predict(self, corpus, min_cdict_coef=None, with_orig=False,
                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
                 save_to=None, log_file=LOG_FILE):
         """Predicts tags in the LEMMA field of the corpus.
@@ -223,7 +223,7 @@ class LemmaTagger(BaseTagger):
 
         **min_cdict_coef** (`float`): min coef when
         `corpuscula.CorpusDict.predict_lemma()` method is treated as relevant.
-        If `None`, then it's not used. Default is `min_cdict_coef=.99`.
+        If `None` (default), then `CorpusDict` is not used for predictions.
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
@@ -325,7 +325,7 @@ class LemmaTagger(BaseTagger):
             corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
 
-    def evaluate(self, gold, test=None, min_cdict_coef=.99,
+    def evaluate(self, gold, test=None, min_cdict_coef=None,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
         """Evaluate the tagger model.
@@ -342,7 +342,7 @@ class LemmaTagger(BaseTagger):
 
         **min_cdict_coef** (`float`): min coef when
         `corpuscula.CorpusDict.predict_lemma()` method is treated as relevant.
-        If `None`, then it's not used. Default is `min_cdict_coef=.99`.
+        If `None` (default), then `CorpusDict` is not used for predictions.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.

@@ -230,7 +230,7 @@ chapter.
 When the training has done, you may evaluate the model quality using the test
 or the development test corpora:
 ```python
-tagger.evaluate(gold, test=None, min_cdict_coef=.99, batch_size=BATCH_SIZE,
+tagger.evaluate(gold, test=None, min_cdict_coef=None, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, log_file=LOG_FILE)
 ```
 
@@ -246,7 +246,7 @@ result will be used as **test**.
 
 **min_cdict_coef** (`float`): min coef when
 `corpuscula.CorpusDict.predict_lemma()` method is treated as relevant.
-If `None`, then it's not used. Default is `min_cdict_coef=.99`.
+If `None` (default), then `CorpusDict` is not used for predictions.
 
 **batch_size** (`int`): number of sentences per batch. Default
 `batch_size=64`.
@@ -268,7 +268,7 @@ The method prints metrics and returns evaluation accuracy.
 
 Using the trained tagger, predict lemmata for the specified corpus:
 ```python
-tagger.predict(corpus, min_cdict_coef=.99, with_orig=False,
+tagger.predict(corpus, min_cdict_coef=None, with_orig=False,
                batch_size=BATCH_SIZE, split=None, clone_ds=False,
                save_to=None, log_file=LOG_FILE)
 ```
@@ -281,7 +281,7 @@ list/iterator of sentences in *Parsed CoNLL-U*.
 
 **min_cdict_coef** (`float`): min coef when
 `corpuscula.CorpusDict.predict_lemma()` method is treated as relevant.
-If `None`, then it's not used. Default is `min_cdict_coef=.99`.
+If `None` (default), then `CorpusDict` is not used for predictions.
 
 **with_orig** (`bool`): if `True`, instead of only a sequence with
 predicted labels, returns a sequence of tuples where the first element
