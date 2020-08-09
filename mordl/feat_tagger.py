@@ -370,11 +370,11 @@ class FeatTagger(BaseTagger):
         args, kwargs = get_func_params(FeatTagger.train, locals())
 
         if self._feats_prune_coef != 0:
-            [x.update({'LEMMA': x['FORM']})
-                 for x in self._train_corpus for x in x]
-            self._cdict = CorpusDict(
-                corpus=self._train_corpus
-                     + (self._test_corpus if self._test_corpus else []),
+            corpus = self._train_corpus + (self._test_corpus
+                                               if self._test_corpus else
+                                           [])
+            [x.update({'LEMMA': x['FORM']}) for x in corpus for x in x]
+            self._cdict = CorpusDict(corpus=corpus,
                 format='conllu_parsed', log_file=log_file
             )
             self._save_cdict(save_as + '.cdict.pickle')
