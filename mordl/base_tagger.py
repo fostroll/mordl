@@ -8,6 +8,7 @@ Provides a base class for specialized morphological taggers.
 """
 from corpuscula.corpus_utils import _AbstractCorpus
 from copy import deepcopy
+import gc
 import itertools
 import json
 import junky
@@ -902,9 +903,10 @@ class BaseTagger(BaseParser):
             ds_test = None
 
         # remove emb models to free memory:
-        del ds_train._pull_xtrn()
+        ds_train._pull_xtrn()
         if ds_test is not None:
-            del ds_test._pull_xtrn()
+            ds_test._pull_xtrn()
+        gc.collect()
 
         model_config_fn, model_fn, _, _, cdict_fn = \
             self._get_filenames(save_as)
