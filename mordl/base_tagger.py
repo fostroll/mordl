@@ -343,9 +343,12 @@ class BaseTagger(BaseParser):
                 res.append(name)
         return res[0] if tostr else res
 
-    def predict(self, field, add_fields, corpus, with_orig=False,
-                batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                save_to=None, log_file=LOG_FILE):
+    def _check_cdict(self, sentence, use_cdict_coef):
+        return sentence
+
+    def predict(self, field, add_fields, corpus, use_cdict_coef=False,
+                with_orig=False, batch_size=BATCH_SIZE, split=None,
+                clone_ds=False, save_to=None, log_file=LOG_FILE):
         """Predicts tags in the specified fields for the corpus.
 
         Args:
@@ -356,6 +359,12 @@ class BaseTagger(BaseParser):
         **corpus**: a corpus which will be used for feature extraction and
         predictions. May be either a name of the file in *CoNLL-U* format or
         list/iterator of sentences in *Parsed CoNLL-U*.
+
+        **use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
+        prediction only. Elsewise, we replace our prediction to the value
+        returned by the `corpuscula.CorpusDict.predict_<field>()` method if
+        its `coef` >= `.99`. Also, you may specify your own threshold as the
+        value of the param.
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
@@ -455,13 +464,14 @@ class BaseTagger(BaseParser):
                             empties=empties, nones=nones
                         )
                     ):
-                        yield sentence, orig_sentence
+                        yield self._check_cdict(sentence, use_cdict_coef), \
+                              orig_sentence
                 else:
                     for sentence in junky.embed_conllu_fields(
                         corpus_, field, values,
                         empties=empties, nones=nones
                     ):
-                        yield sentence
+                        yield self._check_cdict(sentence, use_cdict_coef)
 
         corpus = process(corpus)
         if save_to:

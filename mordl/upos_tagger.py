@@ -12,6 +12,8 @@ from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
 from mordl.upos_tagger_model import UposTaggerModel
 import time
 
+_CDICT_COEF_THRESH = .99
+
 
 class UposTagger(BaseTagger):
     """
@@ -53,8 +55,25 @@ class UposTagger(BaseTagger):
         args, kwargs = get_func_params(UposTagger.load, locals())
         super().load(UposTaggerModel, *args, **kwargs)
 
-    def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
-                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
+    def check_cdict(self, sentence, use_cdict_coef):
+        if use_cdict_coef not in [None, False]:
+            isfirst = True
+            for token in sentence[0] if isinstance(sentence, tuple) else \
+                sentence:
+                id_, form = token['ID'], token['FORM']
+                if token and '-' not in id_:
+                    form, coef = \
+                        cdict.predict_tag(form, isfirst=isfirst)
+                    isfirst = False
+                    if coef >= _CDICT_COEF_THRESH \
+                                   if use_cdict_coef is True else \
+                               use_cdict_coef:
+                        token['FORM'] = form
+        return sentence
+
+    def predict(self, corpus, use_cdict_coef=False, with_orig=False,
+                batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                save_to=None, log_file=LOG_FILE):
         """Predicts tags in the UPOS field of the corpus.
 
         Args:
@@ -62,6 +81,12 @@ class UposTagger(BaseTagger):
         **corpus**: a corpus which will be used for feature extraction and
         predictions. May be either a name of the file in *CoNLL-U* format or a
         list/iterator of sentences in *Parsed CoNLL-U*.
+
+        **use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
+        prediction only. Elsewise, we replace our prediction to the value
+        returned by the `corpuscula.CorpusDict.predict_tag()` method if its
+        `coef` >= `.99`. Also, you may specify your own threshold as the value
+        of the param.
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
@@ -90,8 +115,9 @@ class UposTagger(BaseTagger):
         args, kwargs = get_func_params(UposTagger.predict, locals())
         return super().predict(self._field, None, *args, **kwargs)
 
-    def evaluate(self, gold, test=None, label=None, batch_size=BATCH_SIZE,
-                 split=None, clone_ds=False, log_file=LOG_FILE):
+    def evaluate(self, gold, test=None, label=None, use_cdict_coef=False,
+                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                 log_file=LOG_FILE):
         """Evaluate the tagger model.
 
         Args:
@@ -106,6 +132,12 @@ class UposTagger(BaseTagger):
 
         **label** (`str`): specific label of the target field to be evaluated,
         e.g. label='VERB'`.
+
+        **use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
+        prediction only. Elsewise, we replace our prediction to the value
+        returned by the `corpuscula.CorpusDict.predict_tag()` method if its
+        `coef` >= `.99`. Also, you may specify your own threshold as the value
+        of the param. Relevant if **test** is not `None`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
@@ -268,5 +300,14 @@ class UposTagger(BaseTagger):
         if not start_time:
             start_time = time.time()
         args, kwargs = get_func_params(UposTagger.train, locals())
+
+        self._cdict = CorpusDict(
+            corpus=(x for x in [self._train_corpus,
+                                self._test_corpus if self._test_corpus else
+                                []]
+                      for x in x),
+            format='conllu_parsed', log_file=log_file
+        )
+
         return super().train(self._field, None, UposTaggerModel, None,
                              *args, **kwargs)
