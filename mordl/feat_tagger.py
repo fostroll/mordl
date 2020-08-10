@@ -237,7 +237,7 @@ class FeatTagger(BaseTagger):
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
               upos_emb_dim=300, emb_out_dim=512, lstm_hidden_dim=256,
               lstm_layers=2, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
-              bn3=True, do3=.4, seed=None, start_time=None,
+              bn3=True, do3=.4, seed=None, start_time=None, keep_embs=False,
               log_file=LOG_FILE):
         """Creates and trains a feature tagger model.
 
@@ -360,6 +360,11 @@ class FeatTagger(BaseTagger):
 
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.
+
+        **keep_embs**: by default, after creating `Dataset` objects, we remove
+        word embedding models to free memory. With `keep_embs=False` this
+        operation is omitted, and you can use `.embs` attribute for share
+        embeddings models with other objects.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 

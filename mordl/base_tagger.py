@@ -660,7 +660,8 @@ class BaseTagger(BaseParser):
               word_emb_type='bert', word_emb_path=None,
               word_emb_model_device=None, word_emb_tune_params=None,
               word_transform_kwargs=None, word_next_emb_params=None,
-              seed=None, start_time=None, log_file=LOG_FILE, **model_kwargs):
+              seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
+              **model_kwargs):
         """Creates and trains the tagger model.
 
         We assume all positional argumets but **save_as** are for internal use
@@ -773,6 +774,11 @@ class BaseTagger(BaseParser):
 
         **start_time** (`float`): result of `time.time()` to start with. If
         `None` (default), the arg will be init anew.
+
+        **keep_embs**: by default, after creating `Dataset` objects, we remove
+        word embedding models to free memory. With `keep_embs=False` this
+        operation is omitted, and you can use `.embs` attribute for share
+        embeddings models with other objects.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
@@ -903,10 +909,12 @@ class BaseTagger(BaseParser):
             ds_test = None
 
         # remove emb models to free memory:
-        ds_train._pull_xtrn()
-        if ds_test is not None:
-            ds_test._pull_xtrn()
-        gc.collect()
+        if not keep_embs:
+            ds_train._pull_xtrn()
+            if ds_test is not None:
+                ds_test._pull_xtrn()
+            self._embs = {}
+            gc.collect()
 
         model_config_fn, model_fn, _, _, cdict_fn = \
             self._get_filenames(save_as)

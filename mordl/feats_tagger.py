@@ -187,7 +187,7 @@ class FeatsJointTagger(BaseTagger):
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
               upos_emb_dim=200, emb_out_dim=512, lstm_hidden_dim=256,
               lstm_layers=3, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
-              bn3=True, do3=.4, seed=None, start_time=None,
+              bn3=True, do3=.4, seed=None, start_time=None, keep_embs=False,
               log_file=LOG_FILE):
         """Creates and trains a key-value type field tagger model.
 
@@ -311,6 +311,11 @@ class FeatsJointTagger(BaseTagger):
         **start_time** (`float`): result of `time.time()` to start with. If
         `None` (default), the arg will be init anew.
 
+        **keep_embs**: by default, after creating `Dataset` objects, we remove
+        word embedding models to free memory. With `keep_embs=False` this
+        operation is omitted, and you can use `.embs` attribute for share
+        embeddings models with other objects.
+
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
         The method returns the train statistics.
@@ -412,7 +417,7 @@ class FeatsSeparateTagger(BaseTagger):
                 print('\n--- {}:'.format(feat), file=log_file)
             name_ = self._feats[feat]
             tagger = FeatTagger(feat, feats_prune_coef=self._feats_prune_coef,
-                                embs=self._embs)
+                                embs=self.embs)
             tagger.load(name_)
             self._feats[feat] = [name, tagger]
         if log_file:
@@ -766,7 +771,7 @@ class FeatsSeparateTagger(BaseTagger):
 
             tagger = FeatTagger(self._field + ':' + feat,
                                 feats_prune_coef=self._feats_prune_coef,
-                                embs=self._embs)
+                                embs=self.embs)
             tagger._train_corpus, tagger._test_corpus = \
                 self._train_corpus, self._test_corpus
             if word_emb_path_suffix:
