@@ -272,7 +272,7 @@ class LemmaTagger(BaseTagger):
                 if use_cdict_coef not in [None, False]:
                     str_from_, coef = \
                         cdict.predict_lemma(str_from, upos, isfirst=isfirst)
-                    if coef is not None
+                    if coef is not None \
                    and coef >= (_CDICT_COEF_THRESH \
                                     if use_cdict_coef is True else \
                                 use_cdict_coef):
