@@ -63,7 +63,7 @@ class UposTagger(BaseTagger):
                 id_, form = token['ID'], token['FORM']
                 if token and '-' not in id_:
                     form, coef = \
-                        cdict.predict_tag(form, isfirst=isfirst)
+                        self._cdict.predict_tag(form, isfirst=isfirst)
                     isfirst = False
                     if coef >= _CDICT_COEF_THRESH \
                                    if use_cdict_coef is True else \
