@@ -401,7 +401,7 @@ class WordEmbeddings:
         junky.clear_tqdm()
 
         # Store the average loss after each epoch so we can plot them
-        loss_values, validation_loss_values = [], []
+        loss_values, test_loss_values = [], []
 
         try:
             for epoch in range(1, epochs + 1):
@@ -529,7 +529,7 @@ class WordEmbeddings:
                         nb_eval_steps += 1
 
                     eval_loss = eval_loss / nb_eval_steps
-                    validation_loss_values.append(eval_loss)
+                    test_loss_values.append(eval_loss)
 
                     if use_seq_labeling:
                         gold_labels = [x for x in gold_labels]
@@ -600,7 +600,7 @@ class WordEmbeddings:
                 'best_test_golds': best_test_golds,
                 'best_test_preds': best_test_preds,
                 'loss_values': loss_values,
-                'validation_loss_values': validation_loss_values,
+                'test_loss_values': test_loss_values,
                 'accuracies': accuracies,
                 'precisions': precisions,
                 'recalls': recalls,
