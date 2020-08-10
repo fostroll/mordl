@@ -422,7 +422,7 @@ class WordEmbeddings:
                 # Put the model into training mode.
                 model.train()
                 # Training loop
-                start_time, n_update = time.time(), 0
+                t, n_update = time.time(), 0
                 for step, batch in enumerate(train_loader):
                     if device:
                         # move batch to the specified device
@@ -456,10 +456,10 @@ class WordEmbeddings:
                     scheduler.step()
 
                     if log_file:
-                        t = time.time()
+                        t_ = time.time()
                         n_update += b_input_ids.shape[0]
-                        if t - start_time >= 2:
-                            start_time = t
+                        if t_ - t >= 2:
+                            t = t_
                             progress_bar.set_postfix(train_loss=loss.item())
                             progress_bar.update(n_update)
                             n_update = 0
