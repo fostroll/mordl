@@ -599,6 +599,8 @@ class WordEmbeddings:
                 'best_accuracy': best_accuracy,
                 'best_test_golds': best_test_golds,
                 'best_test_preds': best_test_preds,
+                'loss_values': loss_values,
+                'validation_loss_values': validation_loss_values,
                 'accuracies': accuracies,
                 'precisions': precisions,
                 'recalls': recalls,
