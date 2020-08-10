@@ -6,6 +6,7 @@
 """
 Provides a UPOS tagger class.
 """
+from corpuscula import CorpusDict
 from junky import get_func_params
 from mordl.base_tagger import BaseTagger
 from mordl.defaults import BATCH_SIZE, CDICT_COEF_THRESH ,LOG_FILE, \
