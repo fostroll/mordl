@@ -68,7 +68,7 @@ class UposTagger(BaseTagger):
                     if coef >= _CDICT_COEF_THRESH \
                                    if use_cdict_coef is True else \
                                use_cdict_coef:
-                        token['FORM'] = form
+                        token['UPOS'] = form
         return sentence
 
     def predict(self, corpus, use_cdict_coef=False, with_orig=False,
@@ -112,6 +112,8 @@ class UposTagger(BaseTagger):
 
         Returns corpus with tags predicted in the UPOS field.
         """
+        assert self._field == 'UPOS' or use_cdict_coef in [None, False], \
+            'ERROR: "use_cdict_coef" param may be used only with UPOS field'
         args, kwargs = get_func_params(UposTagger.predict, locals())
         return super().predict(self._field, None, *args, **kwargs)
 
