@@ -55,7 +55,7 @@ class UposTagger(BaseTagger):
         args, kwargs = get_func_params(UposTagger.load, locals())
         super().load(UposTaggerModel, *args, **kwargs)
 
-    def check_cdict(self, sentence, use_cdict_coef):
+    def _check_cdict(self, sentence, use_cdict_coef):
         if use_cdict_coef not in [None, False]:
             isfirst = True
             for token in sentence[0] if isinstance(sentence, tuple) else \
