@@ -65,9 +65,10 @@ class UposTagger(BaseTagger):
                     guess, coef = \
                         self._cdict.predict_tag(form, isfirst=isfirst)
                     isfirst = False
-                    if coef >= _CDICT_COEF_THRESH \
-                                   if use_cdict_coef is True else \
-                               use_cdict_coef:
+                    if coef is not None \
+                   and coef >= (_CDICT_COEF_THRESH
+                                    if use_cdict_coef is True else
+                                use_cdict_coef):
                         token['UPOS'] = guess
         return sentence
 
