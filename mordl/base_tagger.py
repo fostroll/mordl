@@ -480,8 +480,8 @@ class BaseTagger(BaseParser):
         return corpus
 
     def evaluate(self, field, gold, test=None, feats=None, label=None,
-                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                 log_file=LOG_FILE, **ext_predict_kwargs):
+                 use_cdict_coef=False, batch_size=BATCH_SIZE, split=None,
+                 clone_ds=False, log_file=LOG_FILE, **ext_predict_kwargs):
         """Evaluate the tagger model.
 
         Args:
@@ -503,6 +503,12 @@ class BaseTagger(BaseParser):
         e.g. `field='UPOS', label='VERB'` or
         `field='FEATS:Animacy', label='Inan'`. Note that to evaluate key-value
         type fields like `FEATS` or `MISC`.
+
+        **use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
+        prediction only. Elsewise, we replace our prediction to the value
+        returned by the `corpuscula.CorpusDict.predict_<field>()` method if
+        its `coef` >= `.99`. Also, you may specify your own threshold as the
+        value of the param. Relevant if **test** is not `None`.
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=64`.
@@ -528,10 +534,10 @@ class BaseTagger(BaseParser):
         gold = self._get_corpus(gold, log_file=log_file)
         corpora = zip(self._get_corpus(test, log_file=log_file), gold) \
                       if test else \
-                  self.predict(gold, with_orig=True,
-                               batch_size=batch_size, split=split,
-                               clone_ds=clone_ds, log_file=log_file,
-                               **ext_predict_kwargs)
+                  self.predict(gold, use_cdict_coef=use_cdict_coef,
+                               with_orig=True, batch_size=batch_size,
+                               split=split, clone_ds=clone_ds,
+                               log_file=log_file, **ext_predict_kwargs)
         self._normalize_field_names(field)
         header = field.split(':')[:2]
         if len(header) == 2 and not header[1]:
