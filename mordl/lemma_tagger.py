@@ -11,14 +11,14 @@ from corpuscula import CorpusDict
 from difflib import SequenceMatcher, get_close_matches
 from junky import get_func_params
 from mordl.base_tagger import BaseTagger
-from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
+from mordl.defaults import BATCH_SIZE, CDICT_COEF_THRESH, LOG_FILE, \
+                           TRAIN_BATCH_SIZE
 from mordl.feat_tagger_model import FeatTaggerModel
 import time
 
 _OP_C_ASIS = 'asis'
 _OP_C_TITLE = 'title'
 _OP_C_LOWER = 'lower'
-_CDICT_COEF_THRESH = .99
 
 
 class LemmaTagger(BaseTagger):
@@ -273,7 +273,7 @@ class LemmaTagger(BaseTagger):
                     str_from_, coef = \
                         cdict.predict_lemma(str_from, upos, isfirst=isfirst)
                     if coef is not None \
-                   and coef >= (_CDICT_COEF_THRESH \
+                   and coef >= (CDICT_COEF_THRESH \
                                     if use_cdict_coef is True else \
                                 use_cdict_coef):
                         str_from = str_from_

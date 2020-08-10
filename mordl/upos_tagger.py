@@ -8,7 +8,8 @@ Provides a UPOS tagger class.
 """
 from junky import get_func_params
 from mordl.base_tagger import BaseTagger
-from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
+from mordl.defaults import BATCH_SIZE, CDICT_COEF_THRESH ,LOG_FILE, \
+                           TRAIN_BATCH_SIZE
 from mordl.upos_tagger_model import UposTaggerModel
 import time
 
@@ -66,7 +67,7 @@ class UposTagger(BaseTagger):
                         self._cdict.predict_tag(form, isfirst=isfirst)
                     isfirst = False
                     if coef is not None \
-                   and coef >= (_CDICT_COEF_THRESH
+                   and coef >= (CDICT_COEF_THRESH
                                     if use_cdict_coef is True else
                                 use_cdict_coef):
                         token['UPOS'] = guess

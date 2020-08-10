@@ -15,3 +15,4 @@ NONE_TAG = '_'
 CONFIG_ATTR = '_mordl_config'
 CONFIG_EXT = '.config.json'
 LOG_FILE = sys.stdout
+CDICT_COEF_THRESH = .99
