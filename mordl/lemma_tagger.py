@@ -311,7 +311,7 @@ class LemmaTagger(BaseTagger):
                 isfirst = True
                 for token in sentence_:
                     id_, form = token['ID'], token['FORM']
-                    if token and '-' not in id_:
+                    if form and '-' not in id_:
                         token[self._field] = \
                             apply_editops(form, token['UPOS'],
                                           token[self._field], isfirst=isfirst)

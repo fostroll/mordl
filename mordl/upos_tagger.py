@@ -61,7 +61,7 @@ class UposTagger(BaseTagger):
             for token in sentence[0] if isinstance(sentence, tuple) else \
                 sentence:
                 id_, form = token['ID'], token['FORM']
-                if token and '-' not in id_:
+                if form and '-' not in id_:
                     form, coef = \
                         self._cdict.predict_tag(form, isfirst=isfirst)
                     isfirst = False
