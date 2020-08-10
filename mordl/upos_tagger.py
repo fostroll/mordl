@@ -62,13 +62,13 @@ class UposTagger(BaseTagger):
                 sentence:
                 id_, form = token['ID'], token['FORM']
                 if form and '-' not in id_:
-                    form, coef = \
+                    guess, coef = \
                         self._cdict.predict_tag(form, isfirst=isfirst)
                     isfirst = False
                     if coef >= _CDICT_COEF_THRESH \
                                    if use_cdict_coef is True else \
                                use_cdict_coef:
-                        token['UPOS'] = form
+                        token['UPOS'] = guess
         return sentence
 
     def predict(self, corpus, use_cdict_coef=False, with_orig=False,
