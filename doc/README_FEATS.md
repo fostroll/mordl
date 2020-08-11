@@ -75,7 +75,7 @@ stat = tagger.train(save_as,
                     word_emb_path=None, word_emb_tune_params=None,
                     word_transform_kwargs=None, word_next_emb_params=None,
                     rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-                    upos_emb_dim=200, emb_out_dim=512, lstm_hidden_dim=256,
+                    upos_emb_dim=300, emb_out_dim=512, lstm_hidden_dim=256,
                     lstm_layers=3, lstm_do=0, bn1=True, do1=.2, bn2=True,
                     do2=.5, bn3=True, do3=.4, seed=None, start_time=None,
                     keep_embs=False, log_file=LOG_FILE)
@@ -162,7 +162,7 @@ dimensionality. If `None`, the layer is skipped.
 **cnn_emb_dim**.
 
 **upos_emb_dim** (`int`): auxiliary embedding dimensionality for UPOS
-labels. Default `upos_emb_dim=200`.
+labels. Default `upos_emb_dim=300`.
 
 **emb_out_dim** (`int`): output embedding dimensionality. Default
 `emb_out_dim=512`.

@@ -377,7 +377,7 @@ class LemmaTagger(BaseTagger):
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
               max_grad_norm=None, tags_to_remove=None,
-              word_emb_type='bert', word_emb_model_device=None,
+              word_emb_type='ft', word_emb_model_device=None,
               word_emb_path=None, word_emb_tune_params=None,
               word_transform_kwargs=None, word_next_emb_params=None,
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
@@ -427,7 +427,7 @@ class LemmaTagger(BaseTagger):
         *Word embedding params*:
 
         **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v')
-        embedding types.
+        embedding types. Default is `'ft'`.
 
         **word_emb_model_device**: the torch device where the model of word
         embeddings are placed. Relevant only with embedding types, models of
