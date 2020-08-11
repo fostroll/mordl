@@ -22,11 +22,7 @@ of
 emptied and all other fields were stayed intact, the scores are the same as
 outlined above.
 * Serial inference with UPOS - FEATS - LEMMA taggers resulted with scores:
-    - UPOS: `99.16%`; UFeats: `97.76%`; AllTags: `98.58`; Lemmas: `98.61%` for
-the taggers trained on the original *SynTagRus* corpus;
-    - UPOS: `99.16%`; UFeats: `97.76%`; AllTags: `98.53`; Lemmas: `98.58%` for
-the taggers trained serially on the *SynTagRus* corpus processed by previous
-taggers (UPOS tagger for FEATS; UPOS and FEATS taggers for LEMMA).
+UPOS: `99.16%`; UFeats: `97.76%`; AllTags: `98.58`; Lemmas: `98.66%`.
 
 For completeness, we included that script in our distribution, so you can use
 it for your model evaluation, too. To simplify it, we also made a wrapper 
