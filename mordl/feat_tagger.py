@@ -132,7 +132,8 @@ class FeatTagger(BaseTagger):
         super().load(FeatTaggerModel, *args, **kwargs)
 
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
-                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
+                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE,
+                _**):
         """Predicts tags in the specified feature of the FEATS field of the
         corpus.
 
