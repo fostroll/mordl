@@ -41,6 +41,9 @@ _DEFAULT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
 )
 _MAX_BAD_EPOCHS = 0
 
+#import logging
+#logging.basicConfig(level=logging.ERROR)
+
 
 class WordEmbeddings:
     """
