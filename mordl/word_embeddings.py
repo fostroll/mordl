@@ -42,7 +42,7 @@ _DEFAULT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
 _MAX_BAD_EPOCHS = 0
 
 #import logging
-#logging.basicConfig(level=logging.ERROR)
+#logging.basicConfig(level=logging.ERROR)  # to suppress transformers' warnings
 
 
 class WordEmbeddings:
