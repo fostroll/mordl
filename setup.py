@@ -49,7 +49,7 @@ setup(
     packages=find_packages(exclude=['doc', 'examples', 'scripts', 'tests']),
     install_requires=['corpuscula>=1.0.43', 'gensim', 'junky>=0.2.28',
     'morra>=1.0.7', 'numpy', 'sklearn', 'torch>=1.2.0',
-    'transformers>=2.5.1'],
+    'transformers>=3.0.0'],
     include_package_data=True,
     python_requires='>=3.5',
 )

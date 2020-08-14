@@ -262,6 +262,7 @@ class WordEmbeddings:
                 tokenizer.encode_plus(text=sent,
                                       add_special_tokens=True,
                                       max_length=max_len_ + 2,
+                                      truncation=True,
                                       pad_to_max_length=True,
                                       return_tensors='pt',
                                       return_attention_mask=True,
