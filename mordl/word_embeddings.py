@@ -33,7 +33,7 @@ from transformers import AdamW, BertConfig, BertForSequenceClassification, \
 
 _DEFAULT_BERT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
     max_len=0, batch_size=BATCH_SIZE, hidden_ids=11,
-    aggregate_hiddens_op='cat', aggregate_subtokens_op='max',
+    aggregate_hiddens_op='cat', aggregate_subtokens_op='absmax',
     to=junky.CPU, loglevel=1
 )
 _DEFAULT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
