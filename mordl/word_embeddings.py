@@ -41,8 +41,8 @@ _DEFAULT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
 )
 _MAX_BAD_EPOCHS = 0
 
-#import logging
-#logging.basicConfig(level=logging.ERROR)  # to suppress transformers' warnings
+import logging
+logging.basicConfig(level=logging.ERROR)  # to suppress transformers' warnings
 
 
 class WordEmbeddings:
@@ -265,7 +265,7 @@ class WordEmbeddings:
                 tokenizer.encode_plus(text=sent,
                                       add_special_tokens=True,
                                       max_length=max_len_ + 2,
-                                      truncation=True,
+                                      #truncation=True,
                                       pad_to_max_length=True,
                                       return_tensors='pt',
                                       return_attention_mask=True,
