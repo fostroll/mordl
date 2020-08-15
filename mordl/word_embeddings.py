@@ -7,6 +7,13 @@
 Provides a class for loading and applying pretrained embeddings to
 input sentences and creating datasets and collated dataloaders.
 """
+import logging
+import sys
+#logging.basicConfig(level=logging.ERROR)
+#if not sys.warnoptions:
+#    import warnings
+#    warnings.simplefilter('ignore')
+#    os.environ['PYTHONWARNINGS'] = 'ignore'
 from copy import deepcopy
 from corpuscula.corpus_utils import get_root_dir
 from gensim.models.fasttext import load_facebook_model
@@ -21,7 +28,6 @@ import numpy as np
 import os
 from sklearn.metrics import accuracy_score, confusion_matrix, \
                             f1_score, precision_score, recall_score
-import sys
 from tempfile import mkstemp
 import time
 from tqdm import tqdm
@@ -41,15 +47,11 @@ _DEFAULT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
 )
 _MAX_BAD_EPOCHS = 0
 
-import logging
-#logging.basicConfig(level=logging.ERROR)
 # to suppress transformers' warnings
-logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
-#logging.getLogger("pytorch_pretrained_bert.tokenization").setLevel(logging.ERROR)
-#if not sys.warnoptions:
-#    import warnings
-#    warnings.simplefilter('ignore')
-#    os.environ['PYTHONWARNINGS'] = 'ignore'
+#logging.getLogger('transformers.tokenization_utils_base').setLevel(logging.ERROR)
+logging.getLogger('transformers').setLevel(logging.ERROR)
+#logging.getLogger('pytorch_pretrained_bert.tokenization').setLevel(logging.ERROR)
+
 
 class WordEmbeddings:
     """
