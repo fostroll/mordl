@@ -42,8 +42,14 @@ _DEFAULT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
 _MAX_BAD_EPOCHS = 0
 
 import logging
-logging.basicConfig(level=logging.ERROR)  # to suppress transformers' warnings
-
+#logging.basicConfig(level=logging.ERROR)
+# to suppress transformers' warnings
+logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
+#logging.getLogger("pytorch_pretrained_bert.tokenization").setLevel(logging.ERROR)
+#if not sys.warnoptions:
+#    import warnings
+#    warnings.simplefilter('ignore')
+#    os.environ['PYTHONWARNINGS'] = 'ignore'
 
 class WordEmbeddings:
     """
