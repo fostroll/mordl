@@ -75,9 +75,7 @@ class FeatTagger(BaseTagger):
                     [feats_.add(x[0]) for x in tag_feats if x[1] > thresh]
 
         for sent in corpus:
-            if isinstance(sent, tuple):
-                sent = sent[0]
-            for tok in sent:
+            for tok in sent[0] if isinstance(sent, tuple) else sent:
                 upos = tok['UPOS']
                 if upos:
                     upos = upos_ = upos.split(' ')[0]
