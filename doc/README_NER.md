@@ -68,8 +68,9 @@ Refer to
 if you need more help.
 
 Also, note, that before you can make NE tagging, you should make UPOS and
-FEATS tagging. See the pipeline in our
+FEATS tagging. See the **MISC:NE** pipeline in our
 [example notebook](https://github.com/fostroll/mordl/blob/master/examples/mordl.ipynb)
+example notebook.
 
 Because we assume that NE tags are found only in `'MISC:NE'` feature, a single
 token may have only one Named-entity tag. If your sutuation is different, and
