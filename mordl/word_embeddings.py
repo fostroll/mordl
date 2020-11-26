@@ -694,6 +694,7 @@ class WordEmbeddings:
             elif emb_type in ['ft', 'fasttext', 'FastText']:
                 try:
                     model = load_facebook_model(emb_path).wv
+                    #model = load_facebook_vectors(emb_path)
                 except NotImplementedError:
                     model = KeyedVectors.load(emb_path)
                     if not isinstance(model, FastTextKeyedVectors):
