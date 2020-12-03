@@ -14,6 +14,7 @@ import sys
 #    import warnings
 #    warnings.simplefilter('ignore')
 #    os.environ['PYTHONWARNINGS'] = 'ignore'
+from collections.abc import Iterable
 from copy import deepcopy
 from corpuscula.corpus_utils import get_root_dir
 from gensim.models.fasttext import load_facebook_model
@@ -62,7 +63,7 @@ class WordEmbeddings:
     def bert_tune(train_sentences, train_labels, test_data=None,
                   model_name='bert-base-multilingual-cased', device=None,
                   save_to=None, max_len=512, epochs=3, batch_size=8,
-                  seed=None, log_file=LOG_FILE):
+                  special_tokens=None, seed=None, log_file=LOG_FILE):
         """Method for finetuning base BERT model on custom data.
 
         Args:
@@ -94,6 +95,9 @@ class WordEmbeddings:
 
         **batch_size** (`int`): number of sentences per batch. Default
         `batch_size=8`.
+
+        **special_tokens** (`str`|`list(<str>)`): additional special tokens
+        for BERT tokenizer.
 
         **seed** (`int`): random seed.
 
@@ -330,6 +334,9 @@ class WordEmbeddings:
             model_name, num_labels=len(t2y),
             output_attentions = False, output_hidden_states = False
         )
+        if special_tokens:
+            tokenizer.add_tokens(special_tokens, special_tokens=True)
+            model.resize_token_embeddings(len(tokenizer))
         if device:
             model.to(device)
         if log_file:
