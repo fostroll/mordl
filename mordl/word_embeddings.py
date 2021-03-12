@@ -17,7 +17,8 @@ import sys
 from collections.abc import Iterable
 from copy import deepcopy
 from corpuscula.corpus_utils import get_root_dir
-from gensim.models.fasttext import load_facebook_model
+#from gensim.models.fasttext import load_facebook_model
+from gensim.models.fasttext import load_facebook_vectors
 from gensim.scripts.glove2word2vec import glove2word2vec
 from gensim.models import KeyedVectors
 from gensim.models.keyedvectors import FastTextKeyedVectors
@@ -700,12 +701,12 @@ class WordEmbeddings:
 
             elif emb_type in ['ft', 'fasttext', 'FastText']:
                 try:
-                    model = load_facebook_model(emb_path).wv
-                    #model = load_facebook_vectors(emb_path)
+                    #model = load_facebook_model(emb_path).wv
+                    model = load_facebook_vectors(emb_path)
                 except NotImplementedError:
                     model = KeyedVectors.load(emb_path)
                     if not isinstance(model, FastTextKeyedVectors):
-                        raise ValueError('ERROR: Unable to download '
+                        raise ValueError('ERROR: Unable to load '
                                          'Word2vec vectors as FastText')
 
             elif emb_type in ['w2v', 'word2vec', 'Word2vec']:
