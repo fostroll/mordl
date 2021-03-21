@@ -188,15 +188,16 @@ class BaseTaggerModel(BaseModel):
             assert x.shape[2] == self.vec_emb_dim, \
                    'ERROR: Invalid vector size: {} whereas vec_emb_dim = {}' \
                        .format(x.shape[2], self.vec_emb_dim)
-            x_.append(x)
+            x_.append(to_device(x, device))
         if self._rnn_emb_l:
-            x_.append(self._rnn_emb_l(x_ch, x_ch_lens))
+            x_.append(self._rnn_emb_l(to_device(x_ch, device), x_ch_lens))
         if self._cnn_emb_l:
-            x_.append(self._cnn_emb_l(x_ch, to_device(x_ch_lens, device)))
+            x_.append(self._cnn_emb_l(to_device(x_ch, device),
+                                      to_device(x_ch_lens, device)))
         if self._tag_emb_l:
-            x_.append(self._tag_emb_l(x_t[0]))
+            x_.append(self._tag_emb_l(to_device(x_t[0], device)))
         elif self._tag_emb_ls:
-            for l_, x_t_ in zip(self._tag_emb_ls, x_t):
+            for l_, x_t_ in zip(self._tag_emb_ls, to_device(x_t, device)):
                 if l_:
                     x_.append(l_(x_t_))
 

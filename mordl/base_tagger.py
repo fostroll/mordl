@@ -924,8 +924,6 @@ class BaseTagger(BaseParser):
         else:
             ds_test = None
 
-        cpu_batch_ixs = [1, 3] if model_kwargs.get('rnn_emb_dim') else [1]
-
         # remove emb models to free memory:
         if not keep_embs:
             ds_train._pull_xtrn()
@@ -982,7 +980,7 @@ class BaseTagger(BaseParser):
             best_model_backup_method, datasets=(ds_train, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
             batch_size=batch_size, control_metric=control_metric,
-            max_grad_norm=max_grad_norm, cpu_batch_ixs=cpu_batch_ixs,
+            max_grad_norm=max_grad_norm, batch_to_device=False,
             with_progress=log_file is not None, log_file=log_file
         )
         best_epoch, best_score = res_['best_epoch'], res_['best_score']
@@ -999,7 +997,7 @@ class BaseTagger(BaseParser):
             best_model_backup_method, datasets=(ds_train, ds_test),
             epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
             batch_size=batch_size, control_metric=control_metric,
-            max_grad_norm=max_grad_norm, cpu_batch_ixs=cpu_batch_ixs,
+            max_grad_norm=max_grad_norm, batch_to_device=False,
             best_score=best_score,
             with_progress=log_file is not None, log_file=log_file
         )
