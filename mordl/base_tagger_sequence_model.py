@@ -7,7 +7,7 @@
 Provides a base model for MorDL taggers.
 """
 from collections.abc import Iterable
-from junky import CharEmbeddingRNN, CharEmbeddingCNN, Masking, get_func_params
+from junky import CharEmbeddingRNN, CharEmbeddingCNN, get_func_params
 from mordl.base_model import BaseModel
 from mordl.defaults import CONFIG_ATTR
 import torch
@@ -216,10 +216,10 @@ class BaseTaggerSequenceModel(BaseModel):
 
         x_ = pack_padded_sequence(x, x_lens, batch_first=True,
                                   enforce_sorted=False)
-        ## 1. if we want to use h_n:
         output, (h_n, c_n) = self._lstm_l(x_)
         # h_n.shape => [batch size, num layers * num directions, hidden size]
 
+        ## 1. if we want to use h_n:
         x_ = torch.cat((h_n[-2, :, :], h_n[-1, :, :]), dim=1) \
                  if self._lstm_l.bidirectional else \
              h_n[-1, :, :]

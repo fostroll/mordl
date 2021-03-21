@@ -12,7 +12,7 @@ from mordl.defaults import CONFIG_ATTR
 
 
 class DeprelTaggerModel(BaseTaggerSequenceModel):
-    """Named entity tagger class.
+    """A DEPREL tagger class.
 
     Args:
 
