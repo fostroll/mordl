@@ -450,7 +450,7 @@ class BaseTagger(BaseParser):
                     )
                 preds = []
                 for batch in loader:
-                    batch = junky.to_device(batch, device)
+                    #batch = junky.to_device(batch, device)
                     with torch.no_grad():
                         pred = self._model(*batch)
                     pred_indices = pred.argmax(-1)
