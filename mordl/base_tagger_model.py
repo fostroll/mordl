@@ -7,7 +7,8 @@
 Provides a base model for MorDL taggers.
 """
 from collections.abc import Iterable
-from junky import CharEmbeddingRNN, CharEmbeddingCNN, Masking, get_func_params
+from junky import CharEmbeddingRNN, CharEmbeddingCNN, Masking, \
+                  get_func_params, to_device
 from mordl.base_model import BaseModel
 from mordl.defaults import CONFIG_ATTR
 import torch
@@ -191,7 +192,7 @@ class BaseTaggerModel(BaseModel):
         if self._rnn_emb_l:
             x_.append(self._rnn_emb_l(x_ch, x_ch_lens))
         if self._cnn_emb_l:
-            x_.append(self._cnn_emb_l(x_ch, x_ch_lens))
+            x_.append(self._cnn_emb_l(x_ch, to_device(x_ch_lens)))
         if self._tag_emb_l:
             x_.append(self._tag_emb_l(x_t[0]))
         elif self._tag_emb_ls:
@@ -234,6 +235,6 @@ class BaseTaggerModel(BaseModel):
 
         x = self._out_l(x)
         if self._out_masking:
-            x = self._out_masking(x, x_lens)
+            x = self._out_masking(x, to_device(x_lens))
 
         return x
