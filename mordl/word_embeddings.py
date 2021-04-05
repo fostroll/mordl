@@ -280,7 +280,7 @@ class WordEmbeddings:
                                       max_length=max_len_ + 2,
                                       #truncation=True,
                                       #pad_to_max_length=True,
-                                      padding='longest',
+                                      padding='max_length',
                                       return_tensors='pt',
                                       return_attention_mask=True,
                                       return_overflowing_tokens=False)
