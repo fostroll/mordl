@@ -202,8 +202,8 @@ The method returns the train statistics.
 To save and load the state of the tagger, use methods:
 ```python
 tagger.save(self, name, log_file=LOG_FILE)
-tagger.load(model_class, name, device=None, dataset_device=None,
-            log_file=LOG_FILE)
+tagger.load(model_class, name, device=None, dataset_emb_path=None,
+            dataset_device=None, log_file=LOG_FILE)
 ```
 Normally, you don't need to call the method `.save()` because the data is
 saved automatically during training. Though, there are cases when this method
