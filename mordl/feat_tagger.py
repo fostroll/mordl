@@ -111,18 +111,22 @@ class FeatTagger(BaseTagger):
                     restore_upos(sent)
             yield sent
 
-    def load(self, name, device=None, dataset_device=None, log_file=LOG_FILE):
-        """Loads feature tagger and dataset.
+    def load(self, name, device=None, dataset_emb_path=None,
+             dataset_device=None, log_file=LOG_FILE):
+        """Loads tagger's internal state saved by its `.save()` method.
 
         Args:
 
         **name** (`str`): name of the previously saved internal state.
 
-        **device**: a device for the loading model if you want to override its
-        previously saved value.
+        **device**: a device for the loaded model if you want to override
+        the value from config.
 
-        **dataset_device**: a device for the loading dataset if you want to
-        override its previously saved value.
+        **dataset_emb_path**: a path where dataset's embeddings to load from
+        if you want to override the value from config.
+
+        **dataset_device**: a device for the loaded dataset if you want to
+        override the value from config.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
         """
