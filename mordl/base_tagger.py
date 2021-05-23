@@ -250,7 +250,7 @@ class BaseTagger(BaseParser):
             print(json.dumps(config, sort_keys=True, indent=4), file=f)
         ds.save(ds_fn, with_data=False)
 
-    def _load_dataset(self, name, device=None, for_self=True,
+    def _load_dataset(self, name, emb_path=None, device=None, for_self=True,
                       log_file=LOG_FILE):
         ds_config_fn, ds_fn = self._get_filenames(name)[2:4]
         if log_file:
@@ -261,7 +261,8 @@ class BaseTagger(BaseParser):
             config = json.loads(f.read())
             for name, cfg in config.items():
                 WordEmbeddings.apply_config(ds.get_dataset(name), cfg,
-                                            device=device, embs=self.embs)
+                                            emb_path=emb_path, device=device,
+                                            embs=self.embs)
         if log_file:
             print('done.', file=log_file)
         if for_self:
@@ -298,8 +299,8 @@ class BaseTagger(BaseParser):
         self._model.save_state_dict(model_fn, log_file=log_file)
         self._save_cdict(cdict_fn)
 
-    def load(self, model_class, name, device=None, dataset_device=None,
-             log_file=LOG_FILE):
+    def load(self, model_class, name, device=None, dataset_emb_path=None,
+             dataset_device=None, log_file=LOG_FILE):
         """Loads tagger's internal state saved by its `.save()` method.
 
         Args:
@@ -309,15 +310,19 @@ class BaseTagger(BaseParser):
 
         **name** (`str`): name of the previously saved internal state.
 
-        **device**: a device for the loading model if you want to override its
-        previously saved value.
+        **device**: a device for the loaded model if you want to override
+        the value from config.
 
-        **dataset_device**: a device for the loading dataset if you want to
-        override its previously saved value.
+        **dataset_emb_path**: a path where dataset's embeddings to load from
+        if you want to override the value from config.
+
+        **dataset_device**: a device for the loaded dataset if you want to
+        override the value from config.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
         """
-        self._load_dataset(name, device=dataset_device, log_file=log_file)
+        self._load_dataset(name, emb_path=dataset_emb_path,
+                           device=dataset_device, log_file=log_file)
         model_config_fn, model_fn, _, _, cdict_fn = \
             self._get_filenames(name)
         self._model = model_class.create_from_config(

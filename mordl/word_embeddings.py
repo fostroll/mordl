@@ -1020,7 +1020,8 @@ class WordEmbeddings:
         ds.save(f, with_data=False)
 
     @classmethod
-    def load_dataset(cls, f, config_f=True, device=None, embs=None):
+    def load_dataset(cls, f, config_f=True, emb_path=None, device=None,
+                     embs=None):
         """Loads previously saved dataset with embedded tokens.
 
         Args:
@@ -1029,8 +1030,11 @@ class WordEmbeddings:
 
         **config_f** (`str` : `file`): json config file.
 
-        **device**: a device for the loading dataset if you want to override
-        its previously saved value.
+        **emb_path**: a path where dataset to load from if you want to
+        override the value from config.
+
+        **device**: a device for the loaded dataset if you want to override
+        the value from config.
 
         **embs**: `dict` with paths to the embeddings file as keys and
         corresponding embeddings models as values. If value of `emb_path` from
@@ -1062,6 +1066,8 @@ class WordEmbeddings:
         else:
             config = getattr(ds, CONFIG_ATTR, ())
 
+        if emb_path:
+            config['emb_path'] = emb_path
         if device:
             config['emb_model_device'] = device
 
@@ -1069,7 +1075,7 @@ class WordEmbeddings:
         return ds
 
     @classmethod
-    def apply_config(cls, ds, config, device=None, embs=None):
+    def apply_config(cls, ds, config, emb_path=None, device=None, embs=None):
         """Apply config file to the dataset.
 
         Args:
@@ -1078,8 +1084,11 @@ class WordEmbeddings:
 
         **config** (`dict` | `list([dict])`): config with model parameters.
 
-        **device**: a device for the loading dataset if you want to override
-        its previously saved value.
+        **emb_path**: a path where dataset to load from if you want to
+        override the value from config.
+
+        **device**: a device for the loaded dataset if you want to override
+        the value from config.
 
         **embs**: `dict` with paths to the embeddings file as keys and
         corresponding embeddings models as values. If value of `emb_path` from
@@ -1094,7 +1103,9 @@ class WordEmbeddings:
 
         embs, xtrn = {} if embs is None else embs, []
         for cfg in config:
-            emb_type, emb_path = cfg['emb_type'], cfg['emb_path']
+            emb_type = cfg['emb_type']
+            if emb_path is None:
+                emb_path = cfg['emb_path']
             emb_model_device = device if device else \
                                cfg.get('emb_model_device')
             transform_kwargs = cfg.get('transform_kwargs', {})
