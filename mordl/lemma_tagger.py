@@ -39,6 +39,14 @@ class LemmaTagger(BaseTagger):
     * `feats_prune_coef=0` means "do not use feats";
     * `feats_prune_coef=None` means "use all feats";
     * default `feats_prune_coef=6`.
+
+    **embs**: `dict` with paths to the embeddings file as keys and
+    corresponding embeddings models as values. If tagger needs to load any
+    embeddings model, firstly, model is looked up it in that `dict`.
+
+    During init, **embs** is copied to the `embs` attribute of the creating
+    object, and this attribute may be used further to share already loaded
+    embeddings with another taggers.
     """
     def __init__(self, field='LEMMA', feats_prune_coef=6, embs=None):
         super().__init__(embs=embs)

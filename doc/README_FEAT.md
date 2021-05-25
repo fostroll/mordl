@@ -53,7 +53,7 @@ quality.
 corresponding embeddings models as values. If tagger needs to load any
 embeddings model, firstly, model is looked up it in that `dict`.
 
-During init, **embs** is copied to the `emb` attribute of the creating
+During init, **embs** is copied to the `embs` attribute of the creating
 object, and this attribute may be used further to share already loaded
 embeddings with another taggers.
 
