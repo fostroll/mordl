@@ -64,7 +64,8 @@ class WordEmbeddings:
     def bert_tune(train_sentences, train_labels, test_data=None,
                   model_name='bert-base-multilingual-cased', device=None,
                   save_to=None, max_len=512, epochs=3, batch_size=8,
-                  special_tokens=None, seed=None, log_file=LOG_FILE):
+                  special_tokens=None, control_metric='accuracy', seed=None,
+                  log_file=LOG_FILE):
         """Method for finetuning base BERT model on custom data.
 
         Args:
@@ -100,12 +101,19 @@ class WordEmbeddings:
         **special_tokens** (`str`|`list(<str>)`): additional special tokens
         for BERT tokenizer.
 
+        **control_metric** (`str`): metric to control training. Allowed values
+        are: 'accuracy', 'f1' and 'loss'. Default `control_metric=accuracy`.
+
         **seed** (`int`): random seed.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
         Returns the finetune statistics.
         """
+        assert control_metric in ['accuracy', 'f1', 'loss'], \
+               "ERROR: Unknown control_metric '{}' ".format(control_metric) \
+             + "(only 'accuracy', 'f1' and 'loss' are available)"
+
         prefix = ''
         if save_to and save_to.endswith('_'):
             prefix, save_to = save_to, prefix
@@ -414,7 +422,7 @@ class WordEmbeddings:
         recalls = []
         f1s = []
 
-        best_accuracy = float('-inf')
+        best_score = float('-inf')
         best_test_golds, best_test_preds = [], []
 
         bad_epochs = 0
@@ -571,7 +579,14 @@ class WordEmbeddings:
                     recalls.append(recall)
                     f1s.append(f1)
 
+                    score = -eval_loss if control_metric == 'loss' else \
+                            accuracy if control_metric == 'accuracy' else \
+                            f1 if control_metric == 'f1' else \
+                            None
+
                     if log_file:
+                        print('Average test loss: {}'.format(eval_loss),
+                              file=log_file)
                         print('Dev: accuracy = {:.8f}'.format(accuracy),
                               file=log_file)
                         print('Dev: precision = {:.8f}'.format(precision),
@@ -584,8 +599,8 @@ class WordEmbeddings:
                             print('NB: Scores may be high because of labels '
                                   'stretching', file=log_file)
 
-                    if accuracy > best_accuracy:
-                        best_accuracy = accuracy
+                    if score > best_score:
+                        best_score = score
                         best_test_golds, best_test_preds = \
                             gold_labels[:], pred_labels[:]
 
@@ -617,7 +632,7 @@ class WordEmbeddings:
         del model
 
         return {'model_name': save_to,
-                'best_accuracy': best_accuracy,
+                'best_score': best_score,
                 'best_test_golds': best_test_golds,
                 'best_test_preds': best_test_preds,
                 'loss_values': loss_values,

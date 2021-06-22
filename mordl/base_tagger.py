@@ -862,6 +862,8 @@ class BaseTagger(BaseParser):
                                                  bert_header
                     if emb_model_device and 'device' not in emb_tune_params:
                         emb_tune_params['device'] = emb_model_device
+                    if 'control_metric' not in emb_tune_params:
+                        emb_tune_params['control_metric'] = control_metric
                     if 'seed' not in emb_tune_params:
                         emb_tune_params['seed'] = seed
                     if 'log_file' not in emb_tune_params:
