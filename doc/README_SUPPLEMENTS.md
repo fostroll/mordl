@@ -39,8 +39,8 @@ However, for convenience, we include wrappers for ***Corpuscula***'s
 `Conllu.load()` and `Conllu.save()` methods to our project:
 
 ```python
-mordl.save_conllu(*args, **kwargs)
-mordl.load_conllu(*args, **kwargs)
+UposTagger.save_conllu(*args, **kwargs)
+UposTagger.load_conllu(*args, **kwargs)
 ```
 **args** and **kwargs** are arguments that are passed to corresponding methods
 of the
@@ -52,8 +52,8 @@ class.
 The package has a method for loading pretrained embeddings model of any
 supported type:
 ```python
-emb_model = mordl.load_word_embeddings(emb_type, emb_path,
-                                       emb_model_device=None, embs=None)
+emb_model = UposTagger.load_word_embeddings(emb_type, emb_path,
+                                            emb_model_device=None, embs=None)
 ```
 
 Args:
@@ -77,8 +77,8 @@ Returns the embeddings model.
 
 Split a **corpus** in a given proportion:
 ```python
-mordl.split_corpus(corpus, split=[.8, .1, .1], save_split_to=None,
-                   seed=None, silent=False)
+UposTagger.split_corpus(corpus, split=[.8, .1, .1], save_split_to=None,
+                        seed=None, silent=False)
 ```
 Here, **corpus** is a name of the file in *CoNLL-U* format or a list/iterator
 of sentences in
@@ -142,7 +142,7 @@ from mordl import LemmaTagger
 To detect common parts and distinctions between two strings, call:
 ```python
 form_pref, form_root, form_suff, lemma_pref, lemma_root, lemma_suff = \
-                            LemmaTagger.find_affixes(form, lemma, lower=False)
+    LemmaTagger.find_affixes(form, lemma, lower=False)
 ```
 The method finds the longest common part of the given **form** and **lemma**
 and returns concurrent and distinct parts of both **form** and
