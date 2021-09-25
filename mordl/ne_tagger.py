@@ -11,8 +11,8 @@ from mordl import FeatTagger
 
 class NeTagger(FeatTagger):
     """
-    Named-entity tagger class. We use the feature 'NE' of MISC field as the
-    place where Named-entity tags are stored.
+    The named-entity tagger class. We use the feature 'NE' of MISC field as
+    the place where Named-entity tags are stored.
 
     Args:
 

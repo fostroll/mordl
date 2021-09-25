@@ -13,7 +13,8 @@ from mordl.defaults import CONFIG_ATTR
 
 
 class UposTaggerModel(BaseTaggerModel):
-    """Tagger class for `str` fields (like the *UPOS* field).
+    """
+    The tagger class for `str` fields (like the *UPOS* field).
 
     Args:
 

@@ -19,7 +19,7 @@ _CDICT_COEF_THRESH = .99
 
 class UposTagger(BaseTagger):
     """
-    A UPOS tagger class.
+    The UPOS tagger class.
 
     Args:
 

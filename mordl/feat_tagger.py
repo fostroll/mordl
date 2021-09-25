@@ -17,7 +17,7 @@ import time
 
 class FeatTagger(BaseTagger):
     """
-    A class of single-feature tagger.
+    The class of single-feature tagger.
 
     Args:
 

@@ -57,7 +57,7 @@ logging.getLogger('transformers').setLevel(logging.ERROR)
 
 class WordEmbeddings:
     """
-    A class that handles loading various pretrained word embeddings.
+    The class that handles loading various pretrained word embeddings.
     """
 
     @staticmethod

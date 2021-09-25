@@ -32,9 +32,36 @@ _DATASETS_FN = 'ds.pt'
 _CDICT_FN = 'cdict.pickle'
 
 
+'''
+class SentencesDataset(torch.utils.data.Dataset):
+    def __init__(self, x_data, y_data, y_pad):
+        super().__init__()
+        self.x_data = x_data
+        self.y_data = y_data
+        self.y_pad = y_pad
+
+    def __len__(self):
+        return len(self.x_data)
+
+    def __getitem__(self, idx):
+        return self.x_data[idx], self.y_data[idx]
+
+    def collate(self, batch):
+        """
+        **batch**: list([x, y])
+        """
+        sents, labels = zip(*batch)
+        lens = [len(x) for x in sents]
+        max_len = max(lens)
+        output_ids = torch.tensor([x + [self.y_pad] * (max_len - len(x))
+                                       for x in labels])
+        # NB: sents is just a list
+        return sents, torch.tensor(lens), output_ids
+'''
+
 class BaseTagger(BaseParser):
     """
-    A base class for the project's taggers.
+    The base class for the project's taggers.
 
     Args:
 
@@ -909,7 +936,7 @@ class BaseTagger(BaseParser):
         if seed:
             junky.enforce_reproducibility(seed=seed)
 
-        # 3. Create datasets
+        # 2. Create datasets
         if log_file:
             print('\nDATASETS CREATION', file=log_file)
         log_file_ = sys.stderr if log_file else None

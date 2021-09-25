@@ -12,7 +12,9 @@ from mordl.defaults import CONFIG_ATTR
 
 
 class FeatTaggerModel(BaseTaggerModel):
-    """Named entity tagger class.
+    """
+    The class for prediction the content of a key-value type field. Separated
+    implementation (predict only one particular field at a time).
 
     Args:
 

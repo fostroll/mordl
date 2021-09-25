@@ -14,7 +14,7 @@ import torch.nn as nn
 
 class BaseModel(nn.Module):
     """
-    A base class for MorDL models.
+    The base class for MorDL models.
 
     Args:
 

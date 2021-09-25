@@ -22,7 +22,7 @@ from typing import Iterator
 
 class FeatsJointTagger(BaseTagger):
     """
-    A class for prediction a content ot a key-value type field. Joint
+    The class for prediction the content of a key-value type field. Joint
     implementation (predict all the content of the field at once).
 
     Args:

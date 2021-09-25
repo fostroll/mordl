@@ -22,7 +22,7 @@ from typing import Iterator
 # with supp_tagger of `DeprelSeqTagger` type: 97.60
 class DeprelTagger(FeatTagger):
     """
-    A DEPREL tagger class.
+    The DEPREL tagger class.
 
     Args:
 

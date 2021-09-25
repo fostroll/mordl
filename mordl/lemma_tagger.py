@@ -23,7 +23,7 @@ _OP_C_LOWER = 'lower'
 
 class LemmaTagger(BaseTagger):
     """
-    A lemmata generation class.
+    The lemmata generation class.
 
     Args:
 
