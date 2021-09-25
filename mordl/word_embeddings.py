@@ -35,9 +35,10 @@ import time
 from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset, DataLoader
-from transformers import AdamW, BertConfig, BertForSequenceClassification, \
-                         BertForTokenClassification, BertTokenizer, \
+from transformers import AdamW, AutoConfig, AutoModel, AutoTokenizer, \
                          get_linear_schedule_with_warmup
+#BertConfig, BertForSequenceClassification, \
+#                         BertForTokenClassification, BertTokenizer, \
 
 _DEFAULT_BERT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
     max_len=0, batch_size=BATCH_SIZE, hidden_ids=11,
