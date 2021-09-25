@@ -666,7 +666,9 @@ class WordEmbeddings:
         if embs and emb_path in embs:
             model = embs[emb_path]
         else:
-            if emb_type in ['bert', 'BERT']:
+            emb_type = emb_type.lower
+            if emb_type == 'bert':
+                '''
                 tokenizer = BertTokenizer.from_pretrained(
                     emb_path, do_lower_case=False
                 )
@@ -691,12 +693,21 @@ class WordEmbeddings:
                         "Only 'BertForSequenceClassification' and "
                         "'BertForSequenceClassification' are allowed"
                     ).format(arch))
+                '''
+                tokenizer = AutoTokenizer.from_pretrained(
+                    emb_path, do_lower_case=False
+                )
+                config = AutoConfig.from_pretrained(
+                    emb_path, output_hidden_states=True,
+                    output_attentions=False
+                )
+                model = AutoModel.from_pretrained(emb_path, config=config)
                 if emb_model_device:
                     model.to(emb_model_device)
                 model.eval()
                 model = model, tokenizer
 
-            elif emb_type == ['glove', 'Glove']:
+            elif emb_type == 'glove':
                 try:
                     model = KeyedVectors.load_word2vec_format(emb_path,
                                                               binary=False)
@@ -715,7 +726,7 @@ class WordEmbeddings:
                 model = {x: model.vectors[y.index]
                              for x, y in model.vocab.items()}
 
-            elif emb_type in ['ft', 'fasttext', 'FastText']:
+            elif emb_type in ['ft', 'fasttext']:
                 try:
                     #model = load_facebook_model(emb_path).wv
                     model = load_facebook_vectors(emb_path)
@@ -725,7 +736,7 @@ class WordEmbeddings:
                         raise ValueError('ERROR: Unable to load '
                                          'Word2vec vectors as FastText')
 
-            elif emb_type in ['w2v', 'word2vec', 'Word2vec']:
+            elif emb_type in ['w2v', 'word2vec']:
                 try:
                     model = KeyedVectors.load_word2vec_format(emb_path,
                                                               binary=False)
