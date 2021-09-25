@@ -7,7 +7,8 @@
 Provides a base model for MorDL taggers.
 """
 from collections.abc import Iterable
-from junky import BaseConfig, CharEmbeddingRNN, CharEmbeddingCNN, to_device
+from junky import CharEmbeddingRNN, CharEmbeddingCNN, Masking, \
+                  get_func_params, to_device
 from mordl.base_model import BaseModel
 from mordl.defaults import CONFIG_ATTR
 import torch
@@ -16,19 +17,16 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
-class BaseModelHeadConfig(BaseConfig):
+class BaseTaggerModel(BaseModel):
     """
-    The config with params to create `BaseModelHead` class.
+    The base model for MorDL taggers.
 
     Args:
 
-    **num_labels** (`int`): number of target labels.
+    **labels_num** (`int`): number of target labels.
 
-    **labels_pad_idx** (`int`; default=-100): index of padding element in the
-    label vocabulary. You can specify here your real index of the padding
-    intent, but we recommend stay it as is (with default fake index) because
-    in practice learning on padding increasing the resulting model
-    performance.
+    **labels_pad_idx** (`int`): index of padding element in the label
+    vocabulary.
 
     **vec_emb_dim** (`int`): word-level embedding vector space dimensionality.
     If `None`, the layer is skipped.
@@ -84,89 +82,50 @@ class BaseModelHeadConfig(BaseConfig):
     **do3** (`float`): dropout rate after the third batch normalization
     layer `bn3`. Default `do3=.4`.
     """
-    labels_pad_idx = -100
-    vec_emb_dim = None
-
-    alphabet_size = 0
-    char_pad_idx = 0
-    rnn_emb_dim = None
-    cnn_emb_dim = None
-    cnn_kernels = [1, 2, 3, 4, 5, 6]
-    tag_emb_params = None
-    emb_bn = True
-    emb_do = .2
-    final_emb_dim = 512
-
-    pre_bn = True
-    pre_do = .5
-    lstm_layers = 1
-    lstm_do = 0
-    tran_layers = 0
-    tran_heads = 8
-    post_bn = True
-    post_do = .4
-
-    def __init__(self, num_labels, **kwargs):
-        super().__init__(**kwargs)
-        self.num_labels = num_labels
-
-class BaseTaggerModelHead(BaseModel):
-    """
-    A base model for MorDL taggers.
-
-    Args:
-
-    **config**: an instance of the `BaseModelHeadConfig` class or the dict
-    that contains initialization data for it.
-    """
-    def __init__(self, config):
-        super().__init__()
-        self.config = config
-
-        assert config.final_emb_dim % 2 == 0, \
-            'ERROR: `config.final_emb_dim` must be even ' \
-           f"(now it's `{config.final_emb_dim}`."
-        assert not (config.lstm_layers and config.tran_layers, \
-            "ERROR: `config.lstm_layers` and `config.tran_layers` can't be " \
-            'both set to non-zero.'
-
-        cnn_kernels = config.cnn_kernels
+    def __init__(self, labels_num, labels_pad_idx=None, vec_emb_dim=None,
+                 alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,
+                 cnn_emb_dim=None, cnn_kernels=[1, 2, 3, 4, 5, 6],
+                 tag_emb_params=None, emb_out_dim=512, lstm_hidden_dim=256,
+                 lstm_layers=1, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
+                 bn3=True, do3=.4):
         if isinstance(cnn_kernels, Iterable):
-            config.cnn_kernels = list(cnn_kernels)
+            cnn_kernels = list(cnn_kernels)
+        args, kwargs = get_func_params(BaseTaggerModel.__init__, locals())
+        super().__init__(*args, **kwargs)
 
-        if config.rnn_emb_dim:
+        self.vec_emb_dim = vec_emb_dim
+
+        if rnn_emb_dim:
             self._rnn_emb_l = \
-                CharEmbeddingRNN(alphabet_size=config.alphabet_size,
-                                 emb_dim=config.rnn_emb_dim,
-                                 pad_idx=config.char_pad_idx)
+                CharEmbeddingRNN(alphabet_size=alphabet_size,
+                                 emb_dim=rnn_emb_dim,
+                                 pad_idx=char_pad_idx)
         else:
             self._rnn_emb_l = None
-            config.rnn_emb_dim = 0
+            rnn_emb_dim = 0
 
-        if config.cnn_emb_dim:
+        if cnn_emb_dim:
             self._cnn_emb_l = \
-                CharEmbeddingCNN(alphabet_size=config.alphabet_size,
-                                 emb_dim=config.cnn_emb_dim,
-                                 pad_idx=config.char_pad_idx,
-                                 kernels=config.cnn_kernels)
+                CharEmbeddingCNN(alphabet_size=alphabet_size,
+                                 emb_dim=cnn_emb_dim,
+                                 pad_idx=char_pad_idx,
+                                 kernels=cnn_kernels)
         else:
             self._cnn_emb_l = None
-            config.cnn_emb_dim = 0
+            cnn_emb_dim = 0
 
         self._tag_emb_l = self._tag_emb_ls = None
         tag_emb_dim = 0
-        if config.tag_emb_params:
+        if tag_emb_params:
             if isinstance(tag_emb_params, dict):
-                tag_emb_dim = config.tag_emb_params['dim'] or 0
+                tag_emb_dim = tag_emb_params['dim'] or 0
                 if tag_emb_dim:
                     self._tag_emb_l = \
-                        nn.Embedding(
-                            config.tag_emb_params['num'], tag_emb_dim,
-                            padding_idx=config.tag_emb_params['pad_idx']
-                        )
+                        nn.Embedding(tag_emb_params['num'], tag_emb_dim,
+                                     padding_idx=tag_emb_params['pad_idx'])
             else:
                 self._tag_emb_ls = nn.ModuleList()
-                for emb_params in config.tag_emb_params:
+                for emb_params in tag_emb_params:
                     tag_emb_dim_ = emb_params['dim']
                     if tag_emb_dim_:
                         tag_emb_dim += tag_emb_dim_
@@ -177,111 +136,50 @@ class BaseTaggerModelHead(BaseModel):
                     else:
                         self._tag_emb_ls.append(None)
 
-        joint_emb_dim = config.vec_emb_dim + config.rnn_emb_dim \
-                                           + config.cnn_emb_dim + tag_emb_dim
+        self._bn1 = \
+            nn.BatchNorm1d(num_features=vec_emb_dim
+                                      + rnn_emb_dim
+                                      + cnn_emb_dim
+                                      + tag_emb_dim) if bn1 else None
+        self._do1 = nn.Dropout(p=do1) if do1 else None
 
-        # TODO: Wrap with nn.Sequential #####################################
-        self._emb_bn = nn.BatchNorm1d(num_features=joint_emb_dim)
-                           if config.emb_bn else \
-                       None
-        self._emb_do = nn.Dropout(p=config.emb_do) if config.emb_do else None
+        self._emb_fc_l = nn.Linear(
+            in_features=vec_emb_dim + rnn_emb_dim + cnn_emb_dim
+                                    + tag_emb_dim,
+            out_features=emb_out_dim
+        )
+        self._bn2 = \
+            nn.BatchNorm1d(num_features=emb_out_dim) if bn2 else None
+        self._do2 = nn.Dropout(p=do2) if do2 else None
 
-        self._emb_fc_l = nn.Linear(in_features=joint_emb_dim,
-                                   out_features=final_emb_dim)
-        self._pre_bn = nn.BatchNorm1d(num_features=config.final_emb_dim) \
-                           if config.pre_bn else \
-                       None
-        self._pre_do = nn.Dropout(p=config.pre_do) if config.pre_do else None
-        # TODO ##############################################################
+        self._lstm_l = nn.LSTM(input_size=emb_out_dim,
+                               hidden_size=lstm_hidden_dim,
+                               num_layers=lstm_layers, batch_first=True,
+                               dropout=lstm_do, bidirectional=True)
+        lstm_hidden_dim *= 2
+        self._T = nn.Linear(emb_out_dim, lstm_hidden_dim)
+        nn.init.constant_(self._T.bias, -1)
 
-        if config.lstm_layers > 0:
-            self._lstm_l = nn.LSTM(
-                input_size=config.final_emb_dim,
-                hidden_size=config.final_emb_dim // 2,
-                num_layers=config.lstm_layers, batch_first=True,
-                dropout=config.lstm_do, bidirectional=True
-            )
-            self._T = nn.Linear(final_emb_dim, config.final_emb_dim)
-            nn.init.constant_(self._T.bias, -1)
-        else:
-            self._lstm_l = None
+        self._bn3 = \
+            nn.BatchNorm1d(num_features=lstm_hidden_dim) if bn3 else None
+        self._do3 = nn.Dropout(p=do3) if do3 else None
 
-        if config.tran_layers > 0:
-            tran_enc_l = nn.TransformerEncoderLayer(
-                config.final_emb_dim, config.tran_heads,
-                dim_feedforward=2048, dropout=0.1, activation='relu',
-                layer_norm_eps=1e-05
-            )
-            tran_norm_l = nn.LayerNorm(normalized_shape=config.final_emb_dim,
-                                       eps=1e-6, elementwise_affine=True)
-            self._tran_l = nn.TransformerEncoder(
-                tran_enc_l, config.tran_layers, norm=tran_norm_l
-            )
-        else:
-            self._tran_l = None
-
-        # TODO: Wrap with nn.Sequential #####################################
-        self._post_bn = \
-            nn.BatchNorm1d(num_features=config.final_emb_dim) \
-                if config.post_bn else \
-            None
-        self._post_do = nn.Dropout(p=config.post_do) if config.post_do else \
-                        None
-
-        self._out_l = nn.Linear(in_features=config.final_emb_dim,
-                                out_features=config.num_labels)
-        # TODO ##############################################################
+        self._out_l = nn.Linear(in_features=lstm_hidden_dim,
+                                out_features=labels_num)
+        self._out_masking = \
+            Masking(input_size=labels_num,
+                    indices_to_highlight=labels_pad_idx,
+                    batch_first=True) if labels_pad_idx is not None else None
 
         setattr(self, CONFIG_ATTR, (args, kwargs))
 
-    def save(self, path, prefix=''):
-        """Saves the current model.
-
-        Args:
-
-        **path** (`str`): the directory where to save.
-
-        **prefix** (`str`; default is `None`): The default names for model
-        files are `'config.json'` and `'state_dict.pt'`. But in some
-        circumstances, these names may not be available. For such a case it is
-        possible to specify a **prefix** for these names.
+    def forward(self, x, x_lens, x_ch, x_ch_lens, *x_t):
         """
-        with open(os.path.join(path, prefix + 'config.json'), 'wt') as f:
-            print(json.dumps(self.config, sort_keys=True, indent=4), file=f)
-        #torch.save({x: y.cpu() for x, y in model.state_dict()},
-        torch.save(model.state_dict(),
-                   os.path.join(path, prefix + 'state_dict.pt'),
-                   pickle_protocol=2)
-
-    @classmethod
-    def load(cls, path, prefix=''):
-        """Loads a model.
-
-        Args:
-
-        **path** (`str`): the directory from where to load.
-
-        **prefix** (`str`; default is `None`): The default names for model
-        files are `'config.json'` and `'state_dict.pt'`. But in some
-        circumstances, these names may have prefixes. For such a case it is
-        possible to specify this **prefix** here.
-        """
-        with open(os.path.join(path, prefix + 'config.json'), 'rt') as f:
-            config = json.load(f)
-        model = cls(**config)
-        model.load_state_dict(
-            torch.load(os.path.join(path, prefix + 'state_dict.pt'),
-                       map_location='cpu')
-        )
-        return model
-
-    def forward(self, x, x_lens, x_ch, x_ch_lens, *x_t labels=None):
-        """
-        x:    [N (batch), L (sentences), C (words + padding)]
-        lens: number of words in sentences
-        x_ch: [N, L, C (words + padding), S (characters + padding)]
-        x_ch_lens: [L, number of characters in words]
-        *x_t: [N, L, C (upos indices)], [N, L, C (feats indices)], ...
+        x:    [batch[seq[w_idx + pad]]]
+        lens: [seq_word_cnt]
+        x_ch: [batch[seq[word[ch_idx + pad] + word[pad]]]]
+        x_ch_lens: [seq[word_char_count]]
+        *x_t:  [batch[seq[upos_idx]]], ...
         """
         device = next(self.parameters()).device
 
@@ -305,55 +203,39 @@ class BaseTaggerModelHead(BaseModel):
 
         x = x_[0] if len(x_) == 1 else torch.cat(x_, dim=-1)
 
-        if self._emb_bn:
-            x.transpose_(1, 2)  # (N, L, C) to (N, C, L)
-            x = self._emb_bn(x)
-            x.transpose_(1, 2)  # (N, C, L) to (N, L, C)
-        if self._emb_do:
-            x = self._emb_do(x)
+        if self._bn1:
+            x = x.transpose(1, 2)  # (N, L, C) to (N, C, L)
+            x = self._bn1(x)
+            x = x.transpose(1, 2)  # (N, C, L) to (N, L, C)
+        if self._do1:
+            x = self._do1(x)
 
         x = self._emb_fc_l(x)
-        if self._pre_bn:
-            x.transpose_(1, 2)  # (N, L, C) to (N, C, L)
-            x = self._pre_bn(x)
-            x.transpose_(1, 2)  # (N, C, L) to (N, L, C)
-        x.relu_(x)
-        if self._pre_do:
-            x = self._pre_do(x)
+        if self._bn2:
+            x = x.transpose(1, 2)  # (N, L, C) to (N, C, L)
+            x = self._bn2(x)
+            x = x.transpose(1, 2)  # (N, C, L) to (N, L, C)
+        x = F.relu(x)
+        if self._do2:
+            x = self._do2(x)
 
-        if self._lstm_l:
-            x_ = pack_padded_sequence(x, x_lens.cpu(), batch_first=True,
-                                      enforce_sorted=False)
-            x_, _ = self._lstm_l(x_)
-            x_, _ = pad_packed_sequence(x_, batch_first=True)
+        x_ = pack_padded_sequence(x, x_lens, batch_first=True,
+                                  enforce_sorted=False)
+        x_, _ = self._lstm_l(x_)
+        x_, _ = pad_packed_sequence(x_, batch_first=True)
 
-            gate = torch.sigmoid(self._T(x))
-            x = x_ * gate + x * (1 - gate)
+        gate = torch.sigmoid(self._T(x))
+        x = x_ * gate + x * (1 - gate)
 
-        if self._tran_l:
-            src_key_padding_mask = (
-                torch.arange(x.shape[1], device=device).expand(x.shape[:-1])
-             >= x_lens.view(1, -1).transpose(0, 1).expand(x.shape[:-1])
-            )
-            x.transpose_(0, 1)  # (N, L, C) to (L, N, C)
-            x = self._tran_l(x, src_key_padding_mask=src_key_padding_mask)
-            x.transpose_(0, 1)  # (L, N, C) to (N, L, C)
+        if self._bn3:
+            x = x.transpose(1, 2)  # (N, L, C) to (N, C, L)
+            x = self._bn3(x)
+            x = x.transpose(1, 2)  # (N, C, L) to (N, L, C)
+        if self._do3:
+            x = self._do3(x)
 
-        if self._post_bn:
-            x.transpose_(1, 2)  # (N, L, C) to (N, C, L)
-            x = self._post_bn(x)
-            x.transpose_(1, 2)  # (N, C, L) to (N, L, C)
-        if self._post_do:
-            x = self._post_do(x)
+        x = self._out_l(x)
+        if self._out_masking:
+            x = self._out_masking(x, to_device(x_lens, device))
 
-        logits = self._out_l(x)
-        if labels is not None:
-#             criterion = nn.CrossEntropyLoss().to(device)
-#             loss = criterion(logits.flatten(end_dim=-2),
-#                              labels.flatten(end_dim=-1))
-            loss = F.cross_entropy(logits.view(-1, self.num_labels),
-                                   labels.view(-1),
-                                   ignore_index=self.labels_pad_idx)
-            logits = logits, loss
-
-        return logits
+        return x
