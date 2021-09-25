@@ -7,7 +7,7 @@ version_file_contents = open(os.path.join(SCRIPT_DIR, 'mordl/_version.py'),
 VERSION = version_file_contents.strip()[len('__version__ = "'):-1]
 
 setup(
-    name='mordl',
+    name='mordl2',
     version=VERSION,
     description='Morphological parser (POS, lemmata, NER etc.)',
     long_description=open('README.md', 'rt', encoding='utf-8').read(),
