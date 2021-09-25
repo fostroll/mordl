@@ -843,7 +843,118 @@ class BaseTagger(BaseParser):
             tags_to_remove=tags_to_remove
         ) if self._test_corpus is not None else None
 
-        # 2. Tune embeddings
+        if seed:
+            junky.enforce_reproducibility(seed=seed)
+
+        # 2. Create datasets
+        if log_file:
+            print('\nDATASETS CREATION', file=log_file)
+        log_file_ = sys.stderr if log_file else None
+        ds_train = self._create_dataset(
+            train[0],
+            word_emb_type=word_emb_type, word_emb_path=word_emb_path,
+            word_emb_model_device=word_emb_model_device,
+            word_transform_kwargs=word_transform_kwargs,
+            word_next_emb_params=word_next_emb_params,
+            with_chars=model_kwargs.get('rnn_emb_dim') \
+                    or model_kwargs.get('cnn_emb_dim'),
+            tags=train[1:-1], labels=train[-1], for_self=False,
+            log_file=log_file_)
+        self._save_dataset(save_as, ds=ds_train)
+        if test:
+            ds_test = ds_train.clone(with_data=False)
+            self._transform(test[0], tags=test[1:-1], labels=test[-1],
+                            ds=ds_test, log_file=log_file_)
+        else:
+            ds_test = None
+
+        # remove emb models to free memory:
+        if not keep_embs:
+            ds_train._pull_xtrn()
+            if ds_test is not None:
+                ds_test._pull_xtrn()
+            self._embs = {}
+            gc.collect()
+
+        model_config_fn, model_fn, _, _, cdict_fn = \
+            self._get_filenames(save_as)
+        self._save_cdict(cdict_fn)
+
+        # 3. Create model
+        if log_file:
+            print('\nMODEL CREATION', file=log_file)
+        ds_ = ds_train.get_dataset('y')
+        model_args = [len(ds_.transform_dict)]
+        if hasattr(ds_, 'pad'):
+            model_kwargs['labels_pad_idx'] = ds_.pad
+        if word_emb_type:
+            ds_ = ds_train.get_dataset('x')
+            model_kwargs['vec_emb_dim'] = ds_.vec_size
+        if model_kwargs.get('rnn_emb_dim') or model_kwargs.get('cnn_emb_dim'):
+            ds_ = ds_train.get_dataset('x_ch')
+            model_kwargs['alphabet_size'] = len(ds_.transform_dict)
+            model_kwargs['char_pad_idx'] = ds_.pad
+        if tag_emb_names:
+            ds_list = ds_train.list()
+            names = iter(tag_emb_names)
+            for name in ds_train.list():
+                if name.startswith('t_'):
+                    ds_ = ds_train.get_dataset(name)
+                    name = next(names)
+                    emb_dim = model_kwargs[name + '_emb_dim']
+                    if emb_dim:
+                        model_kwargs[name + '_num'] = len(ds_.transform_dict)
+                        model_kwargs[name + '_pad_idx'] = ds_.pad
+        model, criterion, optimizer, scheduler = \
+            model_class.create_model_for_train(*model_args, **model_kwargs)
+        if device:
+            model.to(device)
+        model.save_config(model_config_fn, log_file=log_file)
+
+        # 4. Train model
+        if log_file:
+            print('\nMODEL TRAINING', file=log_file)
+        def best_model_backup_method(model, model_score):
+            if log_file:
+                print('new maximum score {:.8f}'.format(model_score),
+                      file=log_file)
+            model.save_state_dict(model_fn, log_file=log_file)
+        res_ = junky.train(
+            None, model, criterion, optimizer, scheduler,
+            best_model_backup_method, datasets=(ds_train, ds_test),
+            epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
+            batch_size=batch_size, control_metric=control_metric,
+            max_grad_norm=max_grad_norm, batch_to_device=False,
+            with_progress=log_file is not None, log_file=log_file
+        )
+        best_epoch, best_score = res_['best_epoch'], res_['best_score']
+        res = {x: y for x, y in res_.items()
+                        if x not in ['best_epoch', 'best_score']}
+
+        # 5. Tune model
+        if log_file:
+            print('\nMODEL TUNING', file=log_file)
+        model.load_state_dict(model_fn, log_file=log_file)
+        criterion, optimizer, scheduler = model.adjust_model_for_tune()
+        res_= junky.train(
+            None, model, criterion, optimizer, scheduler,
+            best_model_backup_method, datasets=(ds_train, ds_test),
+            epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
+            batch_size=batch_size, control_metric=control_metric,
+            max_grad_norm=max_grad_norm, batch_to_device=False,
+            best_score=best_score,
+            with_progress=log_file is not None, log_file=log_file
+        )
+        if res_['best_epoch'] is not None:
+            for key, value in res.items():
+                if key == 'best_epoch':
+                    res[key] += value
+                elif key == 'best_score':
+                    res[key] = value
+                else:
+                    res[key][:best_epoch] = value
+
+        # 6. Tune embeddings
         if word_emb_model_device is None:
             word_emb_model_device = device
 
@@ -905,117 +1016,6 @@ class BaseTagger(BaseParser):
                         emb_params.get('emb_tune_params',
                         emb_params.get('word_emb_tune_params'))
                 )
-
-        if seed:
-            junky.enforce_reproducibility(seed=seed)
-
-        # 3. Create datasets
-        if log_file:
-            print('\nDATASETS CREATION', file=log_file)
-        log_file_ = sys.stderr if log_file else None
-        ds_train = self._create_dataset(
-            train[0],
-            word_emb_type=word_emb_type, word_emb_path=word_emb_path,
-            word_emb_model_device=word_emb_model_device,
-            word_transform_kwargs=word_transform_kwargs,
-            word_next_emb_params=word_next_emb_params,
-            with_chars=model_kwargs.get('rnn_emb_dim') \
-                    or model_kwargs.get('cnn_emb_dim'),
-            tags=train[1:-1], labels=train[-1], for_self=False,
-            log_file=log_file_)
-        self._save_dataset(save_as, ds=ds_train)
-        if test:
-            ds_test = ds_train.clone(with_data=False)
-            self._transform(test[0], tags=test[1:-1], labels=test[-1],
-                            ds=ds_test, log_file=log_file_)
-        else:
-            ds_test = None
-
-        # remove emb models to free memory:
-        if not keep_embs:
-            ds_train._pull_xtrn()
-            if ds_test is not None:
-                ds_test._pull_xtrn()
-            self._embs = {}
-            gc.collect()
-
-        model_config_fn, model_fn, _, _, cdict_fn = \
-            self._get_filenames(save_as)
-        self._save_cdict(cdict_fn)
-
-        # 4. Create model
-        if log_file:
-            print('\nMODEL CREATION', file=log_file)
-        ds_ = ds_train.get_dataset('y')
-        model_args = [len(ds_.transform_dict)]
-        if hasattr(ds_, 'pad'):
-            model_kwargs['labels_pad_idx'] = ds_.pad
-        if word_emb_type:
-            ds_ = ds_train.get_dataset('x')
-            model_kwargs['vec_emb_dim'] = ds_.vec_size
-        if model_kwargs.get('rnn_emb_dim') or model_kwargs.get('cnn_emb_dim'):
-            ds_ = ds_train.get_dataset('x_ch')
-            model_kwargs['alphabet_size'] = len(ds_.transform_dict)
-            model_kwargs['char_pad_idx'] = ds_.pad
-        if tag_emb_names:
-            ds_list = ds_train.list()
-            names = iter(tag_emb_names)
-            for name in ds_train.list():
-                if name.startswith('t_'):
-                    ds_ = ds_train.get_dataset(name)
-                    name = next(names)
-                    emb_dim = model_kwargs[name + '_emb_dim']
-                    if emb_dim:
-                        model_kwargs[name + '_num'] = len(ds_.transform_dict)
-                        model_kwargs[name + '_pad_idx'] = ds_.pad
-        model, criterion, optimizer, scheduler = \
-            model_class.create_model_for_train(*model_args, **model_kwargs)
-        if device:
-            model.to(device)
-        model.save_config(model_config_fn, log_file=log_file)
-
-        # 5. Train model
-        if log_file:
-            print('\nMODEL TRAINING', file=log_file)
-        def best_model_backup_method(model, model_score):
-            if log_file:
-                print('new maximum score {:.8f}'.format(model_score),
-                      file=log_file)
-            model.save_state_dict(model_fn, log_file=log_file)
-        res_ = junky.train(
-            None, model, criterion, optimizer, scheduler,
-            best_model_backup_method, datasets=(ds_train, ds_test),
-            epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
-            batch_size=batch_size, control_metric=control_metric,
-            max_grad_norm=max_grad_norm, batch_to_device=False,
-            with_progress=log_file is not None, log_file=log_file
-        )
-        best_epoch, best_score = res_['best_epoch'], res_['best_score']
-        res = {x: y for x, y in res_.items()
-                        if x not in ['best_epoch', 'best_score']}
-
-        # 6. Tune model
-        if log_file:
-            print('\nMODEL TUNING', file=log_file)
-        model.load_state_dict(model_fn, log_file=log_file)
-        criterion, optimizer, scheduler = model.adjust_model_for_tune()
-        res_= junky.train(
-            None, model, criterion, optimizer, scheduler,
-            best_model_backup_method, datasets=(ds_train, ds_test),
-            epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
-            batch_size=batch_size, control_metric=control_metric,
-            max_grad_norm=max_grad_norm, batch_to_device=False,
-            best_score=best_score,
-            with_progress=log_file is not None, log_file=log_file
-        )
-        if res_['best_epoch'] is not None:
-            for key, value in res.items():
-                if key == 'best_epoch':
-                    res[key] += value
-                elif key == 'best_score':
-                    res[key] = value
-                else:
-                    res[key][:best_epoch] = value
 
         del model, ds_train, ds_test
         if log_file:
