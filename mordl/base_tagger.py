@@ -847,6 +847,9 @@ class BaseTagger(BaseParser):
             junky.enforce_reproducibility(seed=seed)
 
         # 2. Create datasets
+        if word_emb_model_device is None:
+            word_emb_model_device = device
+
         if log_file:
             print('\nDATASETS CREATION', file=log_file)
         log_file_ = sys.stderr if log_file else None
@@ -955,9 +958,6 @@ class BaseTagger(BaseParser):
                     res[key][:best_epoch] = value
 
         # 6. Tune embeddings
-        if word_emb_model_device is None:
-            word_emb_model_device = device
-
         def tune_word_emb(emb_type, emb_path, emb_model_device=None,
                           emb_tune_params=None):
             if emb_tune_params is True:
