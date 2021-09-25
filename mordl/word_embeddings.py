@@ -666,7 +666,7 @@ class WordEmbeddings:
         if embs and emb_path in embs:
             model = embs[emb_path]
         else:
-            emb_type = emb_type.lower
+            emb_type = emb_type.lower()
             if emb_type == 'bert':
                 '''
                 tokenizer = BertTokenizer.from_pretrained(
