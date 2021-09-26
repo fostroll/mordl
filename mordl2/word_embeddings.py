@@ -125,9 +125,9 @@ class WordEmbeddings:
             'ERROR: given {} without {}.' \
                 .format(('test dataset', 'test sentences') if test_ds else
                         ('test sentences', 'test dataset'))
-        assert len(train_ds) == len(train_corpus), \
+        assert len(train_ds) == len(train_sents), \
             'ERROR: train dataset and train corpus have different sizes.'
-        assert not test_ds or len(train_ds) == len(train_corpus), \
+        assert not test_ds or len(test_ds) == len(test_sents), \
             'ERROR: test dataset and test corpus have different sizes.'
 
         if log_file:
