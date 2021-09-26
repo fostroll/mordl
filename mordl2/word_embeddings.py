@@ -186,7 +186,7 @@ class WordEmbeddings:
         train_dl = train_ds.create_loader(
             batch_size=batch_size, shuffle=True, num_workers=0
         )
-        test_dl = train_ds.create_dataloader(
+        test_dl = train_ds.create_loader(
             batch_size=transform_kwargs.batch_size, shuffle=False,
             num_workers=0
         )
