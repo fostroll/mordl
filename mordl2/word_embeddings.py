@@ -122,10 +122,14 @@ class WordEmbeddings:
                             (datasets, None)
         train_sents, test_sents = \
             sents_data if isinstance(sents_data, tuple) else sents_data, None
+        print(tran_ds)
+        print(test_ds)
+        print(len(train_ds), len(train_sents))
+        print(len(test_ds), len(test_sents))
         assert (test_ds and test_sents) or not (test_ds or test_sents), \
             'ERROR: given {} without {}.' \
-                .format(('test dataset', 'test sentences') if test_ds else
-                        ('test sentences', 'test dataset'))
+                .format(*(('test dataset', 'test sentences') if test_ds else
+                          ('test sentences', 'test dataset')))
         assert len(train_ds) == len(train_sents), \
             'ERROR: train dataset and train corpus have different sizes.'
         assert not test_ds or len(test_ds) == len(test_sents), \
