@@ -204,9 +204,6 @@ class WordEmbeddings:
         test_ds_bert[0].transform(test_sents, **transform_kwargs)
         '''
 
-        if device:
-            torch.cuda.set_device(device)
-
         FULL_FINETUNING = True
         if FULL_FINETUNING:
             param_optimizer = list(model.named_parameters())

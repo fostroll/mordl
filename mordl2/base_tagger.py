@@ -846,6 +846,9 @@ class BaseTagger(BaseParser):
         if seed:
             junky.enforce_reproducibility(seed=seed)
 
+        if device:
+            torch.cuda.set_device(device)
+
         # 2. Create datasets
         if word_emb_model_device is None:
             word_emb_model_device = device
