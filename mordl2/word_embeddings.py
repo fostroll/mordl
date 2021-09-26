@@ -183,7 +183,7 @@ class WordEmbeddings:
         train_ds.datasets['x'] = (train_ds_x, 1, {})
         test_ds.datasets['x'] = (test_ds_x, 1, {})
 
-        train_dl = train_ds.create_dataloader(
+        train_dl = train_ds.create_loader(
             batch_size=batch_size, shuffle=True, num_workers=0
         )
         test_dl = train_ds.create_dataloader(
