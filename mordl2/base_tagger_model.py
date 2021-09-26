@@ -228,7 +228,7 @@ class BaseTaggerModel(BaseModel):
         vec_emb_dim = self.vec_emb_dim
         if vec_emb_dim:
             assert x.shape[2] == vec_emb_dim, \
-                   'ERROR: Invalid vector size: '
+                   'ERROR: Invalid vector size: ' \
                   f'`{x.shape[2]}` whereas `vec_emb_dim={vec_emb_dim}`'
             x_.append(to_device(x, device))
         if self._rnn_emb_l:
