@@ -871,6 +871,7 @@ class BaseTagger(BaseParser):
         else:
             ds_test = None
 
+        '''
         # remove emb models to free memory:
         if not keep_embs:
             ds_train._pull_xtrn()
@@ -878,6 +879,7 @@ class BaseTagger(BaseParser):
                 ds_test._pull_xtrn()
             self._embs = {}
             gc.collect()
+        '''
 
         model_config_fn, model_fn, _, _, cdict_fn = \
             self._get_filenames(save_as)

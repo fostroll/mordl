@@ -173,7 +173,9 @@ class BaseModel(nn.Module):
         return model
 
     @classmethod
-    def create_model_for_train(cls, *args, lr=.0001, **kwargs):
+    def create_model_for_train(cls, *args, lr=.0001, betas=(0.9, 0.999),
+                               eps=1e-08, weight_decay=0, amsgrad=False,
+                               **kwargs):
         """Creates model, criterion, optimizer and scheduler for training.
         Adam optimizer is used to train the model.
 
@@ -181,31 +183,35 @@ class BaseModel(nn.Module):
 
         **\*args**: args for the model creating.
 
-        **lr** (`float`): learning rate for Adam optimizer. Default
-        `lr=.0001`.
+        **lr**, **betas**, **eps**, **weight_decay**, **amsgrad**: hyperparams
+        for Adam optimizer.
 
         **\*\*kwargs**: keyword args for the model's class constructor.
         """
         model = cls(*args, **kwargs)
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(params=model.parameters(), lr=lr)
+        optimizer = torch.optim.Adam(
+            params=raw_model.parameters(), lr=lr, betas=betas, eps=eps,
+            weight_decay=weight_decay, amsgrad=amsgrad
+        )
         scheduler = None
         return model, criterion, optimizer, scheduler
 
-    def adjust_model_for_tune(self, lr=.001, momentum=.9):
+    def adjust_model_for_tune(self, lr=.001, momentum=.9, weight_decay=0,
+                              dampening=0, nesterov=False):
         """Ajusts model for post-train finetuning. Optimizer is changed to
         SGD to finetune the model.
 
         Args:
 
-        **lr** (`float`): learning rate for the SGD optimizer. Default
-        `lr=.001`.
-
-        **momentum** (`float`): momentum factor for the optimizer. Default
-        `momentum=.9`.
+        **lr**, **momentum**, **weight_decay**, **dampening**, **nesterov**:
+        hyperparams for the SGD optimizer.
         """
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.SGD(self.parameters(),
-                                    lr=lr, momentum=momentum)
+        optimizer = torch.optim.SGD(
+            self.parameters(), lr=lr, momentum=momentum,
+            weight_decay=weight_decay, dampening=dampening, nesterov=nesterov
+        )
         scheduler = None
         return criterion, optimizer, scheduler

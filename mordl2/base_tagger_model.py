@@ -23,75 +23,96 @@ class BaseTaggerModel(BaseModel):
 
     Args:
 
-    **labels_num** (`int`): number of target labels.
+    **num_labels** (`int`): the number of target labels. Don't forget to add
+    `1` for padding.
 
-    **labels_pad_idx** (`int`): index of padding element in the label
-    vocabulary.
+    **labels_pad_idx** (`int`; default=-100): the index of padding element in
+    the label vocabulary. You can specify here your the real index of the
+    padding intent, but we recommend to keep it as is (with default fake
+    index) because in practice, learning on padding increasing the resulting
+    model performance. If you stil want to experiment, along with specifying
+    the real padding index, you may try not to add `1` to **num_labels** for
+    the padding intent. The model then put random labels as tags for the
+    padding part of the input, but they are ignored during the loss
+    computation.
 
-    **vec_emb_dim** (`int`): word-level embedding vector space dimensionality.
-    If `None`, the layer is skipped.
+    **vec_emb_dim** (`int`; default is `None`): the incoming word-level
+    embedding vector space dimensionality.
 
-    **alphabet_size** (`int`): length of character vocabulary. Relevant with
-    not `None` **rnn_emb_dim** or **cnn_emb_dim**.
+    **alphabet_size** (`int`): the length of character vocabulary for the
+    internal character-level embedding layer. Relevant if either
+    **rnn_emb_dim** or **cnn_emb_dim** is not `None`.
 
-    **char_pad_idx** (`int`): index of padding element in the character
-    vocabulary. Relevant with not `None` **rnn_emb_dim** or **cnn_emb_dim**.
+    **char_pad_idx** (`int`; default is `0`): the index of the padding element
+    in the character vocabulary of the internal character-level embedding
+    layer. Relevant if either **rnn_emb_dim** or **cnn_emb_dim** is not `None`.
 
-    **rnn_emb_dim** (`int`): character RNN (LSTM) embedding dimensionality. If
-    `None`, the layer is skipped.
+    **rnn_emb_dim** (`int`; default is `None`): internal character RNN (LSTM)
+    embedding dimensionality.
 
-    **cnn_emb_dim** (`int`): character CNN embedding dimensionality. If
-    `None`, the layer is skipped.
+    **cnn_emb_dim** (`int`; default is `None`): internal character CNN
+    embedding dimensionality. If `None`, the layer is skipped.
 
-    **cnn_kernels** (`list([int])`): CNN kernel sizes. By default,
-    `cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with not `None`
-    **cnn_emb_dim**.
+    **cnn_kernels** (`list([int])`; default is `[1, 2, 3, 4, 5, 6]`): CNN
+    kernel sizes of the internal CNN embedding layer. Relevant if
+    **cnn_emb_dim** is not `None`.
 
     **tag_emb_params** (`dict({'dim': int, 'num': int, 'pad_idx': int})` |
-    `list([dict])`): params of the embedding layers for additional
-    `junky.dataset.TokenDataset` outputs. If `None`, the layers are not
-    created.
+    `list([dict])`; default is `None`): params of internal embedding layers
+    for additional `junky.dataset.TokenDataset` outputs. If `None`, the layers
+    are not created.
 
-    **emb_out_dim** (`int`): output embedding dimensionality. Default
-    `emb_out_dim=512`.
+    **emb_bn** (`bool`; default is 'True'): whether batch normalization layer
+    should be applied after the embedding concatenation.
 
-    **lstm_hidden_dim** (`int`): Bidirectional LSTM hidden size. Default
-    `lstm_hidden_dim=256`.
+    **emb_do** (`float`; default is '.2'): dropout rate after the embedding
+    concatenation.
 
-    **lstm_layers** (`int`): number of Bidirectional LSTM layers. Default
-    `lstm_layers=1`.
+    **final_emb_dim** (`int`; default is `512`): the output dimesionality of
+    the linear transformation applying to concatenated embeddings.
 
-    **lstm_do** (`float`): dropout between LSTM layers. Only relevant, if
-    `lstm_layers` > `1`.
+    **pre_bn** (`bool`; default is 'True'): whether batch normalization layer
+    should be applied before the main part of the algorithm.
 
-    **bn1** (`bool`): whether batch normalization layer should be applied
-    after the embedding layer. Default `bn1=True`.
+    **pre_do** (`float`; default is '.5'): dropout rate before the main part
+    of the algorithm.
 
-    **do1** (`float`): dropout rate after the first batch normalization
-    layer `bn1`. Default `do1=.2`.
+    **lstm_layers** (`int`; default is `1`): the number of Bidirectional LSTM
+    layers. If `0`, they are not created.
 
-    **bn2** (`bool`): whether batch normalization layer should be applied
-    after the linear layer before LSTM layer. Default `bn2=True`.
+    **lstm_do** (`float`; default is `0`): dropout between LSTM layers. Only
+    relevant, if `lstm_layers` > `1`.
 
-    **do2** (`float`): dropout rate after the second batch normalization
-    layer `bn2`. Default `do2=.5`.
+    **tran_layers** (`int`; default is `0`): the number of Transformer Encoder
+    layers. If `0`, they are not created.
 
-    **bn3** (`bool`): whether batch normalization layer should be applied
-    after the LSTM layer. Default `bn3=True`.
+    **tran_heads** (`int`; default is `8`): the number of attention heads of
+    Transformer Encoder layers. Only relevant, if `tran_layers` > `1`.
 
-    **do3** (`float`): dropout rate after the third batch normalization
-    layer `bn3`. Default `do3=.4`.
+    **post_bn** (`bool`; default is 'True'): whether batch normalization layer
+    should be applied after the main part of the algorithm.
+
+    **post_do** (`float`; default is '.4'): dropout rate after the main part
+    of the algorithm.
     """
-    def __init__(self, labels_num, labels_pad_idx=None, vec_emb_dim=None,
+    def __init__(self, num_labels, labels_pad_idx=None, vec_emb_dim=None,
                  alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,
                  cnn_emb_dim=None, cnn_kernels=[1, 2, 3, 4, 5, 6],
-                 tag_emb_params=None, emb_out_dim=512, lstm_hidden_dim=256,
-                 lstm_layers=1, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
-                 bn3=True, do3=.4):
+                 tag_emb_params=None, emb_bn=True, emb_do=.2,
+                 final_emb_dim=512, pre_bn=True, pre_do=.5,
+                 lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
+                 post_bn=True, post_do=.4):
         if isinstance(cnn_kernels, Iterable):
             cnn_kernels = list(cnn_kernels)
         args, kwargs = get_func_params(BaseTaggerModel.__init__, locals())
         super().__init__(*args, **kwargs)
+
+        assert final_emb_dim % 2 == 0, \
+            'ERROR: `final_emb_dim` must be even ' \
+           f"(now it's `{config.final_emb_dim}`."
+        assert not (lstm_layers and tran_layers), \
+            "ERROR: `lstm_layers` and `tran_layers` can't be " \
+            'both set to non-zero.'
 
         self.vec_emb_dim = vec_emb_dim
 
@@ -136,58 +157,79 @@ class BaseTaggerModel(BaseModel):
                     else:
                         self._tag_emb_ls.append(None)
 
-        self._bn1 = \
-            nn.BatchNorm1d(num_features=vec_emb_dim
-                                      + rnn_emb_dim
-                                      + cnn_emb_dim
-                                      + tag_emb_dim) if bn1 else None
-        self._do1 = nn.Dropout(p=do1) if do1 else None
+        joint_emb_dim = config.vec_emb_dim + config.rnn_emb_dim \
+                                           + config.cnn_emb_dim + tag_emb_dim
 
-        self._emb_fc_l = nn.Linear(
-            in_features=vec_emb_dim + rnn_emb_dim + cnn_emb_dim
-                                    + tag_emb_dim,
-            out_features=emb_out_dim
-        )
-        self._bn2 = \
-            nn.BatchNorm1d(num_features=emb_out_dim) if bn2 else None
-        self._do2 = nn.Dropout(p=do2) if do2 else None
+        # TODO: Wrap with nn.Sequential #####################################
+        self._emb_bn = nn.BatchNorm1d(num_features=joint_emb_dim) \
+                           if emb_bn else \
+                       None
+        self._emb_do = nn.Dropout(p=emb_do) if emb_do else None
 
-        self._lstm_l = nn.LSTM(input_size=emb_out_dim,
-                               hidden_size=lstm_hidden_dim,
-                               num_layers=lstm_layers, batch_first=True,
-                               dropout=lstm_do, bidirectional=True)
-        lstm_hidden_dim *= 2
-        self._T = nn.Linear(emb_out_dim, lstm_hidden_dim)
-        nn.init.constant_(self._T.bias, -1)
+        self._emb_fc_l = nn.Linear(in_features=joint_emb_dim,
+                                   out_features=final_emb_dim)
+        self._pre_bn = nn.BatchNorm1d(num_features=final_emb_dim) \
+                           if pre_bn else \
+                       None
+        self._pre_do = nn.Dropout(p=pre_do) if pre_do else None
+        # TODO ##############################################################
 
-        self._bn3 = \
-            nn.BatchNorm1d(num_features=lstm_hidden_dim) if bn3 else None
-        self._do3 = nn.Dropout(p=do3) if do3 else None
+        if lstm_layers > 0:
+            self._lstm_l = nn.LSTM(
+                input_size=final_emb_dim,
+                hidden_size=final_emb_dim // 2,
+                num_layers=lstm_layers, batch_first=True,
+                dropout=lstm_do, bidirectional=True
+            )
+            self._T = nn.Linear(final_emb_dim, final_emb_dim)
+            nn.init.constant_(self._T.bias, -1)
+        else:
+            self._lstm_l = None
 
-        self._out_l = nn.Linear(in_features=lstm_hidden_dim,
-                                out_features=labels_num)
-        self._out_masking = \
-            Masking(input_size=labels_num,
-                    indices_to_highlight=labels_pad_idx,
-                    batch_first=True) if labels_pad_idx is not None else None
+        if tran_layers > 0:
+            tran_enc_l = nn.TransformerEncoderLayer(
+                final_emb_dim, tran_heads,
+                dim_feedforward=2048, dropout=0.1, activation='relu',
+                layer_norm_eps=1e-05
+            )
+            tran_norm_l = nn.LayerNorm(normalized_shape=final_emb_dim,
+                                       eps=1e-6, elementwise_affine=True)
+            self._tran_l = nn.TransformerEncoder(
+                tran_enc_l, tran_layers, norm=tran_norm_l
+            )
+        else:
+            self._tran_l = None
+
+        # TODO: Wrap with nn.Sequential #####################################
+        self._post_bn = \
+            nn.BatchNorm1d(num_features=final_emb_dim) \
+                if config.post_bn else \
+            None
+        self._post_do = nn.Dropout(p=post_do) if post_do else None
+
+        self._out_l = nn.Linear(in_features=final_emb_dim,
+                                out_features=num_labels)
+        # TODO ##############################################################
 
         setattr(self, CONFIG_ATTR, (args, kwargs))
 
-    def forward(self, x, x_lens, x_ch, x_ch_lens, *x_t):
+    def forward(self, x, x_lens, x_ch, x_ch_lens, *x_t, labels=None):
         """
-        x:    [batch[seq[w_idx + pad]]]
-        lens: [seq_word_cnt]
-        x_ch: [batch[seq[word[ch_idx + pad] + word[pad]]]]
-        x_ch_lens: [seq[word_char_count]]
-        *x_t:  [batch[seq[upos_idx]]], ...
+        x:         [N (batch), L (sentences), C (words + padding)]
+        lens:      number of words in sentences
+        x_ch:      [N, L, C (words + padding), S (characters + padding)]
+        x_ch_lens: [L, number of characters in words]
+        *x_t:      [N, L, C (upos indices)], [N, L, C (feats indices)], ...
+        labels:    [N, L, C]
         """
         device = next(self.parameters()).device
 
         x_ = []
-        if self.vec_emb_dim:
-            assert x.shape[2] == self.vec_emb_dim, \
-                   'ERROR: Invalid vector size: {} whereas vec_emb_dim = {}' \
-                       .format(x.shape[2], self.vec_emb_dim)
+        vec_emb_dim = self.vec_emb_dim
+        if vec_emb_dim:
+            assert x.shape[2] == vec_emb_dim, \
+                   'ERROR: Invalid vector size: '
+                  f'`{x.shape[2]}` whereas `vec_emb_dim={vec_emb_dim}`'
             x_.append(to_device(x, device))
         if self._rnn_emb_l:
             x_.append(self._rnn_emb_l(to_device(x_ch, device), x_ch_lens))
@@ -203,39 +245,56 @@ class BaseTaggerModel(BaseModel):
 
         x = x_[0] if len(x_) == 1 else torch.cat(x_, dim=-1)
 
-        if self._bn1:
-            x = x.transpose(1, 2)  # (N, L, C) to (N, C, L)
-            x = self._bn1(x)
-            x = x.transpose(1, 2)  # (N, C, L) to (N, L, C)
-        if self._do1:
-            x = self._do1(x)
+        if self._emb_bn:
+            x.transpose_(1, 2)  # (N, L, C) to (N, C, L)
+            x = self._emb_bn(x)
+            x.transpose_(1, 2)  # (N, C, L) to (N, L, C)
+        if self._emb_do:
+            x = self._emb_do(x)
 
         x = self._emb_fc_l(x)
-        if self._bn2:
-            x = x.transpose(1, 2)  # (N, L, C) to (N, C, L)
-            x = self._bn2(x)
-            x = x.transpose(1, 2)  # (N, C, L) to (N, L, C)
-        x = F.relu(x)
-        if self._do2:
-            x = self._do2(x)
+        if self._pre_bn:
+            x.transpose_(1, 2)  # (N, L, C) to (N, C, L)
+            x = self._pre_bn(x)
+            x.transpose_(1, 2)  # (N, C, L) to (N, L, C)
+        x.relu_(x)
+        if self._pre_do:
+            x = self._pre_do(x)
 
-        x_ = pack_padded_sequence(x, x_lens, batch_first=True,
-                                  enforce_sorted=False)
-        x_, _ = self._lstm_l(x_)
-        x_, _ = pad_packed_sequence(x_, batch_first=True)
+        if self._lstm_l:
+            x_ = pack_padded_sequence(x, x_lens.cpu(), batch_first=True,
+                                      enforce_sorted=False)
+            x_, _ = self._lstm_l(x_)
+            x_, _ = pad_packed_sequence(x_, batch_first=True)
 
-        gate = torch.sigmoid(self._T(x))
-        x = x_ * gate + x * (1 - gate)
+            gate = torch.sigmoid(self._T(x))
+            x = x_ * gate + x * (1 - gate)
 
-        if self._bn3:
-            x = x.transpose(1, 2)  # (N, L, C) to (N, C, L)
-            x = self._bn3(x)
-            x = x.transpose(1, 2)  # (N, C, L) to (N, L, C)
-        if self._do3:
-            x = self._do3(x)
+        if self._tran_l:
+            src_key_padding_mask = (
+                torch.arange(x.shape[1], device=device).expand(x.shape[:-1])
+             >= x_lens.view(1, -1).transpose(0, 1).expand(x.shape[:-1])
+            )
+            x.transpose_(0, 1)  # (N, L, C) to (L, N, C)
+            x = self._tran_l(x, src_key_padding_mask=src_key_padding_mask)
+            x.transpose_(0, 1)  # (L, N, C) to (N, L, C)
 
-        x = self._out_l(x)
-        if self._out_masking:
-            x = self._out_masking(x, to_device(x_lens, device))
+        if self._post_bn:
+            x.transpose_(1, 2)  # (N, L, C) to (N, C, L)
+            x = self._post_bn(x)
+            x.transpose_(1, 2)  # (N, C, L) to (N, L, C)
+        if self._post_do:
+            x = self._post_do(x)
 
-        return x
+        logits = self._out_l(x)
+
+        if labels is not None:
+#             criterion = nn.CrossEntropyLoss().to(device)
+#             loss = criterion(logits.flatten(end_dim=-2),
+#                              labels.flatten(end_dim=-1))
+            loss = F.cross_entropy(logits.view(-1, self.num_labels),
+                                   labels.view(-1),
+                                   ignore_index=self.labels_pad_idx)
+            logits = logits, loss
+
+        return logits
