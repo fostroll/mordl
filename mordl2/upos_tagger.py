@@ -175,9 +175,11 @@ class UposTagger(BaseTagger):
               word_emb_path=None, word_emb_tune_params=None,
               word_transform_kwargs=None, word_next_emb_params=None,
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              emb_out_dim=512, lstm_hidden_dim=256, lstm_layers=3, lstm_do=0,
-              bn1=True, do1=.2, bn2=True, do2=.5, bn3=True, do3=.4, seed=None,
-              start_time=None, keep_embs=False, log_file=LOG_FILE):
+              emb_bn=True, emb_do=.2,
+              final_emb_dim=512, pre_bn=True, pre_do=.5,
+              lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
+              post_bn=True, post_do=.4, seed=None, start_time=None,
+              keep_embs=False, log_file=LOG_FILE):
         """Creates and trains the UPOS tagger model.
 
         During training, the best model is saved after each successful epoch.
@@ -249,45 +251,48 @@ class UposTagger(BaseTagger):
 
         *Model hyperparameters*:
 
-        **rnn_emb_dim** (`int`): character RNN (LSTM) embedding
-        dimensionality. If `None`, the layer is skipped.
+        **rnn_emb_dim** (`int`; default is `None`): internal character RNN (LSTM)
+        embedding dimensionality.
 
-        **cnn_emb_dim** (`int`): character CNN embedding dimensionality. If
-        `None`, the layer is skipped.
+        **cnn_emb_dim** (`int`; default is `None`): internal character CNN
+        embedding dimensionality. If `None`, the layer is skipped.
 
-        **cnn_kernels** (`list([int])`): CNN kernel sizes. By default,
-        `cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with not `None`
-        **cnn_emb_dim**.
+        **cnn_kernels** (`list([int])`; default is `[1, 2, 3, 4, 5, 6]`): CNN
+        kernel sizes of the internal CNN embedding layer. Relevant if
+        **cnn_emb_dim** is not `None`.
 
-        **emb_out_dim** (`int`): output embedding dimensionality. Default
-        `emb_out_dim=512`.
+        **emb_bn** (`bool`; default is 'True'): whether batch normalization layer
+        should be applied after the embedding concatenation.
 
-        **lstm_hidden_dim** (`int`): Bidirectional LSTM hidden size. Default
-        `lstm_hidden_dim=256`.
+        **emb_do** (`float`; default is '.2'): dropout rate after the embedding
+        concatenation.
 
-        **lstm_layers** (`int`): number of Bidirectional LSTM layers. Default
-        `lstm_layers=3`.
+        **final_emb_dim** (`int`; default is `512`): the output dimesionality of
+        the linear transformation applying to concatenated embeddings.
 
-        **lstm_do** (`float`): dropout between LSTM layers. Only relevant, if
-        `lstm_layers` > `1`.
+        **pre_bn** (`bool`; default is 'True'): whether batch normalization layer
+        should be applied before the main part of the algorithm.
 
-        **bn1** (`bool`): whether batch normalization layer should be applied
-        after the embedding layer. Default `bn1=True`.
+        **pre_do** (`float`; default is '.5'): dropout rate before the main part
+        of the algorithm.
 
-        **do1** (`float`): dropout rate after the first batch normalization
-        layer `bn1`. Default `do1=.2`.
+        **lstm_layers** (`int`; default is `1`): the number of Bidirectional LSTM
+        layers. If `0`, they are not created.
 
-        **bn2** (`bool`): whether batch normalization layer should be applied
-        after the linear layer before LSTM layer. Default `bn2=True`.
+        **lstm_do** (`float`; default is `0`): dropout between LSTM layers. Only
+        relevant, if `lstm_layers` > `1`.
 
-        **do2** (`float`): dropout rate after the second batch normalization
-        layer `bn2`. Default `do2=.5`.
+        **tran_layers** (`int`; default is `0`): the number of Transformer Encoder
+        layers. If `0`, they are not created.
 
-        **bn3** (`bool`): whether batch normalization layer should be applied
-        after the LSTM layer. Default `bn3=True`.
+        **tran_heads** (`int`; default is `8`): the number of attention heads of
+        Transformer Encoder layers. Only relevant, if `tran_layers` > `1`.
 
-        **do3** (`float`): dropout rate after the third batch normalization
-        layer `bn3`. Default `do3=.4`.
+        **post_bn** (`bool`; default is 'True'): whether batch normalization layer
+        should be applied after the main part of the algorithm.
+
+        **post_do** (`float`; default is '.4'): dropout rate after the main part
+        of the algorithm.
 
         *Other options*:
 
