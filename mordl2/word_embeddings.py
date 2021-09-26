@@ -119,7 +119,7 @@ class WordEmbeddings:
         assert save_as, 'ERROR: Undefined `save_as` param.'
 
         train_ds, test_ds = datasets if isinstance(datasets, tuple) else \
-                            datasets, None
+                            (datasets, None)
         train_sents, test_sents = \
             sents_data if isinstance(sents_data, tuple) else sents_data, None
         assert (test_ds and test_sents) or not (test_ds or test_sents), \
