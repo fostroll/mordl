@@ -240,7 +240,7 @@ class WordEmbeddings:
             num_training_steps=total_steps
         )
 
-        a = next(iter(train_dl))
+        a = train_ds[0]#next(iter(train_dl))
         print(len(a))
         print(a)
         trainer_config = TrainerConfig(
