@@ -108,7 +108,7 @@ class BaseTaggerModel(BaseModel):
         super().__init__(*args, **kwargs)
 
         assert final_emb_dim % 2 == 0, \
-            'ERROR: `final_emb_dim` must be even '
+            'ERROR: `final_emb_dim` must be even ' \
            f"(now it's `{final_emb_dim}`)."
         assert not (lstm_layers and tran_layers), \
             "ERROR: `lstm_layers` and `tran_layers` can't be " \
