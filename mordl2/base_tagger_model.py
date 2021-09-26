@@ -108,8 +108,8 @@ class BaseTaggerModel(BaseModel):
         super().__init__(*args, **kwargs)
 
         assert final_emb_dim % 2 == 0, \
-            'ERROR: `final_emb_dim` must be even ' \
-           f"(now it's `{config.final_emb_dim}`."
+            'ERROR: `final_emb_dim` must be even '
+           f"(now it's `{final_emb_dim}`)."
         assert not (lstm_layers and tran_layers), \
             "ERROR: `lstm_layers` and `tran_layers` can't be " \
             'both set to non-zero.'
@@ -157,20 +157,17 @@ class BaseTaggerModel(BaseModel):
                     else:
                         self._tag_emb_ls.append(None)
 
-        joint_emb_dim = config.vec_emb_dim + config.rnn_emb_dim \
-                                           + config.cnn_emb_dim + tag_emb_dim
+        joint_emb_dim = vec_emb_dim + rnn_emb_dim + cnn_emb_dim + tag_emb_dim
 
         # TODO: Wrap with nn.Sequential #####################################
-        self._emb_bn = nn.BatchNorm1d(num_features=joint_emb_dim) \
-                           if emb_bn else \
-                       None
+        self._emb_bn = \
+            nn.BatchNorm1d(num_features=joint_emb_dim) if emb_bn else None
         self._emb_do = nn.Dropout(p=emb_do) if emb_do else None
 
         self._emb_fc_l = nn.Linear(in_features=joint_emb_dim,
                                    out_features=final_emb_dim)
-        self._pre_bn = nn.BatchNorm1d(num_features=final_emb_dim) \
-                           if pre_bn else \
-                       None
+        self._pre_bn = \
+            nn.BatchNorm1d(num_features=final_emb_dim) if pre_bn else None
         self._pre_do = nn.Dropout(p=pre_do) if pre_do else None
         # TODO ##############################################################
 
@@ -202,9 +199,7 @@ class BaseTaggerModel(BaseModel):
 
         # TODO: Wrap with nn.Sequential #####################################
         self._post_bn = \
-            nn.BatchNorm1d(num_features=final_emb_dim) \
-                if config.post_bn else \
-            None
+            nn.BatchNorm1d(num_features=final_emb_dim) if post_bn else None
         self._post_do = nn.Dropout(p=post_do) if post_do else None
 
         self._out_l = nn.Linear(in_features=final_emb_dim,
