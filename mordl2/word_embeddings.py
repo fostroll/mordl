@@ -172,8 +172,8 @@ class WordEmbeddings:
                 x, = self.ds._collate(x, with_lens=False)
                 return self.model_head(x, *args, labels=labels)
 
-        train_ds_x = BaseDataset(train_sents)
-        test_ds_x = BaseDataset(test_sents)
+        train_ds_x = BaseDataset([list(x) for x in train_sents])
+        test_ds_x = BaseDataset([list(x) for x in test_sents])
 
         train_ds_bert = train_ds.datasets['x']
         test_ds_bert = test_ds.datasets['x']
@@ -240,9 +240,10 @@ class WordEmbeddings:
             num_training_steps=total_steps
         )
 
-        a = train_ds[0]#next(iter(train_dl))
+        a = next(iter(train_dl))
         print(len(a))
         print(a)
+        assert 1 == 0
         trainer_config = TrainerConfig(
             (save_as, model_save_as), max_epochs=epochs,
             batch_lens_idx=1, batch_labels_idx=2,
