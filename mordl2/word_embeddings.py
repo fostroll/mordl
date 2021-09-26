@@ -64,7 +64,7 @@ class WordEmbeddings:
     """
 
     @staticmethod
-    def _full_tune(model, model_save_as, datasets, corpora,
+    def _full_tune(model, model_save_as, datasets, sents_data,
                    save_as=None, epochs=3, batch_size=8,
                    control_metric='accuracy', transform_kwargs=None,
                    seed=None, log_file=LOG_FILE):
