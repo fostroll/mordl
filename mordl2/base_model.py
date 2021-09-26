@@ -192,7 +192,7 @@ class BaseModel(nn.Module):
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(params=model.parameters(), lr=lr)
         optimizer = torch.optim.Adam(
-            params=raw_model.parameters(), lr=lr, betas=betas, eps=eps,
+            params=model.parameters(), lr=lr, betas=betas, eps=eps,
             weight_decay=weight_decay, amsgrad=amsgrad
         )
         scheduler = None
