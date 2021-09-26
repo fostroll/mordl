@@ -37,8 +37,9 @@ import time
 from tqdm import tqdm
 import torch
 import torch.nn as nn
+from torch.optim import AdamW
 from torch.utils.data import Dataset, DataLoader
-from transformers import AdamW, AutoConfig, AutoModel, AutoTokenizer, \
+from transformers import AutoConfig, AutoModel, AutoTokenizer, \
                          get_linear_schedule_with_warmup
 #BertConfig, BertForSequenceClassification, \
 #                         BertForTokenClassification, BertTokenizer, \
