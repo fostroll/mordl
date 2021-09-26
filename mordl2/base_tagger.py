@@ -890,6 +890,7 @@ class BaseTagger(BaseParser):
         # TODO
         self.load(save_as, device=device)
         model = self._model
+        train = deepcopy(test)
         '''==================
         # 3. Create model
         if log_file:
