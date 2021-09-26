@@ -960,48 +960,47 @@ class BaseTagger(BaseParser):
                     res[key][:best_epoch] = value
 
         # 6. Tune embeddings
-        def tune_word_emb(emb_type, emb_path, emb_model_device=None,
-                          emb_tune_params=None):
-            if emb_tune_params is True:
+        def tune_word_emb(emb_type, emb_path, emb_tune_params=None):
+            if not emb_tune_params:
                 emb_tune_params = {}
             elif isinstance(emb_tune_params, str):
-                emb_tune_params = {'model_name': emb_tune_params}
+                emb_tune_params = {'save_as': emb_tune_params}
             if isinstance(emb_tune_params, dict):
-                emb_tune_params = dict(emb_tune_params.items())
                 if emb_type == 'bert':
-                    if 'test_data' not in emb_tune_params and test:
-                        emb_tune_params['test_data'] = test[0], test[-1]
-                    emb_tune_params['save_to'] = emb_path if emb_path else \
-                                                 bert_header
-                    if emb_model_device and 'device' not in emb_tune_params:
-                        emb_tune_params['device'] = emb_model_device
+                    if 'save_as' not in emb_tune_params:
+                        emb_tune_params['save_as'] = bert_header
                     if 'control_metric' not in emb_tune_params:
                         emb_tune_params['control_metric'] = control_metric
-                    if 'seed' not in emb_tune_params:
-                        emb_tune_params['seed'] = seed
                     if 'log_file' not in emb_tune_params:
                         emb_tune_params['log_file'] = log_file
                     if log_file:
                         print(file=log_file)
-                    emb_path = WordEmbeddings.bert_tune(
-                        train[0], train[-1], **emb_tune_params
-                    )['model_name']
+                    WordEmbeddings._full_tune(model, save_as, (ds_train, ds_test),
+                        (train[0], test[0]) if test else train[0], **emb_tune_params
+                    )
                 else:
-                    raise ValueError("ERROR: Tune method for '{}' embeddings "
-                                         .format(emb_type)
-                                   + 'is not implemented')
-            elif emb_tune_params not in [None, False]:
+                    raise ValueError(f"ERROR: Tune method for '{emb_type}' "
+                                      'embeddings is not implemented')
+            else:
                 raise TypeError(
                     'ERROR: emb_tune_params is of incorrect type. '
-                    'It can be either dict, str, bool or None'
+                    'It can be either dict, str or None.'
                 )
-            return emb_path
+            return emb_tune_params['save_as']
 
-        word_emb_path = tune_word_emb(
+        res_ = tune_word_emb(
             word_emb_type, word_emb_path,
-            emb_model_device=word_emb_model_device,
             emb_tune_params=word_emb_tune_params
         )
+        if res_['best_epoch'] is not None:
+            for key, value in res.items():
+                if key == 'best_epoch':
+                    res[key] += value
+                elif key == 'best_score':
+                    res[key] = value
+                else:
+                    res[key][:best_epoch] = value
+        '''
         if word_next_emb_params:
             if isinstance(word_next_emb_params, dict):
                 word_next_emb_params = [word_next_emb_params]
@@ -1018,6 +1017,7 @@ class BaseTagger(BaseParser):
                         emb_params.get('emb_tune_params',
                         emb_params.get('word_emb_tune_params'))
                 )
+        '''
 
         del model, ds_train, ds_test
         if log_file:
