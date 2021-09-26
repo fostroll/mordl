@@ -159,13 +159,13 @@ class WordEmbeddings:
 
             def forward(self, sentences, *args, labels=None):
                 x = self.ds.transform(
-                    sentences, max_len=transform_kwargs.max_len,
+                    sentences, max_len=transform_kwargs['max_len'],
                     batch_size=batch_size,
-                    hidden_ids=transform_kwargs.hidden_ids,
+                    hidden_ids=transform_kwargs['hidden_ids'],
                     aggregate_hiddens_op=\
-                        transform_kwargs.aggregate_hiddens_op,
+                        transform_kwargs['aggregate_hiddens_op'],
                     aggregate_subtokens_op=\
-                        transform_kwargs.aggregate_subtokens_op,
+                        transform_kwargs['aggregate_subtokens_op'],
                     with_grad=True, save=False, loglevel=0
                 )
                 x, = self.ds._collate(x, with_lens=False)
@@ -187,7 +187,7 @@ class WordEmbeddings:
             batch_size=batch_size, shuffle=True, num_workers=0
         )
         test_dl = train_ds.create_loader(
-            batch_size=transform_kwargs.batch_size, shuffle=False,
+            batch_size=transform_kwargs['batch_size'], shuffle=False,
             num_workers=0
         )
 
