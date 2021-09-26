@@ -885,6 +885,9 @@ class BaseTagger(BaseParser):
             self._get_filenames(save_as)
         self._save_cdict(cdict_fn)
 
+        # TODO
+        model.load(model_class, save_as, device=device)
+        '''==================
         # 3. Create model
         if log_file:
             print('\nMODEL CREATION', file=log_file)
@@ -958,6 +961,7 @@ class BaseTagger(BaseParser):
                     res[key] = value
                 else:
                     res[key][:best_epoch] = value
+        =================='''
 
         # 6. Tune embeddings
         def tune_word_emb(emb_type, emb_path, emb_tune_params=None):
