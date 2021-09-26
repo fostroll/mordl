@@ -862,7 +862,8 @@ class BaseTagger(BaseParser):
             word_next_emb_params=word_next_emb_params,
             with_chars=model_kwargs.get('rnn_emb_dim') \
                     or model_kwargs.get('cnn_emb_dim'),
-            tags=train[1:-1], labels=train[-1], for_self=False,
+            #tags=train[1:-1], labels=train[-1], for_self=False,
+            tags=test[1:-1], labels=test[-1], for_self=False,
             log_file=log_file_)
         self._save_dataset(save_as, ds=ds_train)
         if test:
