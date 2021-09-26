@@ -888,7 +888,7 @@ class BaseTagger(BaseParser):
         self._save_cdict(cdict_fn)
 
         # TODO
-        self.load(model_class, save_as, device=device)
+        self.load(save_as, device=device)
         model = self._model
         '''==================
         # 3. Create model
