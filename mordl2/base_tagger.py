@@ -854,7 +854,8 @@ class BaseTagger(BaseParser):
             print('\nDATASETS CREATION', file=log_file)
         log_file_ = sys.stderr if log_file else None
         ds_train = self._create_dataset(
-            train[0],
+            #train[0],
+            test[0],
             word_emb_type=word_emb_type, word_emb_path=word_emb_path,
             word_emb_model_device=word_emb_model_device,
             word_transform_kwargs=word_transform_kwargs,
