@@ -886,7 +886,8 @@ class BaseTagger(BaseParser):
         self._save_cdict(cdict_fn)
 
         # TODO
-        model.load(model_class, save_as, device=device)
+        self.load(model_class, save_as, device=device)
+        model = self._model
         '''==================
         # 3. Create model
         if log_file:
