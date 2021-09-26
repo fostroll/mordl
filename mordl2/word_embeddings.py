@@ -204,14 +204,8 @@ class WordEmbeddings:
         test_ds_bert[0].transform(test_sents, **transform_kwargs)
         '''
 
-        if log_file:
-            print("Loading model '{}'...".format(model_name), end=' ',
-                  file=log_file)
-            log_file.flush()
         if device:
-            model.to(device)
-        if log_file:
-            print('done.', file=log_file)
+            torch.cuda.set_device(device)
 
         FULL_FINETUNING = True
         if FULL_FINETUNING:
