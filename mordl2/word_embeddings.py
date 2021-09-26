@@ -149,7 +149,7 @@ class WordEmbeddings:
                 super().__init__()
 
                 self.ds = bert_ds
-                self.emb_model = self_ds.model
+                self.emb_model = bert_ds.model
                 self.tokenizer = bert_ds.tokenizer
                 self.model_head = model_head
 
