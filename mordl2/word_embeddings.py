@@ -178,7 +178,7 @@ class WordEmbeddings:
         test_ds_bert = test_ds.datasets['x']
         bert_ds = train_ds_bert[0].clone(with_data=False)
         train_ds_bert = (bert_ds, *train_ds_bert[1:])
-        test_ds_bert[0] = (bert_ds.clone(), *test_ds_bert[1:])
+        test_ds_bert = (bert_ds.clone(), *test_ds_bert[1:])
 
         train_ds.datasets['x'] = (train_ds_x, 1, {})
         test_ds.datasets['x'] = (test_ds_x, 1, {})
