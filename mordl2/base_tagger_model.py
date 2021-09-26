@@ -252,7 +252,7 @@ class BaseTaggerModel(BaseModel):
             x.transpose_(1, 2)  # (N, L, C) to (N, C, L)
             x = self._pre_bn(x)
             x.transpose_(1, 2)  # (N, C, L) to (N, L, C)
-        x.relu_(x)
+        x.relu_()
         if self._pre_do:
             x = self._pre_do(x)
 
