@@ -136,6 +136,7 @@ class WordEmbeddings:
         kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
         if transform_kwargs:
             kwargs.update(transform_kwargs)
+        transform_kwargs = kwargs
 
         if seed:
             junky.enforce_reproducibility(seed)
