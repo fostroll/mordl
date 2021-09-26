@@ -120,8 +120,9 @@ class WordEmbeddings:
 
         train_ds, test_ds = datasets if isinstance(datasets, tuple) else \
                             (datasets, None)
-        train_sents, test_sents = \
-            sents_data if isinstance(sents_data, tuple) else sents_data, None
+        train_sents, test_sents = sents_data \
+                                      if isinstance(sents_data, tuple) else \
+                                  (sents_data, None)
         print(train_ds)
         print(test_ds)
         print(len(train_ds), len(train_sents))
