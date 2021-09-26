@@ -230,7 +230,7 @@ class WordEmbeddings:
 
         # Total number of training steps is
         # number of batches * number of epochs
-        total_steps = len(train_loader) * epochs
+        total_steps = len(train_dl) * epochs
 
         # Create the learning rate scheduler
         scheduler = get_linear_schedule_with_warmup(
