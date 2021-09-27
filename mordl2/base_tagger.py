@@ -997,7 +997,7 @@ class BaseTagger(BaseParser):
             return emb_tune_params['save_as']
 
         res_ = tune_word_emb(
-            word_emb_type, word_emb_path,
+            word_emb_type, word_emb_path, self.save,
             emb_tune_params=word_emb_tune_params
         )
         if res_['best_epoch'] is not None:

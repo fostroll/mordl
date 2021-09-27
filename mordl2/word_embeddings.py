@@ -65,8 +65,8 @@ class WordEmbeddings:
     """
 
     @staticmethod
-    def _full_tune(model, model_save_as, datasets, sents_data,
-                   save_as=None, epochs=3, batch_size=8,
+    def _full_tune(model, model_save_as, model_save_method,
+                   datasets, sents_data, save_as=None, epochs=3, batch_size=8,
                    control_metric='accuracy', transform_kwargs=None,
                    seed=None, log_file=LOG_FILE):
         """Method for finetuning base BERT model on custom data.
@@ -155,7 +155,7 @@ class WordEmbeddings:
 
             def save_pretrained(self, paths):
                 self.emb_model.save_pretrained(paths[0])
-                self.model_head.save_state_dict(paths[1])
+                model_save_method(paths[1])
 
             def forward(self, sentences, *args, labels=None):
                 x = self.ds.transform(
