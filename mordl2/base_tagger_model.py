@@ -115,6 +115,7 @@ class BaseTaggerModel(BaseModel):
             'both set to non-zero.'
 
         self.num_labels = num_labels
+        self.labels_pad_idx = labels_pad_idx
         self.vec_emb_dim = vec_emb_dim
 
         if rnn_emb_dim:
