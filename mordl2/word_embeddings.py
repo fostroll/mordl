@@ -24,8 +24,8 @@ from gensim.models import KeyedVectors
 from gensim.models.keyedvectors import FastTextKeyedVectors
 import json
 import junky
-from junky.dataset import BaseDataset, BertDataset, WordCatDataset, \
-                          WordDataset
+from junky.dataset import BaseDataset, BertDataset, LenDataset, \
+                          WordCatDataset, WordDataset
 from junky.trainer import Trainer, TrainerConfig
 from mordl2.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE
 import numpy as np
@@ -38,7 +38,6 @@ from tqdm import tqdm
 import torch
 import torch.nn as nn
 from torch.optim import AdamW
-from torch.utils.data import Dataset, DataLoader
 from transformers import AutoConfig, AutoModel, AutoTokenizer, \
                          get_linear_schedule_with_warmup
 #BertConfig, BertForSequenceClassification, \
@@ -173,7 +172,9 @@ class WordEmbeddings:
                 return self.model_head(x, *args, labels=labels)
 
         train_ds_x = BaseDataset([list(x) for x in train_sents])
+        train_ds_len = LenDataset(train_ds_x)
         test_ds_x = BaseDataset([list(x) for x in test_sents])
+        test_ds_len = LenDataset(test_ds_x)
 
         train_ds_bert = train_ds.datasets['x']
         test_ds_bert = test_ds.datasets['x']
