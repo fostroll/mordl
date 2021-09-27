@@ -891,6 +891,7 @@ class BaseTagger(BaseParser):
         # TODO
         self.load(save_as, device=device)
         model = self._model
+        res = {}
         '''==================
         # 3. Create model
         if log_file:
