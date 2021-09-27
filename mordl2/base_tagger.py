@@ -857,16 +857,14 @@ class BaseTagger(BaseParser):
             print('\nDATASETS CREATION', file=log_file)
         log_file_ = sys.stderr if log_file else None
         ds_train = self._create_dataset(
-            #train[0],
-            test[0],
+            train[0],
             word_emb_type=word_emb_type, word_emb_path=word_emb_path,
             word_emb_model_device=word_emb_model_device,
             word_transform_kwargs=word_transform_kwargs,
             word_next_emb_params=word_next_emb_params,
             with_chars=model_kwargs.get('rnn_emb_dim') \
                     or model_kwargs.get('cnn_emb_dim'),
-            #tags=train[1:-1], labels=train[-1], for_self=False,
-            tags=test[1:-1], labels=test[-1], for_self=False,
+            tags=train[1:-1], labels=train[-1], for_self=False,
             log_file=log_file_)
         self._save_dataset(save_as, ds=ds_train)
         if test:
@@ -893,7 +891,6 @@ class BaseTagger(BaseParser):
         # TODO
         self.load(save_as, device=device)
         model = self._model
-        train = deepcopy(test)
         '''==================
         # 3. Create model
         if log_file:
