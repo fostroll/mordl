@@ -983,7 +983,8 @@ class BaseTagger(BaseParser):
                         emb_tune_params['log_file'] = log_file
                     if log_file:
                         print(file=log_file)
-                    WordEmbeddings._full_tune(model, save_as, (ds_train, ds_test),
+                    WordEmbeddings._full_tune(model, save_as, self.save,
+                        (ds_train, ds_test),
                         (train[0], test[0]) if test else train[0], **emb_tune_params
                     )
                 else:
@@ -997,7 +998,7 @@ class BaseTagger(BaseParser):
             return emb_tune_params['save_as']
 
         res_ = tune_word_emb(
-            word_emb_type, word_emb_path, self.save,
+            word_emb_type, word_emb_path
             emb_tune_params=word_emb_tune_params
         )
         if res_['best_epoch'] is not None:
