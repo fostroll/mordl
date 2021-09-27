@@ -114,6 +114,7 @@ class BaseTaggerModel(BaseModel):
             "ERROR: `lstm_layers` and `tran_layers` can't be " \
             'both set to non-zero.'
 
+        self.num_labels = num_labels
         self.vec_emb_dim = vec_emb_dim
 
         if rnn_emb_dim:
