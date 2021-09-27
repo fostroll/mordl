@@ -168,8 +168,8 @@ class WordEmbeddings:
                         transform_kwargs['aggregate_subtokens_op'],
                     with_grad=True, save=False, loglevel=0
                 )
-                x, = self.ds._collate(x, with_lens=False)
-                return self.model_head(x, *args, labels=labels)
+                x, x_lens = self.ds._collate(x, with_lens=True)
+                return self.model_head(x, x_lens, *args, labels=labels)
 
         train_ds_x = BaseDataset([list(x) for x in train_sents])
         train_ds_len = LenDataset(train_ds_x)
@@ -248,7 +248,7 @@ class WordEmbeddings:
         trainer_config = TrainerConfig(
             (save_as, model_save_as), max_epochs=epochs,
             batch_lens_idx=-1, batch_labels_idx=-2,
-            model_args=[0, -1] + list(range(1, len(train_ds.list()) - 2)),
+            model_args=list(range(len(train_ds.list()) - 2)),
             model_kwargs={'labels': -2},
             output_logits_idx=0, output_loss_idx=1,
             grad_norm_clip=grad_norm_clip,
