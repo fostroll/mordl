@@ -969,6 +969,7 @@ class BaseTagger(BaseParser):
 
         # 6. Tune embeddings
         def tune_word_emb(emb_type, emb_path, emb_tune_params=None):
+            res = None
             if not emb_tune_params:
                 emb_tune_params = {}
             elif isinstance(emb_tune_params, str):
@@ -983,9 +984,10 @@ class BaseTagger(BaseParser):
                         emb_tune_params['log_file'] = log_file
                     if log_file:
                         print(file=log_file)
-                    WordEmbeddings._full_tune(model, save_as, self.save,
-                        (ds_train, ds_test),
-                        (train[0], test[0]) if test else train[0], **emb_tune_params
+                    res = WordEmbeddings._full_tune(
+                        model, save_as, self.save, (ds_train, ds_test),
+                        (train[0], test[0]) if test else train[0],
+                        **emb_tune_params
                     )
                 else:
                     raise ValueError(f"ERROR: Tune method for '{emb_type}' "
@@ -995,13 +997,13 @@ class BaseTagger(BaseParser):
                     'ERROR: emb_tune_params is of incorrect type. '
                     'It can be either dict, str or None.'
                 )
-            return emb_tune_params['save_as']
+            return res
 
         res_ = tune_word_emb(
             word_emb_type, word_emb_path,
             emb_tune_params=word_emb_tune_params
         )
-        if res_['best_epoch'] is not None:
+        if res_ and res_['best_epoch'] is not None:
             for key, value in res.items():
                 if key == 'best_epoch':
                     res[key] += value
