@@ -184,6 +184,8 @@ class WordEmbeddings:
 
         train_ds.datasets['x'] = (train_ds_x, 1, {})
         test_ds.datasets['x'] = (test_ds_x, 1, {})
+        train_ds.add('len', train_ds_len)
+        test_ds.add('len', train_ds_len)
 
         train_dl = train_ds.create_loader(
             batch_size=batch_size, shuffle=True, num_workers=0
@@ -204,6 +206,8 @@ class WordEmbeddings:
         train_ds_bert[0].model = test_ds_bert[0].model = emb_model
         train_ds_bert[0].transform(train_sents, **transform_kwargs)
         test_ds_bert[0].transform(test_sents, **transform_kwargs)
+        train_ds.remove('len')
+        test_ds.remove('len')
         '''
 
         FULL_FINETUNING = True
