@@ -821,7 +821,7 @@ class BaseTagger(BaseParser):
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
         # Train the model head with Adam
-        def stage1(load_from, save_to):
+        def stage1(load_from, save_to, res):
             self._save_dataset(save_to, ds=ds_train)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
@@ -868,7 +868,7 @@ class BaseTagger(BaseParser):
             return res
 
         # Train the model head with SGD
-        def stage2(load_from, save_to):
+        def stage2(load_from, save_to, res):
             self._save_dataset(save_to, ds=ds_train)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
@@ -915,7 +915,7 @@ class BaseTagger(BaseParser):
             return res
 
         # Train the full model with AdamW
-        def stage3(load_from, save_to):
+        def stage3(load_from, save_to, res):
             self._save_dataset(save_to, ds=ds_train)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
@@ -1090,7 +1090,7 @@ class BaseTagger(BaseParser):
         for idx, stage_method in enumerate(stage_methods):
             save_to = save_as + f'_{idx}(stage{stage})' if save_stages else \
                       save_as
-            res = stage_method(load_from, save_to)
+            res = stage_method(load_from, save_to, res)
             load_from = save_to
 
         del model, ds_train, ds_test
