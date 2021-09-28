@@ -1083,9 +1083,8 @@ class BaseTagger(BaseParser):
 
         # 4. Train
         for idx, stage in enumerate(stages):
-            save_to = model_fn + f'_{idx}(stage{stage})' \
-                if save_stages else \
-            model_fn
+            save_to = save_as + f'_{idx}(stage{stage})' if save_stages else \
+                      save_as
             res = stage_methods[stage](load_from, save_to)
             load_from = save_to
 
