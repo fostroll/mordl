@@ -837,7 +837,7 @@ class BaseTagger(BaseParser):
                 model.load_state_dict(load_from, log_file=log_file)
             criterion, optimizer, scheduler = model.adjust_model_for_train()
             best_epoch, best_score = res['best_epoch'], res['best_score'] \
-                                         if res else 
+                                         if res else \
                                      0, None
 
             def best_model_backup_method(model, model_score):
@@ -884,7 +884,7 @@ class BaseTagger(BaseParser):
                 model.load_state_dict(load_from, log_file=log_file)
             criterion, optimizer, scheduler = model.adjust_model_for_tune()
             best_epoch, best_score = res['best_epoch'], res['best_score'] \
-                                         if res else 
+                                         if res else \
                                      0, None
 
             def best_model_backup_method(model, model_score):
@@ -930,7 +930,7 @@ class BaseTagger(BaseParser):
             if load_from:
                 model.load_state_dict(load_from, log_file=log_file)
             best_epoch, best_score = res['best_epoch'], res['best_score'] \
-                                         if res else 
+                                         if res else \
                                      0, None
 
             def tune_word_emb(emb_type, emb_path, best_score=None,
