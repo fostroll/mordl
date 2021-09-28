@@ -185,30 +185,17 @@ class WordEmbeddings:
         train_ds.datasets['x'] = (train_ds_x, 1, {})
         test_ds.datasets['x'] = (test_ds_x, 1, {})
         train_ds.add('len', train_ds_len)
-        test_ds.add('len', train_ds_len)
+        test_ds.add('len', test_ds_len)
 
         train_dl = train_ds.create_loader(
             batch_size=batch_size, shuffle=True, num_workers=0
         )
-        test_dl = train_ds.create_loader(
+        test_dl = test_ds.create_loader(
             batch_size=transform_kwargs['batch_size'], shuffle=False,
             num_workers=0
         )
 
         full_model = WordEmbeddingsModel(bert_ds, model)
-
-        '''TODO: after training recreate datasets
-        emb_config = AutoConfig.from_pretrained(
-            bert_save_to, output_hidden_states=True,
-            output_attentions=False
-        )
-        emb_model = AutoModel.from_pretrained(bert_save_to, config=config)
-        train_ds_bert[0].model = test_ds_bert[0].model = emb_model
-        train_ds_bert[0].transform(train_sents, **transform_kwargs)
-        test_ds_bert[0].transform(test_sents, **transform_kwargs)
-        train_ds.remove('len')
-        test_ds.remove('len')
-        '''
 
         FULL_FINETUNING = True
         if FULL_FINETUNING:
@@ -272,6 +259,16 @@ class WordEmbeddings:
                 )
             raise e
 
+        emb_config = AutoConfig.from_pretrained(
+            bert_save_to, output_hidden_states=True,
+            output_attentions=False
+        )
+        emb_model = AutoModel.from_pretrained(bert_save_to, config=config)
+        train_ds_bert[0].model = test_ds_bert[0].model = emb_model
+        train_ds_bert[0].transform(train_sents, **transform_kwargs)
+        test_ds_bert[0].transform(test_sents, **transform_kwargs)
+        train_ds.remove('len')
+        test_ds.remove('len')
         return res
 
     @staticmethod

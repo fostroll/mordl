@@ -822,14 +822,14 @@ class BaseTagger(BaseParser):
 
         # Train the model head with Adam
         def stage1(load_from, save_to, res):
+            if log_file:
+                print('\nMODEL TRAINING STAGE 1', file=log_file)
             self._save_dataset(save_to, ds=ds_train)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
             self._save_cdict(cdict_fn)
             model.save_config(model_config_fn, log_file=log_file)
 
-            if log_file:
-                print('\nMODEL TRAINING STAGE 1', file=log_file)
             if seed:
                 junky.enforce_reproducibility(seed=seed)
 
@@ -871,14 +871,14 @@ class BaseTagger(BaseParser):
 
         # Train the model head with SGD
         def stage2(load_from, save_to, res):
+            if log_file:
+                print('\nMODEL TRAINING STAGE 2', file=log_file)
             self._save_dataset(save_to, ds=ds_train)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
             self._save_cdict(cdict_fn)
             model.save_config(model_config_fn, log_file=log_file)
 
-            if log_file:
-                print('\nMODEL TRAINING STAGE 2', file=log_file)
             if seed:
                 junky.enforce_reproducibility(seed=seed)
 
@@ -920,14 +920,14 @@ class BaseTagger(BaseParser):
 
         # Train the full model with AdamW
         def stage3(load_from, save_to, res):
+            if log_file:
+                print('\nMODEL TRAINING STAGE 3', file=log_file)
             self._save_dataset(save_to, ds=ds_train)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
             self._save_cdict(cdict_fn)
             model.save_config(model_config_fn, log_file=log_file)
 
-            if log_file:
-                print('\nMODEL TRAINING STAGE 3', file=log_file)
             if seed:
                 junky.enforce_reproducibility(seed=seed)
 
