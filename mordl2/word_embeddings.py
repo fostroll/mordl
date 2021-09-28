@@ -66,7 +66,10 @@ class WordEmbeddings:
 
     @staticmethod
     def _full_tune(model, model_save_as, model_save_method,
-                   datasets, sents_data, save_as=None, epochs=3, batch_size=8,
+                   datasets, sents_data, best_score=None,
+
+                   save_as=None, epochs=3, batch_size=8,
+
                    control_metric='accuracy', transform_kwargs=None,
                    seed=None, log_file=LOG_FILE):
         """Method for finetuning base BERT model on custom data.
@@ -262,7 +265,7 @@ class WordEmbeddings:
         )
 
         try:
-            res = trainer.train()
+            res = trainer.train(best_score=best_score)
         except RuntimeError as e:
             if e.args and e.args[0].startswith('CUDA out of memory'):
                 e = RuntimeError(
