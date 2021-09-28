@@ -260,10 +260,9 @@ class WordEmbeddings:
             raise e
 
         emb_config = AutoConfig.from_pretrained(
-            bert_save_to, output_hidden_states=True,
-            output_attentions=False
+            save_as, output_hidden_states=True, output_attentions=False
         )
-        emb_model = AutoModel.from_pretrained(bert_save_to, config=config)
+        emb_model = AutoModel.from_pretrained(save_as, config=config)
         train_ds_bert[0].model = test_ds_bert[0].model = emb_model
         train_ds_bert[0].transform(train_sents, **transform_kwargs)
         test_ds_bert[0].transform(test_sents, **transform_kwargs)
