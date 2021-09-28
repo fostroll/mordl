@@ -1082,7 +1082,7 @@ class BaseTagger(BaseParser):
                             model_kwargs[name + '_num'] = \
                                 len(ds_.transform_dict)
                             model_kwargs[name + '_pad_idx'] = ds_.pad
-            model = cls(model_class, *model_args, **model_kwargs)
+            model = model_class(*model_args, **model_kwargs)
             if device:
                 model.to(device)
 
