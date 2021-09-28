@@ -8,6 +8,7 @@ Provides a base class for specialized morphological taggers.
 """
 from corpuscula.corpus_utils import _AbstractCorpus
 from copy import deepcopy
+from distutils.dir_util import copy_tree
 import gc
 import itertools
 import json
@@ -821,7 +822,7 @@ class BaseTagger(BaseParser):
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
         # Train the model head with Adam
-        def stage1(load_from, save_to, res):
+        def stage1(load_from, save_to, res, save_to2=None):
             if log_file:
                 print('\nMODEL TRAINING STAGE 1', file=log_file)
             self._save_dataset(save_to, ds=ds_train)
@@ -857,20 +858,23 @@ class BaseTagger(BaseParser):
                 best_score=best_score,
                 with_progress=log_file is not None, log_file=log_file
             )
-            if not res:
-                res = res_
-            elif res_ and res_['best_epoch'] is not None:
-                for key, value in res_.items():
-                    if key == 'best_epoch':
-                        res[key] += value
-                    elif key == 'best_score':
-                        res[key] = value
-                    else:
-                        res[key][:best_epoch] = value
+            if res_ and res_['best_epoch'] is not None:
+                if res:
+                    for key, value in res_.items():
+                        if key == 'best_epoch':
+                            res[key] += value
+                        elif key == 'best_score':
+                            res[key] = value
+                        else:
+                            res[key][:best_epoch] = value
+                else:
+                    res = res_
+                if save_to2:
+                    copy_tree(save_to, save_to2)
             return res
 
         # Train the model head with SGD
-        def stage2(load_from, save_to, res):
+        def stage2(load_from, save_to, res, save_to=None):
             if log_file:
                 print('\nMODEL TRAINING STAGE 2', file=log_file)
             self._save_dataset(save_to, ds=ds_train)
@@ -906,20 +910,23 @@ class BaseTagger(BaseParser):
                 best_score=best_score,
                 with_progress=log_file is not None, log_file=log_file
             )
-            if not res:
-                res = res_
-            elif res_ and res_['best_epoch'] is not None:
-                for key, value in res_.items():
-                    if key == 'best_epoch':
-                        res[key] += value
-                    elif key == 'best_score':
-                        res[key] = value
-                    else:
-                        res[key][:best_epoch] = value
+            if res_ and res_['best_epoch'] is not None:
+                if res:
+                    for key, value in res_.items():
+                        if key == 'best_epoch':
+                            res[key] += value
+                        elif key == 'best_score':
+                            res[key] = value
+                        else:
+                            res[key][:best_epoch] = value
+                else:
+                    res = res_
+                if save_to2:
+                    copy_tree(save_to, save_to2)
             return res
 
         # Train the full model with AdamW
-        def stage3(load_from, save_to, res):
+        def stage3(load_from, save_to, res, save_to2):
             if log_file:
                 print('\nMODEL TRAINING STAGE 3', file=log_file)
             self._save_dataset(save_to, ds=ds_train)
@@ -975,16 +982,19 @@ class BaseTagger(BaseParser):
                 word_emb_type, word_emb_path, best_score=best_score,
                 emb_tune_params=word_emb_tune_params
             )
-            if not res:
-                res = res_
-            elif res_ and res_['best_epoch'] is not None:
-                for key, value in res_.items():
-                    if key == 'best_epoch':
-                        res[key] += value
-                    elif key == 'best_score':
-                        res[key] = value
-                    else:
-                        res[key][:best_epoch] = value
+            if res_ and res_['best_epoch'] is not None:
+                if res:
+                    for key, value in res_.items():
+                        if key == 'best_epoch':
+                            res[key] += value
+                        elif key == 'best_score':
+                            res[key] = value
+                        else:
+                            res[key][:best_epoch] = value
+                else:
+                    res = res_
+                if save_to2:
+                    copy_tree(save_to, save_to2)
             return res
 
         stage_methods = [stage1, stage2, stage3]
@@ -1098,12 +1108,12 @@ class BaseTagger(BaseParser):
         # 4. Train
         for idx, stage in enumerate(stages, start=1):
             stage_method = stage_methods[stage]
-            save_to = save_as + f'_{idx}(stage{stage})' if save_stages else \
-                      save_as
-            res = stage_method(load_from, save_to, res)
+            save_to, save_to2 = (save_as + f'_{idx}(stage{stage})', save_as) \
+                                    if save_stages else \
+                                (save_as, None)
+            res = stage_method(load_from, save_to, res, save_to2=save_to2)
             load_from = save_to
 
-        del model, ds_train, ds_test
         if log_file:
             print('\n=== {} TAGGER TRAINING HAS FINISHED === '.format(header)
                 + 'Total time: {} ===\n'
