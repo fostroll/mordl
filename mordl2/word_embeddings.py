@@ -135,9 +135,6 @@ class WordEmbeddings:
         assert not test_ds or len(test_ds) == len(test_sents), \
             'ERROR: test dataset and test corpus have different sizes.'
 
-        if log_file:
-            print('BERT MODEL TUNING', file=log_file)
-
         kwargs = deepcopy(_DEFAULT_BERT_DATASET_TRANSFORM_KWARGS)
         if transform_kwargs:
             kwargs.update(transform_kwargs)

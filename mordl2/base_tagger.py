@@ -691,8 +691,8 @@ class BaseTagger(BaseParser):
                   # WordDataset.transform() (for other models) params:
                   # {'check_lower': True}
               stages=[1, 2, 3, 1, 2], load_from=None, res=None,
-              seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
-              **model_kwargs):
+              save_stages=False, seed=None, start_time=None, keep_embs=False,
+              log_file=LOG_FILE, **model_kwargs):
         """Creates and trains the tagger model.
 
         We assume all positional argumets but **save_as** are for internal use
@@ -821,10 +821,10 @@ class BaseTagger(BaseParser):
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
         # Train the model head with Adam
-        def stage1():
-            self._save_dataset(save_as, ds=ds_train)
+        def stage1(load_from, save_to):
+            self._save_dataset(save_to, ds=ds_train)
             model_config_fn, model_fn, _, _, cdict_fn = \
-                self._get_filenames(save_as)
+                self._get_filenames(save_to)
             self._save_cdict(cdict_fn)
             model.save_config(model_config_fn, log_file=log_file)
 
@@ -833,11 +833,16 @@ class BaseTagger(BaseParser):
             if seed:
                 junky.enforce_reproducibility(seed=seed)
 
+            if load_from:
+                model.load_state_dict(load_from, log_file=log_file)
+            criterion, optimizer, scheduler = model.adjust_model_for_train()
+
             def best_model_backup_method(model, model_score):
                 if log_file:
                     print('new maximum score {:.8f}'.format(model_score),
                           file=log_file)
-                model.save_state_dict(model_fn, log_file=log_file)
+                model.save_state_dict(save_to, log_file=log_file)
+
             res_ = junky.train(
                 None, model, criterion, optimizer, scheduler,
                 best_model_backup_method, datasets=(ds_train, ds_test),
@@ -860,14 +865,28 @@ class BaseTagger(BaseParser):
             return res
 
         # Train the model head with SGD
-        def stage2():
+        def stage2(load_from, save_to):
+            self._save_dataset(save_to, ds=ds_train)
+            model_config_fn, model_fn, _, _, cdict_fn = \
+                self._get_filenames(save_to)
+            self._save_cdict(cdict_fn)
+            model.save_config(model_config_fn, log_file=log_file)
+
             if log_file:
                 print('\nMODEL TRAINING STAGE 2', file=log_file)
             if seed:
                 junky.enforce_reproducibility(seed=seed)
 
-            model.load_state_dict(model_fn, log_file=log_file)
+            if load_from:
+                model.load_state_dict(load_from, log_file=log_file)
             criterion, optimizer, scheduler = model.adjust_model_for_tune()
+
+            def best_model_backup_method(model, model_score):
+                if log_file:
+                    print('new maximum score {:.8f}'.format(model_score),
+                          file=log_file)
+                model.save_state_dict(save_to, log_file=log_file)
+
             res_= junky.train(
                 None, model, criterion, optimizer, scheduler,
                 best_model_backup_method, datasets=(ds_train, ds_test),
@@ -891,9 +910,20 @@ class BaseTagger(BaseParser):
             return res
 
         # Train the full model with AdamW
-        def stage3():
+        def stage3(load_from, save_to):
+            self._save_dataset(save_to, ds=ds_train)
+            model_config_fn, model_fn, _, _, cdict_fn = \
+                self._get_filenames(save_to)
+            self._save_cdict(cdict_fn)
+            model.save_config(model_config_fn, log_file=log_file)
+
+            if log_file:
+                print('\nMODEL TRAINING STAGE 3', file=log_file)
             if seed:
                 junky.enforce_reproducibility(seed=seed)
+
+            if load_from:
+                model.load_state_dict(load_from, log_file=log_file)
 
             def tune_word_emb(emb_type, emb_path, best_score=None,
                               emb_tune_params=None):
@@ -909,7 +939,7 @@ class BaseTagger(BaseParser):
                         if log_file:
                             print(file=log_file)
                         res = WordEmbeddings._full_tune(
-                            model, save_as, self.save, (ds_train, ds_test),
+                            model, save_to, self.save, (ds_train, ds_test),
                             (train[0], test[0]) if test else train[0],
                             best_score=best_score, control_metric=control_metric,
                             log_file=log_file, **emb_tune_params  # save_as=None, epochs=3, batch_size=8
@@ -947,6 +977,9 @@ class BaseTagger(BaseParser):
             assert stage in stage_ids, \
                f'ERROR: stage {stage} is invalid. ' \
                f'Only stages {stage_ids} are allowed.'
+        if stages(3) > 1:
+            print('WARNING: Save of the BERT model will not be staged.',
+                  file=sys.stderr)
 
         if not start_time:
             start_time = time.time()
@@ -1049,8 +1082,12 @@ class BaseTagger(BaseParser):
                 model.to(device)
 
         # 4. Train
-        for stage in stages:
-            res = stage_methods[stage]
+        for idx, stage in enumerate(stages):
+            save_to = model_fn + f'_{idx}(stage{stage})' \
+                if save_stages else \
+            model_fn
+            res = stage_methods[stage](load_from, save_to)
+            load_from = save_to
 
         del model, ds_train, ds_test
         if log_file:
