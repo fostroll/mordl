@@ -977,7 +977,7 @@ class BaseTagger(BaseParser):
             assert stage in stage_ids, \
                f'ERROR: stage {stage} is invalid. ' \
                f'Only stages {stage_ids} are allowed.'
-        if stages(3) > 1:
+        if stages.count(3) > 1:
             print('WARNING: Save of the BERT model will not be staged.',
                   file=sys.stderr)
 
