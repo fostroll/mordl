@@ -1026,7 +1026,7 @@ class BaseTagger(BaseParser):
             word_emb_type=word_emb_type, word_emb_path=word_emb_path,
             word_emb_model_device=device,
             word_transform_kwargs=word_transform_kwargs,
-            word_next_emb_params=word_next_emb_params,
+            #word_next_emb_params=word_next_emb_params,
             with_chars=model_kwargs.get('rnn_emb_dim') \
                     or model_kwargs.get('cnn_emb_dim'),
             tags=train[1:-1], labels=train[-1], for_self=False,
