@@ -188,7 +188,6 @@ class BaseModel(nn.Module):
         **\*\*kwargs**: keyword args for the model's class constructor.
         """
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(params=model.parameters(), lr=lr)
         optimizer = torch.optim.Adam(
             self.parameters(), lr=lr, betas=betas, eps=eps,
             weight_decay=weight_decay, amsgrad=amsgrad
