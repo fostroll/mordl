@@ -953,7 +953,10 @@ class BaseTagger(BaseParser):
                         if log_file:
                             print(file=log_file)
                         res = WordEmbeddings._full_tune(
-                            model, save_to, self.save, (ds_train, ds_test),
+                            model, save_to,
+                            lambda x: model.save_state_dict(
+                                model_fn, log_file=log_file
+                            ), (ds_train, ds_test),
                             (train[0], test[0]) if test else train[0],
                             best_score=best_score, control_metric=control_metric,
                             log_file=log_file, **emb_tune_params  # save_as=None, epochs=3, batch_size=8
