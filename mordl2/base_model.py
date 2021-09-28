@@ -172,8 +172,7 @@ class BaseModel(nn.Module):
             print('done.', file=log_file)
         return model
 
-    @classmethod
-    def create_model_for_train(cls, *args, lr=.0001, betas=(0.9, 0.999),
+    def adjust_model_for_train(self, *args, lr=.0001, betas=(0.9, 0.999),
                                eps=1e-08, weight_decay=0, amsgrad=False,
                                **kwargs):
         """Creates model, criterion, optimizer and scheduler for training.
@@ -188,7 +187,6 @@ class BaseModel(nn.Module):
 
         **\*\*kwargs**: keyword args for the model's class constructor.
         """
-        model = cls(*args, **kwargs)
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(params=model.parameters(), lr=lr)
         optimizer = torch.optim.Adam(
