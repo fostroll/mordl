@@ -874,7 +874,7 @@ class BaseTagger(BaseParser):
             return res
 
         # Train the model head with SGD
-        def stage2(load_from, save_to, res, save_to=None):
+        def stage2(load_from, save_to, res, save_to2=None):
             if log_file:
                 print('\nMODEL TRAINING STAGE 2', file=log_file)
             self._save_dataset(save_to, ds=ds_train)
@@ -926,7 +926,7 @@ class BaseTagger(BaseParser):
             return res
 
         # Train the full model with AdamW
-        def stage3(load_from, save_to, res, save_to2):
+        def stage3(load_from, save_to, res, save_to2=None):
             if log_file:
                 print('\nMODEL TRAINING STAGE 3', file=log_file)
             self._save_dataset(save_to, ds=ds_train)
