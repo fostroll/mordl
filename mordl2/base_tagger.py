@@ -834,7 +834,9 @@ class BaseTagger(BaseParser):
                 junky.enforce_reproducibility(seed=seed)
 
             if load_from:
-                model.load_state_dict(load_from, log_file=log_file)
+                _, model_fn_, _, _, _ = \
+                   self._get_filenames(load_from)
+                model.load_state_dict(model_fn_, log_file=log_file)
             criterion, optimizer, scheduler = model.adjust_model_for_train()
             best_epoch, best_score = (res['best_epoch'], res['best_score']) \
                                          if res else \
@@ -881,7 +883,9 @@ class BaseTagger(BaseParser):
                 junky.enforce_reproducibility(seed=seed)
 
             if load_from:
-                model.load_state_dict(load_from, log_file=log_file)
+                _, model_fn_, _, _, _ = \
+                   self._get_filenames(load_from)
+                model.load_state_dict(model_fn_, log_file=log_file)
             criterion, optimizer, scheduler = model.adjust_model_for_tune()
             best_epoch, best_score = (res['best_epoch'], res['best_score']) \
                                          if res else \
@@ -928,7 +932,9 @@ class BaseTagger(BaseParser):
                 junky.enforce_reproducibility(seed=seed)
 
             if load_from:
-                model.load_state_dict(load_from, log_file=log_file)
+                _, model_fn_, _, _, _ = \
+                   self._get_filenames(load_from)
+                model.load_state_dict(model_fn_, log_file=log_file)
             best_epoch, best_score = (res['best_epoch'], res['best_score']) \
                                          if res else \
                                      (0, None)
