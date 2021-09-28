@@ -193,7 +193,7 @@ class BaseModel(nn.Module):
             weight_decay=weight_decay, amsgrad=amsgrad
         )
         scheduler = None
-        return model, criterion, optimizer, scheduler
+        return criterion, optimizer, scheduler
 
     def adjust_model_for_tune(self, lr=.001, momentum=.9, weight_decay=0,
                               dampening=0, nesterov=False):
