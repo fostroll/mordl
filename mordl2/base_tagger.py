@@ -1096,7 +1096,8 @@ class BaseTagger(BaseParser):
                 model.to(device)
 
         # 4. Train
-        for idx, stage_method in enumerate(stage_methods):
+        for idx, stage in enumerate(stages, start=1):
+            stage_method = stage_methods[stage]
             save_to = save_as + f'_{idx}(stage{stage})' if save_stages else \
                       save_as
             res = stage_method(load_from, save_to, res)
