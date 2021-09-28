@@ -836,6 +836,9 @@ class BaseTagger(BaseParser):
             if load_from:
                 model.load_state_dict(load_from, log_file=log_file)
             criterion, optimizer, scheduler = model.adjust_model_for_train()
+            best_epoch, best_score = res['best_epoch'], res['best_score'] \
+                                         if res else 
+                                     0, None
 
             def best_model_backup_method(model, model_score):
                 if log_file:
@@ -849,12 +852,12 @@ class BaseTagger(BaseParser):
                 epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
                 batch_size=batch_size, control_metric=control_metric,
                 max_grad_norm=max_grad_norm, batch_to_device=False,
+                best_score=best_score,
                 with_progress=log_file is not None, log_file=log_file
             )
             if not res:
                 res = res_
             elif res_ and res_['best_epoch'] is not None:
-                best_epoch = res['best_epoch']
                 for key, value in res_.items():
                     if key == 'best_epoch':
                         res[key] += value
@@ -880,6 +883,9 @@ class BaseTagger(BaseParser):
             if load_from:
                 model.load_state_dict(load_from, log_file=log_file)
             criterion, optimizer, scheduler = model.adjust_model_for_tune()
+            best_epoch, best_score = res['best_epoch'], res['best_score'] \
+                                         if res else 
+                                     0, None
 
             def best_model_backup_method(model, model_score):
                 if log_file:
@@ -899,7 +905,6 @@ class BaseTagger(BaseParser):
             if not res:
                 res = res_
             elif res_ and res_['best_epoch'] is not None:
-                best_epoch = res['best_epoch']
                 for key, value in res_.items():
                     if key == 'best_epoch':
                         res[key] += value
@@ -924,6 +929,9 @@ class BaseTagger(BaseParser):
 
             if load_from:
                 model.load_state_dict(load_from, log_file=log_file)
+            best_epoch, best_score = res['best_epoch'], res['best_score'] \
+                                         if res else 
+                                     0, None
 
             def tune_word_emb(emb_type, emb_path, best_score=None,
                               emb_tune_params=None):
@@ -961,7 +969,6 @@ class BaseTagger(BaseParser):
             if not res:
                 res = res_
             elif res_ and res_['best_epoch'] is not None:
-                best_epoch = res['best_epoch']
                 for key, value in res_.items():
                     if key == 'best_epoch':
                         res[key] += value
@@ -1082,10 +1089,10 @@ class BaseTagger(BaseParser):
                 model.to(device)
 
         # 4. Train
-        for idx, stage in enumerate(stages):
+        for idx, stage_method in enumerate(stage_methods):
             save_to = save_as + f'_{idx}(stage{stage})' if save_stages else \
                       save_as
-            res = stage_methods[stage](load_from, save_to)
+            res = stage_method(load_from, save_to)
             load_from = save_to
 
         del model, ds_train, ds_test
