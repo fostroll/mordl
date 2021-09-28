@@ -844,7 +844,7 @@ class BaseTagger(BaseParser):
                 if log_file:
                     print('new maximum score {:.8f}'.format(model_score),
                           file=log_file)
-                model.save_state_dict(save_to, log_file=log_file)
+                model.save_state_dict(model_fn, log_file=log_file)
 
             res_ = junky.train(
                 None, model, criterion, optimizer, scheduler,
@@ -891,7 +891,7 @@ class BaseTagger(BaseParser):
                 if log_file:
                     print('new maximum score {:.8f}'.format(model_score),
                           file=log_file)
-                model.save_state_dict(save_to, log_file=log_file)
+                model.save_state_dict(model_fn, log_file=log_file)
 
             res_= junky.train(
                 None, model, criterion, optimizer, scheduler,
