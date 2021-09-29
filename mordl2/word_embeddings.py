@@ -214,6 +214,27 @@ class WordEmbeddings:
             optimizer_grouped_parameters = \
                 [{'params': [p for n, p in param_optimizer]}]
 
+        if FULL_FINETUNING:
+            param_optimizer = list(full_model.emb_model.named_parameters())
+            no_decay = ['bias', 'gamma', 'beta']
+            optimizer_grouped_parameters = [
+                {'params': [p for n, p in param_optimizer
+                                  if not any(nd in n for nd in no_decay)],
+                 'weight_decay_rate': .01},
+                {'params': [p for n, p in param_optimizer
+                                  if any(nd in n for nd in no_decay)],
+                 'weight_decay_rate': .0}
+            ]
+        else:
+            param_optimizer = \
+                list(full_model.emb_model.classifier.named_parameters())
+            optimizer_grouped_parameters = \
+                [{'params': [p for n, p in param_optimizer]}]
+
+        optimizer_grouped_parameters.append(
+            {'params': list(full_model.model_head.parameters())}
+        )
+
         optimizer = AdamW(optimizer_grouped_parameters, lr=3e-5,
                           betas=(0.9, 0.999), eps=1e-8, weight_decay=0.01,
                           amsgrad=False)
