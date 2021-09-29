@@ -300,8 +300,9 @@ class BaseTagger(BaseParser):
         self._model.save_state_dict(model_fn, log_file=log_file)
         self._save_cdict(cdict_fn)
 
-    def load(self, model_class, name, device=None, create_only=False,
-             dataset_emb_path=None, dataset_device=None, log_file=LOG_FILE):
+    def load(self, model_class, name, device=junky.CPU, create_only=False,
+             dataset_emb_path=None, dataset_device=junky.CPU,
+             log_file=LOG_FILE):
         """Loads tagger's internal state saved by its `.save()` method.
 
         Args:
@@ -327,8 +328,8 @@ class BaseTagger(BaseParser):
         model_config_fn, model_fn, _, _, cdict_fn = \
             self._get_filenames(name)
         self._model = model_class.create_from_config(
-            model_config_fn, state_dict_f=model_fn, device=device,
-            log_file=log_file
+            model_config_fn, state_dict_f=None if create_only else model_fn,
+            device=device, log_file=log_file
         )
         self._load_cdict(cdict_fn, log_file=log_file)
 
@@ -1051,16 +1052,23 @@ class BaseTagger(BaseParser):
             if log_file:
                 print('\nDATASETS CREATION', file=log_file)
             log_file_ = sys.stderr if log_file else None
-            ds_train = self._create_dataset(
-                train[0],
-                word_emb_type=word_emb_type, word_emb_path=word_emb_path,
-                word_emb_model_device=device,
-                word_transform_kwargs=word_transform_kwargs,
-                #word_next_emb_params=word_next_emb_params,
-                with_chars=model_kwargs.get('rnn_emb_dim') \
-                        or model_kwargs.get('cnn_emb_dim'),
-                tags=train[1:-1], labels=train[-1], for_self=False,
-                log_file=log_file_)
+            if self._ds is None:
+                ds_train = self._create_dataset(
+                    train[0],
+                    word_emb_type=word_emb_type, word_emb_path=word_emb_path,
+                    word_emb_model_device=device,
+                    word_transform_kwargs=word_transform_kwargs,
+                    #word_next_emb_params=word_next_emb_params,
+                    with_chars=model_kwargs.get('rnn_emb_dim') \
+                            or model_kwargs.get('cnn_emb_dim'),
+                    tags=train[1:-1], labels=train[-1], for_self=False,
+                    log_file=log_file_
+                )
+                self._ds = ds_train.clone(with_data=False)
+            else:
+                ds_train = self._ds.clone(with_data=False)
+                self._transform(train[0], tags=train[1:-1], labels=train[-1],
+                                ds=ds_train, log_file=log_file_)
             if test:
                 ds_test = ds_train.clone(with_data=False)
                 self._transform(test[0], tags=test[1:-1], labels=test[-1],
@@ -1069,16 +1077,19 @@ class BaseTagger(BaseParser):
                 ds_test = None
             return ds_train, ds_test
 
-        ds_train, ds_test = stage_ds()
-
         # 3. Create model
         if load_from:
             if log_file:
                 print('\nMODEL LOADING', file=log_file)
-            self.load(load_from, device=device, create_only=True)
-            model = self._model
+            self.load(load_from, device=junky.CPU, dataset_device=junky.CPU,
+                      create_only=True, log_file=log_file)
+            model = self._model.to(device)
+
+            ds_train, ds_test = stage_ds()
 
         else:
+            ds_train, ds_test = stage_ds()
+
             if log_file:
                 print('\nMODEL CREATION', file=log_file)
             if seed:
@@ -1112,17 +1123,31 @@ class BaseTagger(BaseParser):
             if device:
                 model.to(device)
 
+        # remove emb models to free memory:
+        #if not keep_embs:
+        #    ds_train._pull_xtrn()
+        #    if ds_test is not None:
+        #        ds_test._pull_xtrn()
+        #    self._embs = {}
+        #    gc.collect()
+
         # 4. Train
+        need_ds = False
         for idx, stage in enumerate(stages, start=1):
             stage_method = stage_methods[stage - 1]
             save_to, save_to2 = (save_as + f'_{idx}(stage{stage})', save_as) \
                                     if save_stages else \
                                 (save_as, None)
+            if need_ds:
+                ds_train, ds_test = None
+                gc.collect()
+                #torch.cuda.empty_cache()
+                ds_train, ds_test = stage_ds()
             res = stage_method(load_from, save_to, res, save_to2=save_to2)
             if stage == 3 and res and res['best_epoch'] is not None:
                 if 'save_as' in word_emb_tune_params:
                     word_emb_path = word_emb_tune_params['save_as']
-                ds_train, ds_test = stage_ds()
+                need_ds = True
             load_from = save_to
 
         if log_file:
