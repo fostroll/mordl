@@ -957,11 +957,16 @@ class BaseTagger(BaseParser):
                     if emb_type == 'bert':
                         if 'save_as' not in emb_tune_params:
                             emb_tune_params['save_as'] = bert_header
+
+                        def model_save_method(_):
+                            self._save_cdict(cdict_fn)
+                            self._save_dataset(save_to, ds=ds_train)
+                            model.save_config(model_config_fn, log_file=log_file)
+                            model.save_state_dict(model_fn, log_file=log_file)
+
                         res = WordEmbeddings._full_tune(
-                            model, save_to,
-                            lambda x: model.save_state_dict(
-                                model_fn, log_file=log_file
-                            ), (ds_train, ds_test),
+                            model, save_to, model_save_method,
+                            (ds_train, ds_test),
                             (train[0], test[0]) if test else train[0],
                             best_score=best_score, control_metric=control_metric,
                             log_file=log_file, **emb_tune_params  # save_as=None, epochs=3, batch_size=8
@@ -981,9 +986,6 @@ class BaseTagger(BaseParser):
                 emb_tune_params=word_emb_tune_params
             )
             if res_ and res_['best_epoch'] is not None:
-                self._save_cdict(cdict_fn)
-                self._save_dataset(save_to, ds=ds_train)
-                model.save_config(model_config_fn, log_file=log_file)
                 if save_to2:
                     copy_tree(save_to, save_to2)
                 if res:
