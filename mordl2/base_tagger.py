@@ -1002,8 +1002,10 @@ class BaseTagger(BaseParser):
         stage_ids = list(range(1, len(stage_methods) + 1))
         for stage in stages:
             assert stage in stage_ids, \
-               f'ERROR: stage {stage} is invalid. ' \
+               f'ERROR: The stage {stage} is invalid. ' \
                f'Only stages {stage_ids} are allowed.'
+        assert word_emb_type.lower() == 'bert' or 3 not in stages, \
+            'ERROR: The stage 3 is only allowed with `word_emb_type=bert`.'
         if stages.count(3) > 1:
             print('WARNING: Save of the BERT model will not be staged.',
                   file=sys.stderr)
@@ -1027,6 +1029,7 @@ class BaseTagger(BaseParser):
         )
         fields.append(field)
 
+        del model, ds_train, ds_test
         if log_file:
             print('=== {} TAGGER TRAINING PIPELINE ==='.format(header),
                   file=log_file)
@@ -1045,25 +1048,29 @@ class BaseTagger(BaseParser):
             torch.cuda.set_device(device)
 
         # 2. Create datasets
-        if log_file:
-            print('\nDATASETS CREATION', file=log_file)
-        log_file_ = sys.stderr if log_file else None
-        ds_train = self._create_dataset(
-            train[0],
-            word_emb_type=word_emb_type, word_emb_path=word_emb_path,
-            word_emb_model_device=device,
-            word_transform_kwargs=word_transform_kwargs,
-            #word_next_emb_params=word_next_emb_params,
-            with_chars=model_kwargs.get('rnn_emb_dim') \
-                    or model_kwargs.get('cnn_emb_dim'),
-            tags=train[1:-1], labels=train[-1], for_self=False,
-            log_file=log_file_)
-        if test:
-            ds_test = ds_train.clone(with_data=False)
-            self._transform(test[0], tags=test[1:-1], labels=test[-1],
-                            ds=ds_test, log_file=log_file_)
-        else:
-            ds_test = None
+        def stage_ds():
+            if log_file:
+                print('\nDATASETS CREATION', file=log_file)
+            log_file_ = sys.stderr if log_file else None
+            ds_train = self._create_dataset(
+                train[0],
+                word_emb_type=word_emb_type, word_emb_path=word_emb_path,
+                word_emb_model_device=device,
+                word_transform_kwargs=word_transform_kwargs,
+                #word_next_emb_params=word_next_emb_params,
+                with_chars=model_kwargs.get('rnn_emb_dim') \
+                        or model_kwargs.get('cnn_emb_dim'),
+                tags=train[1:-1], labels=train[-1], for_self=False,
+                log_file=log_file_)
+            if test:
+                ds_test = ds_train.clone(with_data=False)
+                self._transform(test[0], tags=test[1:-1], labels=test[-1],
+                                ds=ds_test, log_file=log_file_)
+            else:
+                ds_test = None
+            return ds_train, ds_test
+
+        ds_train, ds_test = stage_ds()
 
         # 3. Create model
         if load_from:
@@ -1113,6 +1120,10 @@ class BaseTagger(BaseParser):
                                     if save_stages else \
                                 (save_as, None)
             res = stage_method(load_from, save_to, res, save_to2=save_to2)
+            if stage == 3 and res and res['best_epoch'] is not None:
+                if 'save_as' in word_emb_tune_params:
+                    word_emb_path = word_emb_tune_params['save_as']
+                ds_train, ds_test = stage_ds()
             load_from = save_to
 
         if log_file:
