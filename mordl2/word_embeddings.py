@@ -154,6 +154,7 @@ class WordEmbeddings:
                 self.model_head = model_head
 
             def save_pretrained(self, paths):
+                self.tokenizer.save_pretrained(paths[0])
                 self.emb_model.save_pretrained(paths[0])
                 model_save_method(paths[1])
 
