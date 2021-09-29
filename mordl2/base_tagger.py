@@ -821,6 +821,9 @@ class BaseTagger(BaseParser):
         """
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
 
+        if seed:
+            junky.enforce_reproducibility(seed=seed)
+
         # Train the model head with Adam
         def stage1(load_from, save_to, res, save_to2=None):
             if log_file:
@@ -829,7 +832,7 @@ class BaseTagger(BaseParser):
                 self._get_filenames(save_to)
 
             if seed:
-                junky.enforce_reproducibility(seed=seed)
+                junky.enforce_reproducibility(seed=seed + 1)
 
             if load_from:
                 _, model_fn_, _, _, _ = \
@@ -881,7 +884,7 @@ class BaseTagger(BaseParser):
                 self._get_filenames(save_to)
 
             if seed:
-                junky.enforce_reproducibility(seed=seed)
+                junky.enforce_reproducibility(seed=seed + 2)
 
             if load_from:
                 _, model_fn_, _, _, _ = \
@@ -933,7 +936,7 @@ class BaseTagger(BaseParser):
                 self._get_filenames(save_to)
 
             if seed:
-                junky.enforce_reproducibility(seed=seed)
+                junky.enforce_reproducibility(seed=seed + 3)
 
             if load_from:
                 _, model_fn_, _, _, _ = \
