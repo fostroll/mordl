@@ -1029,7 +1029,6 @@ class BaseTagger(BaseParser):
         )
         fields.append(field)
 
-        del model, ds_train, ds_test
         if log_file:
             print('=== {} TAGGER TRAINING PIPELINE ==='.format(header),
                   file=log_file)
@@ -1136,6 +1135,7 @@ class BaseTagger(BaseParser):
                    'with the {} tagger.').format(save_as, header),
                       file=log_file)
 
+        del model, ds_train, ds_test
         return res
 
 
