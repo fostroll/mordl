@@ -825,11 +825,8 @@ class BaseTagger(BaseParser):
         def stage1(load_from, save_to, res, save_to2=None):
             if log_file:
                 print('\nMODEL TRAINING STAGE 1', file=log_file)
-            self._save_dataset(save_to, ds=ds_train)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
-            self._save_cdict(cdict_fn)
-            model.save_config(model_config_fn, log_file=log_file)
 
             if seed:
                 junky.enforce_reproducibility(seed=seed)
@@ -859,6 +856,11 @@ class BaseTagger(BaseParser):
                 with_progress=log_file is not None, log_file=log_file
             )
             if res_ and res_['best_epoch'] is not None:
+                self._save_cdict(cdict_fn)
+                self._save_dataset(save_to, ds=ds_train)
+                model.save_config(model_config_fn, log_file=log_file)
+                if save_to2:
+                    copy_tree(save_to, save_to2)
                 if res:
                     for key, value in res_.items():
                         if key == 'best_epoch':
@@ -869,19 +871,14 @@ class BaseTagger(BaseParser):
                             res[key][:best_epoch] = value
                 else:
                     res = res_
-                if save_to2:
-                    copy_tree(save_to, save_to2)
             return res
 
         # Train the model head with SGD
         def stage2(load_from, save_to, res, save_to2=None):
             if log_file:
                 print('\nMODEL TRAINING STAGE 2', file=log_file)
-            self._save_dataset(save_to, ds=ds_train)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
-            self._save_cdict(cdict_fn)
-            model.save_config(model_config_fn, log_file=log_file)
 
             if seed:
                 junky.enforce_reproducibility(seed=seed)
@@ -911,6 +908,11 @@ class BaseTagger(BaseParser):
                 with_progress=log_file is not None, log_file=log_file
             )
             if res_ and res_['best_epoch'] is not None:
+                self._save_cdict(cdict_fn)
+                self._save_dataset(save_to, ds=ds_train)
+                model.save_config(model_config_fn, log_file=log_file)
+                if save_to2:
+                    copy_tree(save_to, save_to2)
                 if res:
                     for key, value in res_.items():
                         if key == 'best_epoch':
@@ -921,19 +923,14 @@ class BaseTagger(BaseParser):
                             res[key][:best_epoch] = value
                 else:
                     res = res_
-                if save_to2:
-                    copy_tree(save_to, save_to2)
             return res
 
         # Train the full model with AdamW
         def stage3(load_from, save_to, res, save_to2=None):
             if log_file:
                 print('\nMODEL TRAINING STAGE 3', file=log_file)
-            self._save_dataset(save_to, ds=ds_train)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
-            self._save_cdict(cdict_fn)
-            model.save_config(model_config_fn, log_file=log_file)
 
             if seed:
                 junky.enforce_reproducibility(seed=seed)
@@ -983,6 +980,11 @@ class BaseTagger(BaseParser):
                 emb_tune_params=word_emb_tune_params
             )
             if res_ and res_['best_epoch'] is not None:
+                self._save_cdict(cdict_fn)
+                self._save_dataset(save_to, ds=ds_train)
+                model.save_config(model_config_fn, log_file=log_file)
+                if save_to2:
+                    copy_tree(save_to, save_to2)
                 if res:
                     for key, value in res_.items():
                         if key == 'best_epoch':
@@ -993,8 +995,6 @@ class BaseTagger(BaseParser):
                             res[key][:best_epoch] = value
                 else:
                     res = res_
-                if save_to2:
-                    copy_tree(save_to, save_to2)
             return res
 
         stage_methods = [stage1, stage2, stage3]

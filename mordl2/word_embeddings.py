@@ -280,10 +280,14 @@ class WordEmbeddings:
                 )
             raise e
 
-        emb_config = AutoConfig.from_pretrained(
-            save_as, output_hidden_states=True, output_attentions=False
-        )
-        emb_model = AutoModel.from_pretrained(save_as, config=config)
+        config = getattr(train_ds_bert[0], CONFIG_ATTR, None)
+        if res and res['best_epoch'] is not None:
+            config.emb_path = save_as
+        emb_config = AutoConfig.from_pretrained(config.emb_path,
+                                                output_hidden_states=True,
+                                                output_attentions=False)
+        emb_model = AutoModel.from_pretrained(config.emb_path,
+                                              config=emb_config)
         train_ds_bert[0].model = test_ds_bert[0].model = emb_model
         train_ds_bert[0].transform(train_sents, **transform_kwargs)
         test_ds_bert[0].transform(test_sents, **transform_kwargs)
