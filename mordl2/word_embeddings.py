@@ -162,9 +162,9 @@ class WordEmbeddings:
                     sentences, max_len=transform_kwargs['max_len'],
                     batch_size=batch_size,
                     hidden_ids=transform_kwargs['hidden_ids'],
-                    aggregate_hiddens_op=\
+                    aggregate_hiddens_op=
                         transform_kwargs['aggregate_hiddens_op'],
-                    aggregate_subtokens_op=\
+                    aggregate_subtokens_op=
                         transform_kwargs['aggregate_subtokens_op'],
                     with_grad=True, save=False, loglevel=0
                 )
@@ -240,7 +240,7 @@ class WordEmbeddings:
             output_logits_idx=0, output_loss_idx=1,
             grad_norm_clip=grad_norm_clip,
             optimizer=optimizer, scheduler=scheduler,
-            postprocess_method='strip_mask', save_ckpt_method=\
+            postprocess_method='strip_mask', save_ckpt_method=
                 lambda model, paths: full_model.save_pretrained(paths)
         )
         trainer = Trainer(
