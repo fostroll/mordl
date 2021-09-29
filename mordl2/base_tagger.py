@@ -300,9 +300,8 @@ class BaseTagger(BaseParser):
         self._model.save_state_dict(model_fn, log_file=log_file)
         self._save_cdict(cdict_fn)
 
-    def load(self, model_class, name, device=junky.CPU, create_only=False,
-             dataset_emb_path=None, dataset_device=junky.CPU,
-             log_file=LOG_FILE):
+    def load(self, model_class, name, device=None, create_only=False,
+             dataset_emb_path=None, dataset_device=None, log_file=LOG_FILE):
         """Loads tagger's internal state saved by its `.save()` method.
 
         Args:
@@ -1081,7 +1080,7 @@ class BaseTagger(BaseParser):
         if load_from:
             if log_file:
                 print('\nMODEL LOADING', file=log_file)
-            self.load(load_from, device=junky.CPU, dataset_device=junky.CPU,
+            self.load(load_from, device=device, dataset_device=device,
                       create_only=True, log_file=log_file)
             model = self._model.to(device)
 
