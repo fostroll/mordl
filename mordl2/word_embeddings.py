@@ -549,7 +549,7 @@ class WordEmbeddings:
                     if not res:
                         break
             else:
-                kwargs = config.get('transform_kwargs', {})
+                kwargs = config[0].get('transform_kwargs', {})
                 if transform_kwargs:
                     kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
