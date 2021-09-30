@@ -506,7 +506,7 @@ class WordEmbeddings:
 
         if hasattr(ds, CONFIG_ATTR):
             raise AttributeError(
-                'ERROR: {} class has unexpected attribute {}'
+                'ERROR: {} class has unexpected attribute `{}`'
                     .format(ds.__class__, CONFIG_ATTR)
             )
         setattr(ds, CONFIG_ATTR, config)
@@ -691,7 +691,7 @@ class WordEmbeddings:
 
         if config_f is True:
             assert isinstance(f, str), \
-                   'ERROR: config_f can be True only with f of str type'
+                'ERROR: config_f can be True only with f of str type'
             pref, suff = os.path.splitext(f)
             config_f_ = pref + CONFIG_EXT
             if os.path.isfile(config_f_):
@@ -742,7 +742,7 @@ class WordEmbeddings:
             config = [config]
 
         assert len(config) == 1 or len(config) == len(ds.list()), \
-               'ERROR: f and config_f have incompatible data'
+            'ERROR: f and config_f have incompatible data'
 
         embs, xtrn = {} if embs is None else embs, []
         for cfg in config:
@@ -763,11 +763,6 @@ class WordEmbeddings:
             xtrn = {x: y for x, y in zip(ds.list(), xtrn)}
         ds._push_xtrn(xtrn)
 
-        if hasattr(ds, CONFIG_ATTR):
-            raise AttributeError(
-                'ERROR: {} class has unexpected attribute {}'
-                    .format(ds.__class__, CONFIG_ATTR)
-            )
         setattr(ds, CONFIG_ATTR, config)
 
         return embs
