@@ -44,7 +44,7 @@ from transformers import AutoConfig, AutoModel, AutoTokenizer, \
 #                         BertForTokenClassification, BertTokenizer, \
 
 _DEFAULT_BERT_DATASET_TRANSFORM_KWARGS = junky.kwargs(
-    max_len=0, batch_size=BATCH_SIZE, hidden_ids=-2,
+    max_len=0, batch_size=BATCH_SIZE, hidden_ids=10,
     aggregate_hiddens_op='cat', aggregate_subtokens_op='absmax',
     to=junky.CPU, loglevel=1
 )

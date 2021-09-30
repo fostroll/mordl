@@ -685,7 +685,7 @@ class BaseTagger(BaseParser):
               word_transform_kwargs=None,
                   # BertDataset.transform() (for BERT-descendant models)
                   # params:
-                  # {'max_len': 0, 'batch_size': 64, 'hidden_ids': '-2',
+                  # {'max_len': 0, 'batch_size': 64, 'hidden_ids': '10',
                   #  'aggregate_hiddens_op': 'cat',
                   #  'aggregate_subtokens_op': 'absmax', 'to': junky.CPU,
                   #  'loglevel': 1}
