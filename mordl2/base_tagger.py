@@ -979,7 +979,7 @@ class BaseTagger(BaseParser):
                                    bert_header
 
                         def model_save_method(_):
-                            config = getattr(self._ds.get_dataset('x', {}), CONFIG_ATTR, {})
+                            config = getattr(self._ds.get_dataset('x'), CONFIG_ATTR, {})
                             print('cfg', config)
                             config['emb_path'] = emb_path
                             self._save_dataset(save_to)
@@ -1034,7 +1034,7 @@ class BaseTagger(BaseParser):
                   file=sys.stderr)
 
         if log_file:
-            print('=== {} TAGGER TRAINING PIPELINE ==='.format(header),
+            print(f'\n=== {header} TAGGER TRAINING PIPELINE ===',
                   file=log_file)
 
         # 1. Prepare corpora
