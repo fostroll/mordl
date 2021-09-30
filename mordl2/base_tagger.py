@@ -959,8 +959,8 @@ class BaseTagger(BaseParser):
                             emb_tune_params['save_as'] = bert_header
 
                         def model_save_method(_):
-                            self._save_cdict(cdict_fn)
                             self._save_dataset(save_to, ds=ds_train)
+                            self._save_cdict(cdict_fn)
                             model.save_config(model_config_fn, log_file=log_file)
                             model.save_state_dict(model_fn, log_file=log_file)
 
