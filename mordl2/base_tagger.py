@@ -1084,6 +1084,7 @@ class BaseTagger(BaseParser):
                 print('\nMODEL LOADING', file=log_file)
             self.load(load_from, device=device, dataset_device=device,
                       create_only=True, log_file=log_file)
+            model = self._model
 
             ds_train, ds_test = stage_ds()
 
