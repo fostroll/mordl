@@ -981,8 +981,6 @@ class BaseTagger(BaseParser):
                     )
                 return res
 
-            if 'save_as' in word_emb_tune_params:
-            emb_path = word_emb_tune_params['save_as']
             res_ = tune_word_emb(word_emb_type,
                                  word_emb_tune_params['save_as']
                                      if 'save_as' in word_emb_tune_params else
