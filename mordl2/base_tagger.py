@@ -1027,7 +1027,7 @@ class BaseTagger(BaseParser):
         stage_methods = [stage1, stage2, stage3]
         stage_ids = list(range(1, len(stage_methods) + 1))
         for stage in stages:
-            assert stage in stage_ids, \
+            assert not stage or stage in stage_ids, \
                f'ERROR: The stage {stage} is invalid. ' \
                f'Only stages {stage_ids} are allowed.'
         assert word_emb_type.lower() == 'bert' or 3 not in stages, \
