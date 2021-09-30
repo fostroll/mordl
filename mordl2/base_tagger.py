@@ -959,7 +959,7 @@ class BaseTagger(BaseParser):
                             emb_tune_params['save_as'] = bert_header
 
                         def model_save_method(_):
-                            self._save_dataset(save_to, ds=ds_train)
+                            self._save_dataset(save_to)
                             self._save_cdict(cdict_fn)
                             model.save_config(model_config_fn, log_file=log_file)
                             model.save_state_dict(model_fn, log_file=log_file)
@@ -981,10 +981,13 @@ class BaseTagger(BaseParser):
                     )
                 return res
 
-            res_ = tune_word_emb(
-                word_emb_type, word_emb_path, best_score=best_score,
-                emb_tune_params=word_emb_tune_params
-            )
+            if 'save_as' in word_emb_tune_params:
+            emb_path = word_emb_tune_params['save_as']
+            res_ = tune_word_emb(word_emb_type,
+                                 word_emb_tune_params['save_as']
+                                     if 'save_as' in word_emb_tune_params else
+                                 word_emb_path, best_score=best_score,
+                                 emb_tune_params=word_emb_tune_params)
             if res_ and res_['best_epoch'] is not None:
                 if save_to2:
                     copy_tree(save_to, save_to2)
@@ -1146,8 +1149,6 @@ class BaseTagger(BaseParser):
                 ds_train, ds_test = stage_ds()
             res = stage_method(load_from, save_to, res, save_to2=save_to2)
             if stage == 3 and res and res['best_epoch'] is not None:
-                if 'save_as' in word_emb_tune_params:
-                    word_emb_path = word_emb_tune_params['save_as']
                 need_ds = True
             load_from = save_to
 
