@@ -824,6 +824,25 @@ class BaseTagger(BaseParser):
         if seed:
             junky.enforce_reproducibility(seed=seed)
 
+        if not start_time:
+            start_time = time.time()
+
+        if isinstance(tag_emb_names, str):
+            tag_emb_names = [tag_emb_names]
+
+        field = self._normalize_field_names(field)
+        header = field.split(':')[:2]
+        if len(header) == 2 and not header[1]:
+            header = header[:1]
+        header = ':'.join(header)
+        bert_header = header.lower().replace(':', '-') + '_'
+        fields = self._normalize_field_names(
+            [] if add_fields is None else \
+            [add_fields] if isinstance(add_fields, str) else \
+            add_fields
+        )
+        fields.append(field)
+
         # Train the model head with Adam
         def stage1(load_from, save_to, res, save_to2=None):
             if log_file:
@@ -946,7 +965,7 @@ class BaseTagger(BaseParser):
                                          if res else \
                                      (0, None)
 
-            def tune_word_emb(emb_type, emb_path, best_score=None,
+            def tune_word_emb(emb_type, best_score=None,
                               emb_tune_params=None):
                 res = None
                 if not emb_tune_params:
@@ -955,10 +974,14 @@ class BaseTagger(BaseParser):
                     emb_tune_params = {'save_as': emb_tune_params}
                 if isinstance(emb_tune_params, dict):
                     if emb_type == 'bert':
-                        if 'save_as' not in emb_tune_params:
-                            emb_tune_params['save_as'] = bert_header
+                        emb_path = emb_tune_params['save_as'] \
+                                       if 'save_as' in emb_tune_params else \
+                                   bert_header
 
                         def model_save_method(_):
+                            config = getattr(self._ds.get_dataset('x', {}), CONFIG_ATTR, {})
+                            print('cfg', config)
+                            config['emb_path'] = emb_path
                             self._save_dataset(save_to)
                             self._save_cdict(cdict_fn)
                             model.save_config(model_config_fn, log_file=log_file)
@@ -981,10 +1004,7 @@ class BaseTagger(BaseParser):
                     )
                 return res
 
-            res_ = tune_word_emb(word_emb_type,
-                                 word_emb_tune_params['save_as']
-                                     if 'save_as' in word_emb_tune_params else
-                                 word_emb_path, best_score=best_score,
+            res_ = tune_word_emb(word_emb_type, best_score=best_score,
                                  emb_tune_params=word_emb_tune_params)
             if res_ and res_['best_epoch'] is not None:
                 if save_to2:
@@ -1012,25 +1032,6 @@ class BaseTagger(BaseParser):
         if stages.count(3) > 1:
             print('WARNING: Save of the BERT model will not be staged.',
                   file=sys.stderr)
-
-        if not start_time:
-            start_time = time.time()
-
-        if isinstance(tag_emb_names, str):
-            tag_emb_names = [tag_emb_names]
-
-        field = self._normalize_field_names(field)
-        header = field.split(':')[:2]
-        if len(header) == 2 and not header[1]:
-            header = header[:1]
-        header = ':'.join(header)
-        bert_header = header.lower().replace(':', '-') + '_'
-        fields = self._normalize_field_names(
-            [] if add_fields is None else \
-            [add_fields] if isinstance(add_fields, str) else \
-            add_fields
-        )
-        fields.append(field)
 
         if log_file:
             print('=== {} TAGGER TRAINING PIPELINE ==='.format(header),
