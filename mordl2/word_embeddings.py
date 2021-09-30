@@ -1131,7 +1131,7 @@ class WordEmbeddings:
                     if not res:
                         break
             else:
-                kwargs = config[0].get('transform_kwargs', {})
+                kwargs = config.get('transform_kwargs', {})
                 if transform_kwargs:
                     kwargs.update(transform_kwargs)
                 transform_kwargs = kwargs
@@ -1320,6 +1320,8 @@ class WordEmbeddings:
         **config** is in **embs**, the method don't load the corresponding
         model and use already loaded one.
         """
+        setattr(ds, CONFIG_ATTR, config)
+
         if isinstance(config, dict):
             config = [config]
 
@@ -1344,7 +1346,5 @@ class WordEmbeddings:
         else:
             xtrn = {x: y for x, y in zip(ds.list(), xtrn)}
         ds._push_xtrn(xtrn)
-
-        setattr(ds, CONFIG_ATTR, config)
 
         return embs
