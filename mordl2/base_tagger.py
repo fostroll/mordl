@@ -980,7 +980,7 @@ class BaseTagger(BaseParser):
 
                         def model_save_method(_):
                             config = getattr(self._ds.get_dataset('x'),
-                                             CONFIG_ATTR)[0]
+                                             CONFIG_ATTR)
                             config['emb_path'] = emb_path
                             self._save_dataset(save_to)
                             self._save_cdict(cdict_fn)
