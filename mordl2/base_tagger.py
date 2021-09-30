@@ -1140,19 +1140,21 @@ class BaseTagger(BaseParser):
         # 4. Train
         need_ds = False
         for idx, stage in enumerate(stages, start=1):
-            stage_method = stage_methods[stage - 1]
-            save_to, save_to2 = (save_as + f'_{idx}(stage{stage})', save_as) \
-                                    if save_stages else \
-                                (save_as, None)
-            if need_ds:
-                ds_train, ds_test = None
-                gc.collect()
-                #torch.cuda.empty_cache()
-                ds_train, ds_test = stage_ds()
-            res = stage_method(load_from, save_to, res, save_to2=save_to2)
-            if stage == 3 and res and res['best_epoch'] is not None:
-                need_ds = True
-            load_from = save_to
+            if stage:
+                stage_method = stage_methods[stage - 1]
+                save_to, save_to2 = \
+                    (save_as + f'_{idx}(stage{stage})', save_as) \
+                        if save_stages else \
+                    (save_as, None)
+                if need_ds:
+                    ds_train = ds_test = None
+                    gc.collect()
+                    #torch.cuda.empty_cache()
+                    ds_train, ds_test = stage_ds()
+                res = stage_method(load_from, save_to, res, save_to2=save_to2)
+                if stage == 3 and res and res['best_epoch'] is not None:
+                    need_ds = True
+                load_from = save_to
 
         if log_file:
             print(f'\n=== {header} TAGGER TRAINING HAS FINISHED === '
