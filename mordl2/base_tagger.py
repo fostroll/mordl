@@ -866,6 +866,9 @@ class BaseTagger(BaseParser):
                 if log_file:
                     print('new maximum score {:.8f}'.format(model_score),
                           file=log_file)
+                self._save_dataset(save_to, ds=ds_train)
+                self._save_cdict(cdict_fn)
+                model.save_config(model_config_fn, log_file=log_file)
                 model.save_state_dict(model_fn, log_file=log_file)
 
             res_ = junky.train(
@@ -878,9 +881,6 @@ class BaseTagger(BaseParser):
                 with_progress=log_file is not None, log_file=log_file
             )
             if res_ and res_['best_epoch'] is not None:
-                self._save_cdict(cdict_fn)
-                self._save_dataset(save_to, ds=ds_train)
-                model.save_config(model_config_fn, log_file=log_file)
                 if save_to2:
                     copy_tree(save_to, save_to2)
                 if res:
@@ -918,6 +918,9 @@ class BaseTagger(BaseParser):
                 if log_file:
                     print('new maximum score {:.8f}'.format(model_score),
                           file=log_file)
+                self._save_dataset(save_to, ds=ds_train)
+                self._save_cdict(cdict_fn)
+                model.save_config(model_config_fn, log_file=log_file)
                 model.save_state_dict(model_fn, log_file=log_file)
 
             res_= junky.train(
