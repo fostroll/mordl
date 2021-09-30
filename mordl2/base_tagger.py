@@ -981,7 +981,6 @@ class BaseTagger(BaseParser):
                         def model_save_method(_):
                             config = getattr(self._ds.get_dataset('x'),
                                              CONFIG_ATTR)[0]
-                            print('cfg', config)
                             config['emb_path'] = emb_path
                             self._save_dataset(save_to)
                             self._save_cdict(cdict_fn)
@@ -1154,7 +1153,7 @@ class BaseTagger(BaseParser):
 
         if log_file:
             print(f'\n=== {header} TAGGER TRAINING HAS FINISHED === '
-                  f'\nTotal time: {junky.seconds_to_strtime(time.time() - start_time)} ===\n',
+                  f'Total time: {junky.seconds_to_strtime(time.time() - start_time)} ===\n',
                   file=log_file)
             print(f"Use the `.load('{save_as}')` method to start working "
                   f'with the {header} tagger.', file=log_file)
