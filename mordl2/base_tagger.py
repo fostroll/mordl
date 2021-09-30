@@ -979,7 +979,8 @@ class BaseTagger(BaseParser):
                                    bert_header
 
                         def model_save_method(_):
-                            config = getattr(self._ds.get_dataset('x'), CONFIG_ATTR, [])
+                            config = getattr(self._ds.get_dataset('x'),
+                                             CONFIG_ATTR)[0]
                             print('cfg', config)
                             config['emb_path'] = emb_path
                             self._save_dataset(save_to)
