@@ -1236,7 +1236,7 @@ class WordEmbeddings:
                 config_f = open(config_f, 'wt', encoding='utf-8')
                 need_close = True
             try:
-                print(json.dumps(getattr(ds, CONFIG_ATTR, ()),
+                print(json.dumps(getattr(ds, CONFIG_ATTR, []),
                                  sort_keys=True, indent=4),
                       file=config_f)
             finally:
@@ -1289,7 +1289,7 @@ class WordEmbeddings:
                 if need_close:
                     config_f.close()
         else:
-            config = getattr(ds, CONFIG_ATTR, ())
+            config = getattr(ds, CONFIG_ATTR, [])
 
         if emb_path:
             config['emb_path'] = emb_path

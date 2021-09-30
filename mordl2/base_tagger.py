@@ -979,7 +979,7 @@ class BaseTagger(BaseParser):
                                    bert_header
 
                         def model_save_method(_):
-                            config = getattr(self._ds.get_dataset('x'), CONFIG_ATTR, {})
+                            config = getattr(self._ds.get_dataset('x'), CONFIG_ATTR, [])
                             print('cfg', config)
                             config['emb_path'] = emb_path
                             self._save_dataset(save_to)
@@ -1152,14 +1152,11 @@ class BaseTagger(BaseParser):
             load_from = save_to
 
         if log_file:
-            print('\n=== {} TAGGER TRAINING HAS FINISHED === '.format(header)
-                + 'Total time: {} ===\n'
-                      .format(junky.seconds_to_strtime(time.time()
-                                                     - start_time)),
+            print(f'\n=== {header} TAGGER TRAINING HAS FINISHED === '
+                  f'\nTotal time: {junky.seconds_to_strtime(time.time() - start_time)} ===\n',
                   file=log_file)
-            print(("Use the `.load('{}')` method to start working "
-                   'with the {} tagger.').format(save_as, header),
-                      file=log_file)
+            print(f"Use the `.load('{save_as}')` method to start working "
+                  f'with the {header} tagger.', file=log_file)
 
         del model, ds_train, ds_test
         return res
