@@ -199,8 +199,8 @@ class LemmaTagger(BaseTagger):
                 str_from.insert(idx, str_from[idx - 1])
         return ''.join(str_from)
 
-    def load(self, name, device=None, dataset_emb_path=None,
-             dataset_device=None, log_file=LOG_FILE):
+    def load(self, name, device=None,
+             dataset_emb_path=None, dataset_device=None, log_file=LOG_FILE):
         """Loads tagger's internal state saved by its `.save()` method.
 
         Args:
