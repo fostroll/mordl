@@ -1092,7 +1092,7 @@ class BaseTagger(BaseParser):
             if log_file:
                 print('\nMODEL LOADING', file=log_file)
             self.load(name, device=device, dataset_emb_path=word_emb_path,
-                      dataset_device=device, log_file=log_file):
+                      dataset_device=device, log_file=log_file)
             model = self._model
 
             ds_train, ds_test = stage_ds()
