@@ -833,7 +833,7 @@ class BaseTagger(BaseParser):
         field = self._normalize_field_names(field)
         header = field.split(':')[:2]
         if len(header) == 2 and not header[1]:
-7            header = header[:1]
+            header = header[:1]
         header = ':'.join(header)
         bert_header = header.lower().replace(':', '-') + '_'
         fields = self._normalize_field_names(
