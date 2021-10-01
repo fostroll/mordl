@@ -186,14 +186,25 @@ class FeatsJointTagger(BaseTagger):
               device=None, epochs=None, min_epochs=0, bad_epochs=5,
               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
               max_grad_norm=None, tags_to_remove=None,
-              word_emb_type='bert', word_emb_model_device=None,
-              word_emb_path=None, word_emb_tune_params=None,
-              word_transform_kwargs=None, word_next_emb_params=None,
-              rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              upos_emb_dim=300, emb_out_dim=512, lstm_hidden_dim=256,
-              lstm_layers=3, lstm_do=0, bn1=True, do1=.2, bn2=True, do2=.5,
-              bn3=True, do3=.4, seed=None, start_time=None, keep_embs=False,
-              log_file=LOG_FILE):
+              word_emb_type='bert', word_emb_path=None,
+              word_emb_tune_params=None,
+                  # {'save_as': None, 'epochs': 3, 'batch_size': 8}
+              word_transform_kwargs=None,
+                  # BertDataset.transform() (for BERT-descendant models)
+                  # params:
+                  # {'max_len': 0, 'batch_size': 64, 'hidden_ids': '10',
+                  #  'aggregate_hiddens_op': 'cat',
+                  #  'aggregate_subtokens_op': 'absmax', 'to': junky.CPU,
+                  #  'loglevel': 1}
+                  # WordDataset.transform() (for other models) params:
+                  # {'check_lower': True}
+              stages=[1, 2, 3, 1, 2], load_from=None, res=None,
+              save_stages=False, seed=None, start_time=None, keep_embs=False,
+              log_file=LOG_FILE, rnn_emb_dim=None, cnn_emb_dim=None,
+              cnn_kernels=range(1, 7), emb_bn=True, emb_do=.2,
+              final_emb_dim=512, pre_bn=True, pre_do=.5,
+              lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
+              post_bn=True, post_do=.4):
         """Creates and trains a key-value type field tagger model.
 
         During training, the best model is saved after each successful epoch.
