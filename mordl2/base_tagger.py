@@ -1152,8 +1152,11 @@ class BaseTagger(BaseParser):
                     #torch.cuda.empty_cache()
                     ds_train, ds_test = stage_ds()
                 res = stage_method(load_from, save_to, res, save_to2=save_to2)
-                need_ds = stage == 3 and res and res['best_epoch'] is not None
-                load_from = save_to
+                if res and res['best_epoch'] is not None:
+                    need_ds = stage == 3
+                    load_from = save_to
+                else:
+                    need_ds = False
 
         if log_file:
             print(f'\n=== {header} TAGGER TRAINING HAS FINISHED === '
