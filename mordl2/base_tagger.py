@@ -1106,6 +1106,7 @@ class BaseTagger(BaseParser):
                     max_grad_norm=None, batch_to_device=False,
                     best_score=None, with_progress=False, log_file=None
                 )
+                print(f"Best score: {res['best_score']}")
 
         else:
             ds_train, ds_test = stage_ds()
