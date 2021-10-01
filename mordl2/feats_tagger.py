@@ -43,8 +43,8 @@ class FeatsJointTagger(BaseTagger):
         super().__init__(embs=embs)
         self._field = field
 
-    def load(self, name, device=None, dataset_emb_path=None,
-             dataset_device=None, log_file=LOG_FILE):
+    def load(self, name, device=None, create_only=False,
+             dataset_emb_path=None, dataset_device=None, log_file=LOG_FILE):
         """Loads tagger's internal state saved by its `.save()` method.
 
         Args:
@@ -198,11 +198,10 @@ class FeatsJointTagger(BaseTagger):
                   #  'loglevel': 1}
                   # WordDataset.transform() (for other models) params:
                   # {'check_lower': True}
-              stages=[1, 2, 3, 1, 2], load_from=None, res=None,
-              save_stages=False, seed=None, start_time=None, keep_embs=False,
-              log_file=LOG_FILE, rnn_emb_dim=None, cnn_emb_dim=None,
-              cnn_kernels=range(1, 7), upos_emb_dim=300,
-              emb_bn=True, emb_do=.2,
+              stages=[1, 2, 3, 1, 2], load_from=None, save_stages=False,
+              seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
+              rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
+              upos_emb_dim=300, emb_bn=True, emb_do=.2,
               final_emb_dim=512, pre_bn=True, pre_do=.5,
               lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
               post_bn=True, post_do=.4):
