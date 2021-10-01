@@ -111,7 +111,7 @@ class FeatTagger(BaseTagger):
                     restore_upos(sent)
             yield sent
 
-    def load(self, name, device=None, create_only=False,
+    def load(self, name, device=None,
              dataset_emb_path=None, dataset_device=None, log_file=LOG_FILE):
         """Loads tagger's internal state saved by its `.save()` method.
 

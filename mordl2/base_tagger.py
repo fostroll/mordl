@@ -300,7 +300,7 @@ class BaseTagger(BaseParser):
         self._model.save_state_dict(model_fn, log_file=log_file)
         self._save_cdict(cdict_fn)
 
-    def load(self, model_class, name, device=None, create_only=False,
+    def load(self, model_class, name, device=None,
              dataset_emb_path=None, dataset_device=None, log_file=LOG_FILE):
         """Loads tagger's internal state saved by its `.save()` method.
 
@@ -327,7 +327,7 @@ class BaseTagger(BaseParser):
         model_config_fn, model_fn, _, _, cdict_fn = \
             self._get_filenames(name)
         self._model = model_class.create_from_config(
-            model_config_fn, state_dict_f=None if create_only else model_fn,
+            model_config_fn, state_dict_f=model_fn,
             device=device, log_file=log_file
         )
         self._load_cdict(cdict_fn, log_file=log_file)
@@ -1092,7 +1092,7 @@ class BaseTagger(BaseParser):
             if log_file:
                 print('\nMODEL LOADING', file=log_file)
             self.load(load_from, device=device, dataset_device=device,
-                      create_only=True, log_file=log_file)
+                      log_file=log_file)
             model = self._model
 
             ds_train, ds_test = stage_ds()
@@ -1106,7 +1106,7 @@ class BaseTagger(BaseParser):
                     max_grad_norm=None, batch_to_device=False,
                     best_score=None, with_progress=False, log_file=None
                 )
-                print(f"Best score: {res['best_score']}")
+                print(f"\nBest score: {res['best_score']}")
 
         else:
             ds_train, ds_test = stage_ds()
