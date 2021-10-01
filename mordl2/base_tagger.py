@@ -691,9 +691,9 @@ class BaseTagger(BaseParser):
                   #  'loglevel': 1}
                   # WordDataset.transform() (for other models) params:
                   # {'check_lower': True}
-              stages=[1, 2, 3, 1, 2], load_from=None, res=None,
-              save_stages=False, seed=None, start_time=None, keep_embs=False,
-              log_file=LOG_FILE, **model_kwargs):
+              stages=[1, 2, 3, 1, 2], load_from=None, save_stages=False,
+              seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
+              **model_kwargs):
         """Creates and trains the tagger model.
 
         We assume all positional argumets but **save_as** are for internal use
@@ -833,7 +833,7 @@ class BaseTagger(BaseParser):
         field = self._normalize_field_names(field)
         header = field.split(':')[:2]
         if len(header) == 2 and not header[1]:
-            header = header[:1]
+7            header = header[:1]
         header = ':'.join(header)
         bert_header = header.lower().replace(':', '-') + '_'
         fields = self._normalize_field_names(
@@ -1087,6 +1087,7 @@ class BaseTagger(BaseParser):
             return ds_train, ds_test
 
         # 3. Create model
+        res = None
         if load_from:
             if log_file:
                 print('\nMODEL LOADING', file=log_file)
@@ -1095,6 +1096,16 @@ class BaseTagger(BaseParser):
             model = self._model
 
             ds_train, ds_test = stage_ds()
+
+            if ds_test:
+                res = junky.train(
+                    None, model, None, None, None,
+                    None, datasets=(None, ds_test),
+                    epochs=1, min_epochs=0, bad_epochs=1,
+                    batch_size=batch_size, control_metric=control_metric,
+                    max_grad_norm=None, batch_to_device=False,
+                    best_score=None, with_progress=False, log_file=None
+                )
 
         else:
             ds_train, ds_test = stage_ds()
@@ -1167,7 +1178,6 @@ class BaseTagger(BaseParser):
             print(f"Use the `.load('{save_as}')` method to start working "
                   f'with the {header} tagger.', file=log_file)
 
-        del model, ds_train, ds_test
         return res
 
 
