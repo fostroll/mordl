@@ -78,6 +78,7 @@ class DeprelTaggerModel(BaseTaggerSequenceModel):
     def __init__(self, num_labels, labels_pad_idx=None, vec_emb_dim=None,
                  alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,
                  cnn_emb_dim=None, cnn_kernels=[1, 2, 3, 4, 5, 6],
+                 upos_emb_dim=300, upos_num=0, upos_pad_idx=0,
                  emb_bn=True, emb_do=.2,
                  final_emb_dim=512, pre_bn=True, pre_do=.5,
                  lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
