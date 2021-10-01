@@ -871,6 +871,7 @@ class BaseTagger(BaseParser):
                 model.save_config(model_config_fn, log_file=log_file)
                 model.save_state_dict(model_fn, log_file=log_file)
 
+            change_load_from = False
             res_ = junky.train(
                 None, model, criterion, optimizer, scheduler,
                 best_model_backup_method, datasets=(ds_train, ds_test),
@@ -881,7 +882,8 @@ class BaseTagger(BaseParser):
                 with_progress=log_file is not None, log_file=log_file
             )
             if res_ and res_['best_epoch'] is not None:
-                if save_to2:
+                change_load_from = True
+                if save_to2 and save_to2 != save_to:
                     copy_tree(save_to, save_to2)
                 if res:
                     for key, value in res_.items():
@@ -893,7 +895,7 @@ class BaseTagger(BaseParser):
                             res[key][:best_epoch] = value
                 else:
                     res = res_
-            return res
+            return res, change_load_from
 
         # Train the model head with SGD
         def stage2(load_from, save_to, res, save_to2=None):
@@ -923,6 +925,7 @@ class BaseTagger(BaseParser):
                 model.save_config(model_config_fn, log_file=log_file)
                 model.save_state_dict(model_fn, log_file=log_file)
 
+            change_load_from = False
             res_= junky.train(
                 None, model, criterion, optimizer, scheduler,
                 best_model_backup_method, datasets=(ds_train, ds_test),
@@ -933,10 +936,8 @@ class BaseTagger(BaseParser):
                 with_progress=log_file is not None, log_file=log_file
             )
             if res_ and res_['best_epoch'] is not None:
-                self._save_cdict(cdict_fn)
-                self._save_dataset(save_to, ds=ds_train)
-                model.save_config(model_config_fn, log_file=log_file)
-                if save_to2:
+                change_load_from = True
+                if save_to2 and save_to2 != save_to:
                     copy_tree(save_to, save_to2)
                 if res:
                     for key, value in res_.items():
@@ -948,7 +949,7 @@ class BaseTagger(BaseParser):
                             res[key][:best_epoch] = value
                 else:
                     res = res_
-            return res
+            return res, change_load_from
 
         # Train the full model with AdamW
         def stage3(load_from, save_to, res, save_to2=None):
@@ -1007,10 +1008,12 @@ class BaseTagger(BaseParser):
                     )
                 return res
 
+            change_load_from = False
             res_ = tune_word_emb(word_emb_type, best_score=best_score,
                                  emb_tune_params=word_emb_tune_params)
             if res_ and res_['best_epoch'] is not None:
-                if save_to2:
+                change_load_from = True
+                if save_to2 and save_to2 != save_to:
                     copy_tree(save_to, save_to2)
                 if res:
                     for key, value in res_.items():
@@ -1022,7 +1025,7 @@ class BaseTagger(BaseParser):
                             res[key][:best_epoch] = value
                 else:
                     res = res_
-            return res
+            return res, change_load_from
 
         stage_methods = [stage1, stage2, stage3]
         stage_ids = list(range(1, len(stage_methods) + 1))
@@ -1151,12 +1154,11 @@ class BaseTagger(BaseParser):
                     gc.collect()
                     #torch.cuda.empty_cache()
                     ds_train, ds_test = stage_ds()
-                res = stage_method(load_from, save_to, res, save_to2=save_to2)
-                if res and res['best_epoch'] is not None:
-                    need_ds = stage == 3
+                res, change_load_from = stage_method(load_from, save_to, res,
+                                                     save_to2=save_to2)
+                need_ds = stage == 3 and res and res['best_epoch'] is not None
+                if change_load_from:
                     load_from = save_to
-                else:
-                    need_ds = False
 
         if log_file:
             print(f'\n=== {header} TAGGER TRAINING HAS FINISHED === '
