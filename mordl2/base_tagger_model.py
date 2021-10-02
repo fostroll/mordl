@@ -161,6 +161,7 @@ class BaseTaggerModel(BaseModel):
 
         joint_emb_dim = vec_emb_dim + rnn_emb_dim + cnn_emb_dim + tag_emb_dim
 
+        '''
         # TODO: Wrap with nn.Sequential #####################################
         self._emb_bn = \
             nn.BatchNorm1d(num_features=joint_emb_dim) if emb_bn else None
@@ -171,6 +172,21 @@ class BaseTaggerModel(BaseModel):
         self._pre_bn = \
             nn.BatchNorm1d(num_features=final_emb_dim) if pre_bn else None
         self._pre_do = nn.Dropout(p=pre_do) if pre_do else None
+        # TODO ##############################################################
+        '''
+        modules = []
+        if emb_bn:
+            modules.append(nn.BatchNorm1d(num_features=joint_emb_dim))
+        if emb_do:
+            modules.append(nn.Dropout(p=emb_do))
+        modules.append(nn.Linear(in_features=joint_emb_dim,
+                                 out_features=final_emb_dim)
+        if pre_bn:
+            modules.append(nn.BatchNorm1d(num_features=final_emb_dim))
+        modules.append(nn.ReLU())
+        if pre_do:
+            modules.append(nn.Dropout(p=pre_do))
+        self._emb_seq_l = nn.Sequential(*modules)
         # TODO ##############################################################
 
         if lstm_layers > 0:
@@ -242,6 +258,7 @@ class BaseTaggerModel(BaseModel):
 
         x = x_[0] if len(x_) == 1 else torch.cat(x_, dim=-1)
 
+        '''
         if self._emb_bn:
             x.transpose_(1, 2)  # (N, L, C) to (N, C, L)
             x = self._emb_bn(x)
@@ -257,6 +274,8 @@ class BaseTaggerModel(BaseModel):
         x.relu_()
         if self._pre_do:
             x = self._pre_do(x)
+        '''
+        x = self._emb_seq_l(x)
 
         if self._lstm_l:
             x_ = pack_padded_sequence(x, x_lens.cpu(), batch_first=True,
