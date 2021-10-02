@@ -171,19 +171,31 @@ class BaseTaggerModel(BaseModel):
 
         joint_emb_dim = vec_emb_dim + rnn_emb_dim + cnn_emb_dim + tag_emb_dim
 
+        # PREPROCESS #########################################################
         modules = OrderedDict()
         if emb_bn:
             modules['emb_bn'] = BatchNorm(num_features=joint_emb_dim)
         if emb_do:
             modules['emb_do'] = nn.Dropout(p=emb_do)
-        modules['emb_fc_l'] = nn.Linear(in_features=joint_emb_dim,
-                                        out_features=final_emb_dim)
+
+        dim = int(final_emb_dim * 1.5)
+        modules['pre_fc_l'] = nn.Linear(in_features=joint_emb_dim,
+                                         out_features=dim)
         if pre_bn:
-            modules['pre_bn'] = BatchNorm(num_features=final_emb_dim)
+            modules['pre_bn'] = BatchNorm(num_features=dim)
         modules['pre_nl'] = nn.ReLU()
         if pre_do:
             modules['pre_do'] = nn.Dropout(p=pre_do)
+
+        modules['pre_fc2_l'] = nn.Linear(in_features=dim,
+                                         out_features=final_emb_dim)
+        if pre_bn:
+            modules['pre_bn2'] = BatchNorm(num_features=final_emb_dim)
+        modules['pre_nl2'] = nn.ReLU()
+        if pre_do:
+            modules['pre_do2'] = nn.Dropout(p=pre_do)
         self.pre_seq_l = nn.Sequential(modules)
+        ######################################################################
 
         if lstm_layers > 0:
             self.lstm_l = nn.LSTM(
@@ -211,6 +223,7 @@ class BaseTaggerModel(BaseModel):
         else:
             self.tran_l = None
 
+        # POSTPROCESS ########################################################
         modules = OrderedDict()
         if post_bn:
             modules['post_bn'] = BatchNorm(num_features=final_emb_dim)
@@ -220,6 +233,7 @@ class BaseTaggerModel(BaseModel):
         modules['out_fc_l'] = nn.Linear(in_features=final_emb_dim,
                                         out_features=num_labels)
         self.post_seq_l = nn.Sequential(modules)
+        ######################################################################
 
         setattr(self, CONFIG_ATTR, (args, kwargs))
 
