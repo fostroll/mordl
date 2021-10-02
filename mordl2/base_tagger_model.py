@@ -6,7 +6,7 @@
 """
 Provides a base model for MorDL taggers.
 """
-from collections.abc import Iterable
+from collections.abc import Iterable, OrderedDict
 from junky import CharEmbeddingRNN, CharEmbeddingCNN, Masking, \
                   get_func_params, to_device
 from mordl2.base_model import BaseModel
