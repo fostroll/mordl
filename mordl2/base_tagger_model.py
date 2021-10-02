@@ -129,61 +129,48 @@ class BaseTaggerModel(BaseModel):
         self.vec_emb_dim = vec_emb_dim
 
         if rnn_emb_dim:
-            self._rnn_emb_l = \
+            self.rnn_emb_l = \
                 CharEmbeddingRNN(alphabet_size=alphabet_size,
                                  emb_dim=rnn_emb_dim,
                                  pad_idx=char_pad_idx)
         else:
-            self._rnn_emb_l = None
+            self.rnn_emb_l = None
             rnn_emb_dim = 0
 
         if cnn_emb_dim:
-            self._cnn_emb_l = \
+            self.cnn_emb_l = \
                 CharEmbeddingCNN(alphabet_size=alphabet_size,
                                  emb_dim=cnn_emb_dim,
                                  pad_idx=char_pad_idx,
                                  kernels=cnn_kernels)
         else:
-            self._cnn_emb_l = None
+            self.cnn_emb_l = None
             cnn_emb_dim = 0
 
-        self._tag_emb_l = self._tag_emb_ls = None
+        self.tag_emb_l = self.tag_emb_ls = None
         tag_emb_dim = 0
         if tag_emb_params:
             if isinstance(tag_emb_params, dict):
                 tag_emb_dim = tag_emb_params['dim'] or 0
                 if tag_emb_dim:
-                    self._tag_emb_l = \
+                    self.tag_emb_l = \
                         nn.Embedding(tag_emb_params['num'], tag_emb_dim,
                                      padding_idx=tag_emb_params['pad_idx'])
             else:
-                self._tag_emb_ls = nn.ModuleList()
+                self.tag_emb_ls = nn.ModuleList()
                 for emb_params in tag_emb_params:
                     tag_emb_dim_ = emb_params['dim']
                     if tag_emb_dim_:
                         tag_emb_dim += tag_emb_dim_
-                        self._tag_emb_ls.append(
+                        self.tag_emb_ls.append(
                             nn.Embedding(emb_params['num'], tag_emb_dim_,
                                          padding_idx=emb_params['pad_idx'])
                         )
                     else:
-                        self._tag_emb_ls.append(None)
+                        self.tag_emb_ls.append(None)
 
         joint_emb_dim = vec_emb_dim + rnn_emb_dim + cnn_emb_dim + tag_emb_dim
 
-        '''
-        # TODO: Wrap with nn.Sequential #####################################
-        self._emb_bn = \
-            nn.BatchNorm1d(num_features=joint_emb_dim) if emb_bn else None
-        self._emb_do = nn.Dropout(p=emb_do) if emb_do else None
-
-        self._emb_fc_l = nn.Linear(in_features=joint_emb_dim,
-                                   out_features=final_emb_dim)
-        self._pre_bn = \
-            nn.BatchNorm1d(num_features=final_emb_dim) if pre_bn else None
-        self._pre_do = nn.Dropout(p=pre_do) if pre_do else None
-        # TODO ##############################################################
-        '''
         modules = OrderedDict()
         if emb_bn:
             modules['emb_bn'] = BatchNorm(num_features=joint_emb_dim)
@@ -196,20 +183,19 @@ class BaseTaggerModel(BaseModel):
         modules['pre_nl'] = nn.ReLU()
         if pre_do:
             modules['pre_do'] = nn.Dropout(p=pre_do)
-        self._emb_seq_l = nn.Sequential(modules)
-        # TODO ##############################################################
+        self.pre_seq_l = nn.Sequential(modules)
 
         if lstm_layers > 0:
-            self._lstm_l = nn.LSTM(
+            self.lstm_l = nn.LSTM(
                 input_size=final_emb_dim,
                 hidden_size=final_emb_dim // 2,
                 num_layers=lstm_layers, batch_first=True,
                 dropout=lstm_do, bidirectional=True
             )
-            self._T = nn.Linear(final_emb_dim, final_emb_dim)
-            nn.init.constant_(self._T.bias, -1)
+            self.T = nn.Linear(final_emb_dim, final_emb_dim)
+            nn.init.constant_(self.T.bias, -1)
         else:
-            self._lstm_l = None
+            self.lstm_l = None
 
         if tran_layers > 0:
             tran_enc_l = nn.TransformerEncoderLayer(
@@ -219,20 +205,21 @@ class BaseTaggerModel(BaseModel):
             )
             tran_norm_l = nn.LayerNorm(normalized_shape=final_emb_dim,
                                        eps=1e-6, elementwise_affine=True)
-            self._tran_l = nn.TransformerEncoder(
+            self.tran_l = nn.TransformerEncoder(
                 tran_enc_l, tran_layers, norm=tran_norm_l
             )
         else:
-            self._tran_l = None
+            self.tran_l = None
 
-        # TODO: Wrap with nn.Sequential #####################################
-        self._post_bn = \
-            nn.BatchNorm1d(num_features=final_emb_dim) if post_bn else None
-        self._post_do = nn.Dropout(p=post_do) if post_do else None
+        modules = OrderedDict()
+        if post_bn:
+            modules['post_bn'] = BatchNorm(num_features=final_emb_dim)
+        if post_do:
+            modules['post_do'] = nn.Dropout(p=post_do)
 
-        self._out_l = nn.Linear(in_features=final_emb_dim,
-                                out_features=num_labels)
-        # TODO ##############################################################
+        modules['out_fc_l'] = nn.Linear(in_features=final_emb_dim,
+                                        out_features=num_labels)
+        self.post_seq_l = nn.Sequential(modules)
 
         setattr(self, CONFIG_ATTR, (args, kwargs))
 
@@ -254,65 +241,41 @@ class BaseTaggerModel(BaseModel):
                    'ERROR: Invalid vector size: ' \
                   f'`{x.shape[2]}` whereas `vec_emb_dim={vec_emb_dim}`'
             x_.append(to_device(x, device))
-        if self._rnn_emb_l:
-            x_.append(self._rnn_emb_l(to_device(x_ch, device), x_ch_lens))
-        if self._cnn_emb_l:
-            x_.append(self._cnn_emb_l(to_device(x_ch, device),
+        if self.rnn_emb_l:
+            x_.append(self.rnn_emb_l(to_device(x_ch, device), x_ch_lens))
+        if self.cnn_emb_l:
+            x_.append(self.cnn_emb_l(to_device(x_ch, device),
                                       to_device(x_ch_lens, device)))
-        if self._tag_emb_l:
-            x_.append(self._tag_emb_l(to_device(x_t[0], device)))
-        elif self._tag_emb_ls:
-            for l_, x_t_ in zip(self._tag_emb_ls, to_device(x_t, device)):
+        if self.tag_emb_l:
+            x_.append(self.tag_emb_l(to_device(x_t[0], device)))
+        elif self.tag_emb_ls:
+            for l_, x_t_ in zip(self.tag_emb_ls, to_device(x_t, device)):
                 if l_:
                     x_.append(l_(x_t_))
 
         x = x_[0] if len(x_) == 1 else torch.cat(x_, dim=-1)
 
-        '''
-        if self._emb_bn:
-            x.transpose_(1, 2)  # (N, L, C) to (N, C, L)
-            x = self._emb_bn(x)
-            x.transpose_(1, 2)  # (N, C, L) to (N, L, C)
-        if self._emb_do:
-            x = self._emb_do(x)
+        x = self.pre_seq_l(x)
 
-        x = self._emb_fc_l(x)
-        if self._pre_bn:
-            x.transpose_(1, 2)  # (N, L, C) to (N, C, L)
-            x = self._pre_bn(x)
-            x.transpose_(1, 2)  # (N, C, L) to (N, L, C)
-        x.relu_()
-        if self._pre_do:
-            x = self._pre_do(x)
-        '''
-        x = self._emb_seq_l(x)
-
-        if self._lstm_l:
+        if self.lstm_l:
             x_ = pack_padded_sequence(x, x_lens.cpu(), batch_first=True,
                                       enforce_sorted=False)
-            x_, _ = self._lstm_l(x_)
+            x_, _ = self.lstm_l(x_)
             x_, _ = pad_packed_sequence(x_, batch_first=True)
 
-            gate = torch.sigmoid(self._T(x))
+            gate = torch.sigmoid(self.T(x))
             x = x_ * gate + x * (1 - gate)
 
-        if self._tran_l:
+        if self.tran_l:
             src_key_padding_mask = (
                 torch.arange(x.shape[1], device=device).expand(x.shape[:-1])
              >= x_lens.view(1, -1).transpose(0, 1).expand(x.shape[:-1])
             )
             x.transpose_(0, 1)  # (N, L, C) to (L, N, C)
-            x = self._tran_l(x, src_key_padding_mask=src_key_padding_mask)
+            x = self.tran_l(x, src_key_padding_mask=src_key_padding_mask)
             x.transpose_(0, 1)  # (L, N, C) to (N, L, C)
 
-        if self._post_bn:
-            x.transpose_(1, 2)  # (N, L, C) to (N, C, L)
-            x = self._post_bn(x)
-            x.transpose_(1, 2)  # (N, C, L) to (N, L, C)
-        if self._post_do:
-            x = self._post_do(x)
-
-        logits = self._out_l(x)
+        logits = self.post_seq_l(x)
 
         if labels is not None:
 #             criterion = nn.CrossEntropyLoss().to(device)
