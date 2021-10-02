@@ -23,7 +23,7 @@ class BatchNorm(nn.BatchNorm1d):
         super(*args, **kwargs)
 
     def forward(self, x):
-        return super().forward(x.transpose(1, 2).transpose(1, 2)
+        return super().forward(x.transpose(1, 2)).transpose(1, 2)
 
 
 class BaseTaggerModel(BaseModel):
