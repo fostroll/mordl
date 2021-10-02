@@ -184,7 +184,7 @@ class BaseTaggerModel(BaseModel):
         self._pre_do = nn.Dropout(p=pre_do) if pre_do else None
         # TODO ##############################################################
         '''
-        modules = OrderedDict
+        modules = OrderedDict()
         if emb_bn:
             modules['emb_bn'] = BatchNorm(num_features=joint_emb_dim)
         if emb_do:
