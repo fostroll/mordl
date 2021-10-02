@@ -180,7 +180,7 @@ class BaseTaggerModel(BaseModel):
         if emb_do:
             modules.append(nn.Dropout(p=emb_do))
         modules.append(nn.Linear(in_features=joint_emb_dim,
-                                 out_features=final_emb_dim)
+                                 out_features=final_emb_dim))
         if pre_bn:
             modules.append(nn.BatchNorm1d(num_features=final_emb_dim))
         modules.append(nn.ReLU())
