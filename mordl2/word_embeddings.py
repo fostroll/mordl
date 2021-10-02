@@ -257,7 +257,7 @@ class WordEmbeddings:
         trainer_config = TrainerConfig(
             (save_as, model_save_as), max_epochs=epochs,
             batch_lens_idx=-1, batch_labels_idx=-2,
-            model_args=list(range(len(train_ds.list()) - 2)),
+            model_args=list(range(len(next(iter(train_dl))) - 2)),
             model_kwargs={'labels': -2},
             output_logits_idx=0, output_loss_idx=1,
             grad_norm_clip=grad_norm_clip,
