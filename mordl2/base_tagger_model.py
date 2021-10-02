@@ -21,7 +21,7 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 class BatchNorm(nn.BatchNorm1d):
 
     def __init__(self, *args, **kwargs):
-        super().__init(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def forward(self, x):
         return super().forward(x.transpose(1, 2)).transpose(1, 2)
