@@ -17,6 +17,15 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
+class BatchNorm(nn.BatchNorm1d):
+
+    def __init__(self, *args, **kwargs):
+        super(*args, **kwargs)
+
+    def forward(self, x):
+        return super().forward(x.transpose(1, 2).transpose(1, 2)
+
+
 class BaseTaggerModel(BaseModel):
     """
     The base model for MorDL taggers.
@@ -174,19 +183,19 @@ class BaseTaggerModel(BaseModel):
         self._pre_do = nn.Dropout(p=pre_do) if pre_do else None
         # TODO ##############################################################
         '''
-        modules = []
+        modules = OrderedDict
         if emb_bn:
-            modules.append(nn.BatchNorm1d(num_features=joint_emb_dim))
+            modules['emb_bn'] = BatchNorm(num_features=joint_emb_dim)
         if emb_do:
-            modules.append(nn.Dropout(p=emb_do))
-        modules.append(nn.Linear(in_features=joint_emb_dim,
-                                 out_features=final_emb_dim))
+            modules['emb_do'] = nn.Dropout(p=emb_do)
+        modules['emb_fc_l'] = nn.Linear(in_features=joint_emb_dim,
+                                        out_features=final_emb_dim)
         if pre_bn:
-            modules.append(nn.BatchNorm1d(num_features=final_emb_dim))
-        modules.append(nn.ReLU())
+            modules['pre_bn'] = BatchNorm(num_features=final_emb_dim)
+        modules['pre_nl'] = nn.ReLU()
         if pre_do:
-            modules.append(nn.Dropout(p=pre_do))
-        self._emb_seq_l = nn.Sequential(*modules)
+            modules['pre_do'] = nn.Dropout(p=pre_do)
+        self._emb_seq_l = nn.Sequential(modules)
         # TODO ##############################################################
 
         if lstm_layers > 0:
