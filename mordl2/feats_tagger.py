@@ -364,15 +364,6 @@ class FeatsJointTagger(BaseTagger):
             ):
                 pass
 
-        # TODO
-        self._cdict = CorpusDict(
-            corpus=(x for x in [self._train_corpus,
-                                self._test_corpus if self._test_corpus else
-                                []]
-                      for x in x),
-            format='conllu_parsed', log_file=log_file
-        )
-
         return super().train(self._field, 'UPOS', FeatTaggerModel, 'upos',
                              *args, **kwargs)
 
