@@ -21,6 +21,8 @@ from mordl2.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE, \
                            NONE_TAG, TRAIN_BATCH_SIZE
 from mordl2.lib.conll18_ud_eval import main as _conll18_ud_eval
 import os
+from sklearn.metrics import accuracy_score, f1_score, \
+                            precision_score, recall_score
 import sys
 import time
 import torch
