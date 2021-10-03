@@ -230,16 +230,7 @@ class BaseTaggerModel(BaseModel):
         if post_do:
             modules['post_do'] = nn.Dropout(p=post_do)
 
-        dim = int(final_emb_dim // 2)
-        modules['post_fc2_l'] = nn.Linear(in_features=final_emb_dim,
-                                         out_features=dim)
-        if pre_bn:
-            modules['post_bn2'] = BatchNorm(num_features=dim)
-        modules['post_nl2'] = nn.ReLU()
-        if pre_do:
-            modules['post_do2'] = nn.Dropout(p=pre_do)
-
-        modules['out_fc_l'] = nn.Linear(in_features=dim,
+        modules['out_fc_l'] = nn.Linear(in_features=final_emb_dim,
                                         out_features=num_labels)
         self.post_seq_l = nn.Sequential(modules)
         ######################################################################
