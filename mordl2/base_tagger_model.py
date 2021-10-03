@@ -178,22 +178,36 @@ class BaseTaggerModel(BaseModel):
         if emb_do:
             modules['emb_do'] = nn.Dropout(p=emb_do)
 
-        dim = int(final_emb_dim * 1.5)
-        modules['pre_fc_l'] = nn.Linear(in_features=joint_emb_dim,
-                                         out_features=dim)
+        layers = []
+        def add_layers(idx, dim, new_dim):
+            ls = []
+            ls.append((f'pre_fc{idx}_l',
+                       nn.Linear(in_features=new_dim, out_features=dim)))
+            if pre_bn:
+                ls.append((f'pre_bn{idx}', BatchNorm(num_features=dim)))
+            ls.append((f'pre_nl{idx}', nn.ReLU()))
+            if pre_do:
+                ls.append((f'pre_do{idx}', nn.Dropout(p=pre_do)))
+            layers.insert(0, ls)
+
+        idx, dim = 0, final_emb_dim
+        while joint_emb_dim / dim > 2:
+            new_dim = int(dim * 1.5)
+            add_layers(idx, dim, new_dim)
+            dim = new_dim
+            idx += 1
+        add_fc(dim, joint_emb_dim)
+        for layer in enumerate(layers):
+            for l_name, l_layer in ls:
+                modules[l_name] = l_layer
+
+        modules['pre_fc_l'] = nn.Linear(in_features=dim,
+                                         out_features=final_emb_dim)
         if pre_bn:
-            modules['pre_bn'] = BatchNorm(num_features=dim)
+            modules['pre_bn'] = BatchNorm(num_features=final_emb_dim)
         modules['pre_nl'] = nn.ReLU()
         if pre_do:
             modules['pre_do'] = nn.Dropout(p=pre_do)
-
-        modules['pre_fc2_l'] = nn.Linear(in_features=dim,
-                                         out_features=final_emb_dim)
-        if pre_bn:
-            modules['pre_bn2'] = BatchNorm(num_features=final_emb_dim)
-        modules['pre_nl2'] = nn.ReLU()
-        if pre_do:
-            modules['pre_do2'] = nn.Dropout(p=pre_do)
         self.pre_seq_l = nn.Sequential(modules)
         ######################################################################
 
