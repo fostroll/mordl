@@ -888,14 +888,14 @@ class BaseTagger(BaseParser):
         fields.append(field)
 
         # Train the model head with Adam
-        def stage1(load_from, save_to, res, save_to2=None):
+        def stage1(idx, load_from, save_to, res, save_to2=None):
             if log_file:
-                print('\nMODEL TRAINING STAGE 1', file=log_file)
+                print(f'\nMODEL TRAINING {idx} (STAGE 1)', file=log_file)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
 
             if seed:
-                junky.enforce_reproducibility(seed=seed + 1)
+                junky.enforce_reproducibility(seed=seed + idx)
 
             if load_from:
                 _, model_fn_, _, _, _ = \
@@ -942,14 +942,14 @@ class BaseTagger(BaseParser):
             return res, change_load_from
 
         # Train the model head with SGD
-        def stage2(load_from, save_to, res, save_to2=None):
+        def stage2(idx, load_from, save_to, res, save_to2=None):
             if log_file:
-                print('\nMODEL TRAINING STAGE 2', file=log_file)
+                print(f'\nMODEL TRAINING {idx} (STAGE 2)', file=log_file)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
 
             if seed:
-                junky.enforce_reproducibility(seed=seed + 2)
+                junky.enforce_reproducibility(seed=seed + idx)
 
             if load_from:
                 _, model_fn_, _, _, _ = \
@@ -996,14 +996,14 @@ class BaseTagger(BaseParser):
             return res, change_load_from
 
         # Train the full model with AdamW
-        def stage3(load_from, save_to, res, save_to2=None):
+        def stage3(idx, load_from, save_to, res, save_to2=None):
             if log_file:
-                print('\nMODEL TRAINING STAGE 3', file=log_file)
+                print(f'\nMODEL TRAINING {idx} (STAGE 3)', file=log_file)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
 
             if seed:
-                junky.enforce_reproducibility(seed=seed + 3)
+                junky.enforce_reproducibility(seed=seed + idx)
 
             if load_from:
                 _, model_fn_, _, _, _ = \
@@ -1211,8 +1211,8 @@ class BaseTagger(BaseParser):
                     gc.collect()
                     #torch.cuda.empty_cache()
                     ds_train, ds_test = stage_ds()
-                res, change_load_from = stage_method(load_from, save_to, res,
-                                                     save_to2=save_to2)
+                res, change_load_from = stage_method(idx, load_from, save_to,
+                                                     res, save_to2=save_to2)
                 need_ds = stage == 3 and res and res['best_epoch'] is not None
                 if change_load_from:
                     load_from = save_to
