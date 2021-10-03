@@ -198,8 +198,8 @@ class BaseTaggerModel(BaseModel):
             idx += 1
         add_layers(idx, dim, joint_emb_dim)
         for layer in enumerate(reversed(layers)):
-            for l_name, l_layer in ls:
-                modules[l_name] = l_layer
+            for name, module in layer:
+                modules[name] = module
 
         #modules['pre_fc_l'] = nn.Linear(in_features=dim,
         #                                out_features=final_emb_dim)
