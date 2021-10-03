@@ -195,7 +195,7 @@ class BaseTaggerModel(BaseModel):
             new_dim = int(dim * 1.5)
             add_layers(dim, new_dim)
             dim = new_dim
-        add_layers(idx, dim, joint_emb_dim)
+        add_layers(dim, joint_emb_dim)
         for idx, layer in enumerate(reversed(layers)):
             for name, module in layer:
                 modules[name.format(idx)] = module
