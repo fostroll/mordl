@@ -577,8 +577,25 @@ class BaseTagger(BaseParser):
                 c += 1
             return n, c, nt, ct, ca, ce, cr
 
+        # n - the overall number of tags (outer join of gold and predicted)
+        #     plus 1 for each void token in case of non-feats field
+        # c - the number of tags predicted correctly (plus 1 for each
+        #     correctly predicted void token in case of non-feats field)
+        # nt - the overall number of tags (outer join of gold and predicted)
+        # ct - the number of tags predicted correctly
+        # ca - the number of absent feats (not predicted)
+        # ce - the number of excess feats (predicted when they aren't in gold)
+        # cr - the number of feats of wrong type in prediction
+        # ntok - the overall number of tokens
+        # ctok - the number of tokens predicted correctly
+        # ntokt - the number of non-void tokens (gold or predicted)
+        # ctokt - tne number of non-void tokens predicted correctly
         n = c = nt = ct = ca = ce = cr = ntok = ctok = ntokt = ctokt = 0
+        # nsent - the overall number of sentences
+        # csent - the number of sentences predicted correctly
         nsent = csent = 0
+        # labels (for f1 counting)
+        golds, preds = [], []
         for nsent, sentences in enumerate(corpora, start=1):
             csent_ = 1
             for gold_token, test_token in zip(*sentences):
@@ -598,11 +615,15 @@ class BaseTagger(BaseParser):
                         ntok += 1
                         if gold_label or test_label:
                             ctok_ = 1
+                            # sub labels (for f1 counting)
+                            gold, pred = {}, {}
                             for feat in feats if feats else set(
                                 [*gold_label.keys(), *test_label.keys()]
                             ):
                                 gold_feat = gold_label.get(feat)
                                 test_feat = test_label.get(feat)
+                                gold[feat] = gold_feat
+                                pred[feat] = test_feat
                                 n, c_, nt, ct, ca, ce, cr = \
                                     compare(gold_feat, test_feat,
                                             n, c, nt, ct, ca, ce, cr)
@@ -611,12 +632,16 @@ class BaseTagger(BaseParser):
                                     csent_ = 0 
                                 else:
                                     c = c_
+                            golds.append(gold)
+                            preds.append(pred)
                             ntokt += 1
                             ctok += ctok_
                             ctokt += ctok_
                         else:
                             ctok += 1
                     elif not (isgold or istest):
+                        golds.append(gold_label)
+                        preds.append(test_label)
                         n, c_, nt, ct, ca, ce, cr = \
                             compare(gold_label, test_label,
                                     n, c, nt, ct, ca, ce, cr)
@@ -635,6 +660,25 @@ class BaseTagger(BaseParser):
                 next(gold)
             except StopIteration:
                 pass
+
+        if golds and isinstance(golds[0], list):
+            feats = set(x[0] for x in golds for x in x)
+            golds = [f'{y}:{x.get(y) or "_"}' for x in golds for y in feats]
+            preds = [f'{y}:{x.get(y) or "_"}' for x in preds for y in feats]
+        cats = {y: x for x, y in enumerate(set((*golds, *preds)))}
+        golds, preds = [cats[x] for x in golds], [cats[x] for x in preds]
+
+        accuracy = accuracy_score(golds, preds)
+        precision = precision_score(golds, preds, average='macro')
+        recall = recall_score(golds, preds, average='macro')
+        f1 = f1_score(golds, preds, average='macro')
+        print('----------------------------------------')
+        print('accuracy:', accuracy)
+        print('precision:', precision)
+        print('recall:', recall)
+        print('f1', f1)
+        print('----------------------------------------')
+
         if log_file:
             if nsent <= 0:
                 print('Nothing to do!', file=log_file)
