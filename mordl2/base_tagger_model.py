@@ -181,13 +181,13 @@ class BaseTaggerModel(BaseModel):
         layers = []
         def add_layers(dim, new_dim):
             ls = []
-            ls.append(('pre_fc{idx}_l',
+            ls.append(('pre_fc{}_l',
                        nn.Linear(in_features=new_dim, out_features=dim)))
             if pre_bn:
-                ls.append(('pre_bn{idx}', BatchNorm(num_features=dim)))
-            ls.append(('pre_nl{idx}', nn.ReLU()))
+                ls.append(('pre_bn{}', BatchNorm(num_features=dim)))
+            ls.append(('pre_nl{}', nn.ReLU()))
             if pre_do:
-                ls.append(('pre_do{idx}', nn.Dropout(p=pre_do)))
+                ls.append(('pre_do{}', nn.Dropout(p=pre_do)))
             layers.append(ls)
 
         dim = final_emb_dim
