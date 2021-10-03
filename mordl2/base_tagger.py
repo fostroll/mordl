@@ -597,7 +597,7 @@ class BaseTagger(BaseParser):
         # csent - the number of sentences predicted correctly
         nsent = csent = 0
         # labels (for f1 counting)
-        golds, preds = [], []
+        res_golds, res_preds = [], []
         for nsent, sentences in enumerate(corpora, start=1):
             csent_ = 1
             for gold_token, test_token in zip(*sentences):
@@ -618,14 +618,14 @@ class BaseTagger(BaseParser):
                         if gold_label or test_label:
                             ctok_ = 1
                             # sub labels (for f1 counting)
-                            gold, pred = {}, {}
+                            res_gold, res_pred = {}, {}
                             for feat in feats if feats else set(
                                 [*gold_label.keys(), *test_label.keys()]
                             ):
                                 gold_feat = gold_label.get(feat)
                                 test_feat = test_label.get(feat)
-                                gold[feat] = gold_feat
-                                pred[feat] = test_feat
+                                res_gold[feat] = gold_feat
+                                res_pred[feat] = test_feat
                                 n, c_, nt, ct, ca, ce, cr = \
                                     compare(gold_feat, test_feat,
                                             n, c, nt, ct, ca, ce, cr)
@@ -634,16 +634,16 @@ class BaseTagger(BaseParser):
                                     csent_ = 0 
                                 else:
                                     c = c_
-                            golds.append(gold)
-                            preds.append(pred)
+                            res_golds.append(res_gold)
+                            res_preds.append(res_pred)
                             ntokt += 1
                             ctok += ctok_
                             ctokt += ctok_
                         else:
                             ctok += 1
                     elif not (isgold or istest):
-                        golds.append(gold_label)
-                        preds.append(test_label)
+                        res_golds.append(gold_label)
+                        res_preds.append(test_label)
                         n, c_, nt, ct, ca, ce, cr = \
                             compare(gold_label, test_label,
                                     n, c, nt, ct, ca, ce, cr)
@@ -663,17 +663,20 @@ class BaseTagger(BaseParser):
             except StopIteration:
                 pass
 
-        if golds and isinstance(golds[0], list):
-            feats = set(x[0] for x in golds for x in x)
-            golds = [f'{y}:{x.get(y) or "_"}' for x in golds for y in feats]
-            preds = [f'{y}:{x.get(y) or "_"}' for x in preds for y in feats]
-        cats = {y: x for x, y in enumerate(set((*golds, *preds)))}
-        golds, preds = [cats[x] for x in golds], [cats[x] for x in preds]
+        if res_golds and isinstance(res_golds[0], list):
+            feats = set(x[0] for x in res_golds for x in x)
+            res_golds = [f'{y}:{x.get(y) or "_"}' for x in res_golds
+                                                  for y in feats]
+            res_preds = [f'{y}:{x.get(y) or "_"}' for x in res_preds
+                                                  for y in feats]
+        cats = {y: x for x, y in enumerate(set((*res_golds, *res_preds)))}
+        res_golds = [cats[x] for x in res_golds]
+        res_preds = [cats[x] for x in res_preds]
 
-        accuracy = accuracy_score(golds, preds)
-        precision = precision_score(golds, preds, average='macro')
-        recall = recall_score(golds, preds, average='macro')
-        f1 = f1_score(golds, preds, average='macro')
+        accuracy = accuracy_score(res_golds, res_preds)
+        precision = precision_score(res_golds, res_preds, average='macro')
+        recall = recall_score(res_golds, res_preds, average='macro')
+        f1 = f1_score(res_golds, res_preds, average='macro')
         print('----------------------------------------')
         print('accuracy:', accuracy)
         print('precision:', precision)
