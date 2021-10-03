@@ -845,7 +845,7 @@ class WordEmbeddings:
 
                 if epoch == max_epochs:
                     print('\nMaximum epochs exceeded. ' \
-                          'Process has been stopped.' \
+                          'Process has been stopped.')
                     break
 
                 if log_file:
