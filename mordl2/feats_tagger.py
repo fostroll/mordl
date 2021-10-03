@@ -183,12 +183,12 @@ class FeatsJointTagger(BaseTagger):
         return super().evaluate(field, *args, **kwargs)
 
     def train(self, save_as,
-              device=None, epochs=None, min_epochs=0, bad_epochs=5,
+              device=None, max_epochs=None, min_epochs=0, bad_epochs=5,
               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
               max_grad_norm=None, tags_to_remove=None,
               word_emb_type='bert', word_emb_path=None,
               word_emb_tune_params=None,
-                  # {'save_as': None, 'epochs': 3, 'batch_size': 8}
+                  # {'save_as': None, 'max_epochs': 3, 'batch_size': 8}
               word_transform_kwargs=None,
                   # BertDataset.transform() (for BERT-descendant models)
                   # params:
@@ -363,6 +363,15 @@ class FeatsJointTagger(BaseTagger):
                     for x in self._test_corpus for x in x
             ):
                 pass
+
+        # TODO
+        self._cdict = CorpusDict(
+            corpus=(x for x in [self._train_corpus,
+                                self._test_corpus if self._test_corpus else
+                                []]
+                      for x in x),
+            format='conllu_parsed', log_file=log_file
+        )
 
         return super().train(self._field, 'UPOS', FeatTaggerModel, 'upos',
                              *args, **kwargs)
@@ -618,12 +627,12 @@ class FeatsSeparateTagger(BaseTagger):
         return super().evaluate(field, *args, **kwargs)
 
     def train(self, save_as, feats=None,
-              device=None, epochs=None, min_epochs=0, bad_epochs=5,
+              device=None, max_epochs=None, min_epochs=0, bad_epochs=5,
               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
               max_grad_norm=None, tags_to_remove=None,
               word_emb_type='bert', word_emb_path=None,
               word_emb_tune_params=None,
-                  # {'save_as': None, 'epochs': 3, 'batch_size': 8}
+                  # {'save_as': None, 'max_epochs': 3, 'batch_size': 8}
               word_transform_kwargs=None,
                   # BertDataset.transform() (for BERT-descendant models)
                   # params:

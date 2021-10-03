@@ -676,12 +676,12 @@ class BaseTagger(BaseParser):
         return ct / nt if nt > 0 else 1.
 
     def train(self, field, add_fields, model_class, tag_emb_names, save_as,
-              device=None, epochs=None, min_epochs=0, bad_epochs=5,
+              device=None, max_epochs=None, min_epochs=0, bad_epochs=5,
               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
               max_grad_norm=None, tags_to_remove=None,
               word_emb_type='bert', word_emb_path=None,
               word_emb_tune_params=None,
-                  # {'save_as': None, 'epochs': 3, 'batch_size': 8}
+                  # {'save_as': None, 'max_epochs': 3, 'batch_size': 8}
               word_transform_kwargs=None,
                   # BertDataset.transform() (for BERT-descendant models)
                   # params:
@@ -875,10 +875,10 @@ class BaseTagger(BaseParser):
             res_ = junky.train(
                 None, model, criterion, optimizer, scheduler,
                 best_model_backup_method, datasets=(ds_train, ds_test),
-                epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
-                batch_size=batch_size, control_metric=control_metric,
-                max_grad_norm=max_grad_norm, batch_to_device=False,
-                best_score=best_score,
+                epochs=max_epochs, min_epochs=min_epochs,
+                bad_epochs=bad_epochs, batch_size=batch_size,
+                control_metric=control_metric, max_grad_norm=max_grad_norm,
+                batch_to_device=False, best_score=best_score,
                 with_progress=log_file is not None, log_file=log_file
             )
             if res_ and res_['best_epoch'] is not None:
@@ -929,10 +929,10 @@ class BaseTagger(BaseParser):
             res_= junky.train(
                 None, model, criterion, optimizer, scheduler,
                 best_model_backup_method, datasets=(ds_train, ds_test),
-                epochs=epochs, min_epochs=min_epochs, bad_epochs=bad_epochs,
-                batch_size=batch_size, control_metric=control_metric,
-                max_grad_norm=max_grad_norm, batch_to_device=False,
-                best_score=best_score,
+                epochs=max_epochs, min_epochs=min_epochs,
+                bad_epochs=bad_epochs, batch_size=batch_size,
+                control_metric=control_metric, max_grad_norm=max_grad_norm,
+                batch_to_device=False, best_score=best_score,
                 with_progress=log_file is not None, log_file=log_file
             )
             if res_ and res_['best_epoch'] is not None:
@@ -996,7 +996,7 @@ class BaseTagger(BaseParser):
                             (ds_train, ds_test),
                             (train[0], test[0]) if test else train[0],
                             best_score=best_score, control_metric=control_metric,
-                            log_file=log_file, **emb_tune_params  # save_as=None, epochs=3, batch_size=8
+                            log_file=log_file, **emb_tune_params  # save_as=None, max_epochs=3, batch_size=8
                         )
                     else:
                         raise ValueError(f"ERROR: Tune method for '{emb_type}' "
