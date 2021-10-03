@@ -188,7 +188,7 @@ class BaseTaggerModel(BaseModel):
             ls.append((f'pre_nl{idx}', nn.ReLU()))
             if pre_do:
                 ls.append((f'pre_do{idx}', nn.Dropout(p=pre_do)))
-            layers.insert(0, ls)
+            layers.append(ls)
 
         idx, dim = 0, final_emb_dim
         while joint_emb_dim / dim > 2:
@@ -196,18 +196,18 @@ class BaseTaggerModel(BaseModel):
             add_layers(idx, dim, new_dim)
             dim = new_dim
             idx += 1
-        add_fc(dim, joint_emb_dim)
-        for layer in enumerate(layers):
+        add_layers(idx, dim, joint_emb_dim)
+        for layer in enumerate(reversed(layers)):
             for l_name, l_layer in ls:
                 modules[l_name] = l_layer
 
-        modules['pre_fc_l'] = nn.Linear(in_features=dim,
-                                         out_features=final_emb_dim)
-        if pre_bn:
-            modules['pre_bn'] = BatchNorm(num_features=final_emb_dim)
-        modules['pre_nl'] = nn.ReLU()
-        if pre_do:
-            modules['pre_do'] = nn.Dropout(p=pre_do)
+        #modules['pre_fc_l'] = nn.Linear(in_features=dim,
+        #                                out_features=final_emb_dim)
+        #if pre_bn:
+        #    modules['pre_bn'] = BatchNorm(num_features=final_emb_dim)
+        #modules['pre_nl'] = nn.ReLU()
+        #if pre_do:
+        #    modules['pre_do'] = nn.Dropout(p=pre_do)
         self.pre_seq_l = nn.Sequential(modules)
         ######################################################################
 
