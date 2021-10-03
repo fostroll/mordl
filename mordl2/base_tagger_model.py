@@ -179,27 +179,26 @@ class BaseTaggerModel(BaseModel):
             modules['emb_do'] = nn.Dropout(p=emb_do)
 
         layers = []
-        def add_layers(idx, dim, new_dim):
+        def add_layers(dim, new_dim):
             ls = []
-            ls.append((f'pre_fc{idx}_l',
+            ls.append(('pre_fc{idx}_l',
                        nn.Linear(in_features=new_dim, out_features=dim)))
             if pre_bn:
-                ls.append((f'pre_bn{idx}', BatchNorm(num_features=dim)))
-            ls.append((f'pre_nl{idx}', nn.ReLU()))
+                ls.append(('pre_bn{idx}', BatchNorm(num_features=dim)))
+            ls.append(('pre_nl{idx}', nn.ReLU()))
             if pre_do:
-                ls.append((f'pre_do{idx}', nn.Dropout(p=pre_do)))
+                ls.append(('pre_do{idx}', nn.Dropout(p=pre_do)))
             layers.append(ls)
 
-        idx, dim = 0, final_emb_dim
+        dim = final_emb_dim
         while joint_emb_dim / dim > 2:
             new_dim = int(dim * 1.5)
-            add_layers(idx, dim, new_dim)
+            add_layers(dim, new_dim)
             dim = new_dim
-            idx += 1
         add_layers(idx, dim, joint_emb_dim)
-        for layer in enumerate(reversed(layers)):
+        for idx, layer in enumerate(reversed(layers)):
             for name, module in layer:
-                modules[name] = module
+                modules[name.format(idx)] = module
 
         #modules['pre_fc_l'] = nn.Linear(in_features=dim,
         #                                out_features=final_emb_dim)
