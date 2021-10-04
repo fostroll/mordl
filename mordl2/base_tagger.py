@@ -670,34 +670,33 @@ class BaseTagger(BaseParser):
             #                 for x in res_golds]
             #res_preds = [[f'{y}:{x.get(y)}' or '_' for y in feats]
             #                 for x in res_preds]
-            res_golds = [[x.get(y) or '_' for y in feats]
+            res_golds = [[f'{y}:{x.get(y) or "_"}' for y in feats]
                              for x in res_golds]
-            res_preds = [[x.get(y) or '_' for y in feats]
+            res_preds = [[f'{y}:{x.get(y) or "_"}' for y in feats]
                              for x in res_preds]
             g, p = list(zip(*res_golds)), list(zip(*res_preds))
             g_, p_ = list(zip(*[list(zip(*x)) if x else [(), ()] for x in (
-                [(x, y) for x, y in x if x != '_' or y != '_'] for x in (
-                    list(zip(x, y)) for x, y in zip(g, p)
-                )
+                [(x, y) for x, y in x if x != y or not x.endswith(':_')]
+                    for x in (list(zip(x, y)) for x, y in zip(g, p))
             )]))
 
             accuracy = np.mean([accuracy_score(x, y) for x, y in zip(g, p)])
             precision = np.mean([precision_score(x, y, average='macro')
-                                     for x, y in zip(g_, p_)])
+                                     for x, y in zip(g, p)])
             recall = np.mean([recall_score(x, y, average='macro')
-                                  for x, y in zip(g_, p_)])
+                                  for x, y in zip(g, p)])
             f1 = np.mean([f1_score(x, y, average='macro')
-                              for x, y in zip(g_, p_)])
+                              for x, y in zip(g, p)])
 
             accuracy = (accuracy, np.mean([accuracy_score(x, y)
                                                for x, y in zip(g_, p_)]))
             precision = (precision,
                          np.mean([precision_score(x, y, average='macro')
-                                      for x, y in zip(g, p)]))
+                                      for x, y in zip(g_, p_)]))
             recall = (recall, np.mean([recall_score(x, y, average='macro')
-                                           for x, y in zip(g, p)]))
+                                           for x, y in zip(g_, p_)]))
             f1 = (f1, np.mean([f1_score(x, y, average='macro')
-                               for x, y in zip(g, p)]))
+                               for x, y in zip(g_, p_)]))
         else:
             cats = {y: x for x, y in enumerate(set((*res_golds, *res_preds)))}
             res_golds = [cats[x] for x in res_golds]
