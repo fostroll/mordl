@@ -674,6 +674,7 @@ class BaseTagger(BaseParser):
                              for x in res_golds]
             res_preds = [[f'{y}:{x.get(y) or "_"}' for y in feats]
                              for x in res_preds]
+            print(res_golds[:5])
             g, p = list(zip(*res_golds)), list(zip(*res_preds))
             g_, p_ = list(zip(*[list(zip(*x)) if x else [(), ()] for x in (
                 [(x, y) for x, y in x if x != y or not x.endswith(':_')]
@@ -709,10 +710,10 @@ class BaseTagger(BaseParser):
             res_golds = [cats[x] for x in res_golds]
             res_preds = [cats[x] for x in res_preds]
 
-        accuracy = accuracy_score(res_golds, res_preds)
-        precision = precision_score(res_golds, res_preds, average='macro')
-        recall = recall_score(res_golds, res_preds, average='macro')
-        f1 = f1_score(res_golds, res_preds, average='macro')
+            accuracy = accuracy_score(res_golds, res_preds)
+            precision = precision_score(res_golds, res_preds, average='macro')
+            recall = recall_score(res_golds, res_preds, average='macro')
+            f1 = f1_score(res_golds, res_preds, average='macro')
 
         print('----------------------------------------')
         print('accuracy:', accuracy)
