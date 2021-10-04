@@ -665,7 +665,7 @@ class BaseTagger(BaseParser):
                 pass
 
         if res_golds and isinstance(res_golds[0], dict):
-            feats = set(x[0] for x in res_golds for x in x)
+            feats = set(x for x in res_golds for x in x)
             #res_golds = [[f'{y}:{x.get(y)}' or '_' for y in feats]
             #                 for x in res_golds]
             #res_preds = [[f'{y}:{x.get(y)}' or '_' for y in feats]
