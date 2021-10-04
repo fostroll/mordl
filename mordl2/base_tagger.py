@@ -696,7 +696,14 @@ class BaseTagger(BaseParser):
             recall = (recall, np.mean([recall_score(x, y, average='macro')
                                            for x, y in zip(g_, p_)]))
             f1 = (f1, np.mean([f1_score(x, y, average='macro')
-                               for x, y in zip(g_, p_)]))
+                                   for x, y in zip(g_, p_)]))
+
+            g__, p__ = [x for x in g_ for x in x], [x for x in p_ for x in x]
+            accuracy = (*accuracy, accuracy_score(g__, p__))
+            precision = (*precision,
+                         precision_score(g__, p__, average='macro'))
+            recall = (*recall, recall_score(g__, p__, average='macro'))
+            f1 = (*f1, f1_score(g__, p__, average='macro'))
         else:
             cats = {y: x for x, y in enumerate(set((*res_golds, *res_preds)))}
             res_golds = [cats[x] for x in res_golds]
