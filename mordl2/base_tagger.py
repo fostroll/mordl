@@ -666,9 +666,13 @@ class BaseTagger(BaseParser):
 
         if res_golds and isinstance(res_golds[0], dict):
             feats = set(x[0] for x in res_golds for x in x)
-            res_golds = [[f'{y}:{x.get(y)}' or '_' for y in feats]
+            #res_golds = [[f'{y}:{x.get(y)}' or '_' for y in feats]
+            #                 for x in res_golds]
+            #res_preds = [[f'{y}:{x.get(y)}' or '_' for y in feats]
+            #                 for x in res_preds]
+            res_golds = [[x.get(y) or '_' for y in feats]
                              for x in res_golds]
-            res_preds = [[f'{y}:{x.get(y)}' or '_' for y in feats]
+            res_preds = [[x.get(y) or '_' for y in feats]
                              for x in res_preds]
             g, p = list(zip(*res_golds)), list(zip(*res_preds))
             g_, p_ = list(zip(*[list(zip(*x)) if x else [(), ()] for x in (
