@@ -20,10 +20,11 @@ from mordl2 import WordEmbeddings
 from mordl2.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE, \
                            NONE_TAG, TRAIN_BATCH_SIZE
 from mordl2.lib.conll18_ud_eval import main as _conll18_ud_eval
-import numpy as np
+#import numpy as np
 import os
-from sklearn.metrics import accuracy_score, f1_score, \
-                            precision_score, recall_score
+#from sklearn.metrics import accuracy_score, f1_score, \
+#                            precision_score, recall_score
+import random
 import sys
 import time
 import torch
@@ -928,14 +929,15 @@ class BaseTagger(BaseParser):
         fields.append(field)
 
         # Train the model head with Adam
-        def stage1(idx, load_from, save_to, res, save_to2=None):
+        def stage1(load_from, save_to, res, save_to2=None, seed=None):
             if log_file:
-                print(f'\nMODEL TRAINING {idx} (STAGE 1)', file=log_file)
+                print(f'\nMODEL TRAINING {idx} (STAGE 1, SEED {seed})',
+                      file=log_file)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
 
             if seed:
-                junky.enforce_reproducibility(seed=seed + idx)
+                junky.enforce_reproducibility(seed=seed)
 
             if load_from:
                 _, model_fn_, _, _, _ = \
@@ -982,14 +984,15 @@ class BaseTagger(BaseParser):
             return res, change_load_from
 
         # Train the model head with SGD
-        def stage2(idx, load_from, save_to, res, save_to2=None):
+        def stage2(load_from, save_to, res, save_to2=None, seed=None):
             if log_file:
-                print(f'\nMODEL TRAINING {idx} (STAGE 2)', file=log_file)
+                print(f'\nMODEL TRAINING {idx} (STAGE 2, SEED {seed})',
+                      file=log_file)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
 
             if seed:
-                junky.enforce_reproducibility(seed=seed + idx)
+                junky.enforce_reproducibility(seed=seed)
 
             if load_from:
                 _, model_fn_, _, _, _ = \
@@ -1036,14 +1039,15 @@ class BaseTagger(BaseParser):
             return res, change_load_from
 
         # Train the full model with AdamW
-        def stage3(idx, load_from, save_to, res, save_to2=None):
+        def stage3(load_from, save_to, res, save_to2=None, seed=seed):
             if log_file:
-                print(f'\nMODEL TRAINING {idx} (STAGE 3)', file=log_file)
+                print(f'\nMODEL TRAINING {idx} (STAGE 3, SEED {seed})',
+                      file=log_file)
             model_config_fn, model_fn, _, _, cdict_fn = \
                 self._get_filenames(save_to)
 
             if seed:
-                junky.enforce_reproducibility(seed=seed + idx)
+                junky.enforce_reproducibility(seed=seed)
 
             if load_from:
                 _, model_fn_, _, _, _ = \
@@ -1239,7 +1243,9 @@ class BaseTagger(BaseParser):
 
         # 4. Train
         need_ds = False
-        for idx, stage in enumerate(stages, start=1):
+        seeds = [random.randrange(1, sys.maxsize) if seed else None
+                     for x in range(len(stages))]
+        for stage, seed in zip(stages, seeds):
             if stage:
                 stage_method = stage_methods[stage - 1]
                 save_to, save_to2 = \
@@ -1251,8 +1257,9 @@ class BaseTagger(BaseParser):
                     gc.collect()
                     #torch.cuda.empty_cache()
                     ds_train, ds_test = stage_ds()
-                res, change_load_from = stage_method(idx, load_from, save_to,
-                                                     res, save_to2=save_to2)
+                res, change_load_from = stage_method(
+                   load_from, save_to, res, save_to2=save_to2, seed=seed
+                )
                 need_ds = stage == 3 and res and res['best_epoch'] is not None
                 if change_load_from:
                     load_from = save_to
