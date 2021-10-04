@@ -683,11 +683,11 @@ class BaseTagger(BaseParser):
 
             accuracy = np.mean([accuracy_score(x, y) for x, y in zip(g, p)])
             precision = np.mean([precision_score(x, y, average='macro')
-                                     for x, y in zip(g, p)])
+                                     for x, y in zip(g_, p_)])
             recall = np.mean([recall_score(x, y, average='macro')
-                                  for x, y in zip(g, p)])
+                                  for x, y in zip(g_, p_)])
             f1 = np.mean([f1_score(x, y, average='macro')
-                              for x, y in zip(g, p)])
+                              for x, y in zip(g_, p_)])
 
             accuracy = (accuracy, np.mean([accuracy_score(x, y)
                                                for x, y in zip(g_, p_)]))
