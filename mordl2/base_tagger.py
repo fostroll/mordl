@@ -1245,7 +1245,7 @@ class BaseTagger(BaseParser):
         need_ds = False
         seeds = [random.randrange(1, 2**32) if seed else None
                      for x in range(len(stages))]
-        for idx, (stage, seed) in enumerate(zip(stages, seeds)):
+        for idx, (stage, seed) in enumerate(zip(stages, seeds), start=1):
             if stage:
                 stage_method = stage_methods[stage - 1]
                 save_to, save_to2 = \
