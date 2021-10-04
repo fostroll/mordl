@@ -20,6 +20,7 @@ from mordl2 import WordEmbeddings
 from mordl2.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE, \
                            NONE_TAG, TRAIN_BATCH_SIZE
 from mordl2.lib.conll18_ud_eval import main as _conll18_ud_eval
+import numpy as np
 import os
 from sklearn.metrics import accuracy_score, f1_score, \
                             precision_score, recall_score
@@ -665,18 +666,44 @@ class BaseTagger(BaseParser):
 
         if res_golds and isinstance(res_golds[0], list):
             feats = set(x[0] for x in res_golds for x in x)
-            res_golds = [f'{y}:{x.get(y) or "_"}' for x in res_golds
-                                                  for y in feats]
-            res_preds = [f'{y}:{x.get(y) or "_"}' for x in res_preds
-                                                  for y in feats]
-        cats = {y: x for x, y in enumerate(set((*res_golds, *res_preds)))}
-        res_golds = [cats[x] for x in res_golds]
-        res_preds = [cats[x] for x in res_preds]
+            res_golds = [[f'{y}:x.get(y)' or '_' for y in feats]
+                             for x in res_golds]
+            res_preds = [[f'{y}:x.get(y)' or '_' for y in feats]
+                             for x in res_preds]
+            g, p = list(zip(*res_golds)), list(zip(*res_preds))
+            g_, p_ = list(zip(*[list(zip(*x)) if x else [(), ()] for x in (
+                [(x, y) for x, y in x if x != '_' or y != '_'] for x in (
+                    list(zip(x, y)) for x, y in zip(g, p)
+                )
+            )]))
 
-        accuracy = accuracy_score(res_golds, res_preds)
-        precision = precision_score(res_golds, res_preds, average='macro')
-        recall = recall_score(res_golds, res_preds, average='macro')
-        f1 = f1_score(res_golds, res_preds, average='macro')
+            accuracy = np.mean([accuracy_score(x, y) for x, y in zip(g, p)])
+            precision = np.mean([precision_score(x, y, average='macro')
+                                     for x, y in zip(g, p)])
+            recall = np.mean([recall_score(x, y, average='macro')
+                                  for x, y in zip(g, p)])
+            f1 = np.mean([f1_score(x, y, average='macro')
+                              for x, y in zip(g, p)])
+
+            accuracy = (accuracy, np.mean([accuracy_score(x, y)
+                                               for x, y in zip(g_, p_)]))
+            precision = (precision,
+                         np.mean([precision_score(x, y, average='macro')
+                                      for x, y in zip(g, p)]))
+            recall = (recall, np.mean([recall_score(x, y, average='macro')
+                                           for x, y in zip(g, p)]))
+            f1 = (f1, np.mean([f1_score(x, y, average='macro')
+                               for x, y in zip(g, p)]))
+        else:
+            cats = {y: x for x, y in enumerate(set((*res_golds, *res_preds)))}
+            res_golds = [cats[x] for x in res_golds]
+            res_preds = [cats[x] for x in res_preds]
+
+            accuracy = accuracy_score(res_golds, res_preds)
+            precision = precision_score(res_golds, res_preds, average='macro')
+            recall = recall_score(res_golds, res_preds, average='macro')
+            f1 = f1_score(res_golds, res_preds, average='macro')
+
         print('----------------------------------------')
         print('accuracy:', accuracy)
         print('precision:', precision)
