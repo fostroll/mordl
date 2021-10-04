@@ -664,17 +664,13 @@ class BaseTagger(BaseParser):
             except StopIteration:
                 pass
 
+        '''
         if res_golds and isinstance(res_golds[0], dict):
             feats = set(x for x in res_golds for x in x)
-            #res_golds = [[f'{y}:{x.get(y)}' or '_' for y in feats]
-            #                 for x in res_golds]
-            #res_preds = [[f'{y}:{x.get(y)}' or '_' for y in feats]
-            #                 for x in res_preds]
             res_golds = [[f'{y}:{x.get(y) or "_"}' for y in feats]
                              for x in res_golds]
             res_preds = [[f'{y}:{x.get(y) or "_"}' for y in feats]
                              for x in res_preds]
-            print(res_golds[:5])
             g, p = list(zip(*res_golds)), list(zip(*res_preds))
             g_, p_ = list(zip(*[list(zip(*x)) if x else [(), ()] for x in (
                 [(x, y) for x, y in x if x != y or not x.endswith(':_')]
@@ -721,6 +717,7 @@ class BaseTagger(BaseParser):
         print('recall:', recall)
         print('f1', f1)
         print('----------------------------------------')
+        '''
 
         if log_file:
             if nsent <= 0:
