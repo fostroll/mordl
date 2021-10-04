@@ -1243,7 +1243,7 @@ class BaseTagger(BaseParser):
 
         # 4. Train
         need_ds = False
-        seeds = [random.randrange(1, sys.maxsize) if seed else None
+        seeds = [random.randrange(1, 2**32) if seed else None
                      for x in range(len(stages))]
         for idx, (stage, seed) in enumerate(zip(stages, seeds)):
             if stage:
