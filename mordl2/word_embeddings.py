@@ -67,14 +67,28 @@ class WordEmbeddings:
     @staticmethod
     def _full_tune(model, model_save_as, model_save_method,
                    datasets, sents_data, best_score=None,
-
+                   # word_emb_tune_params ##################
                    save_as=None, max_epochs=3, batch_size=8,
-
+                   #########################################
                    control_metric='accuracy', transform_kwargs=None,
+                       # BertDataset.transform() # params:
+                       # {'max_len': 0, 'batch_size': 64, 'hidden_ids': '10',
+                       #  'aggregate_hiddens_op': 'cat',
+                       #  'aggregate_subtokens_op': 'absmax', 'to': junky.CPU,
+                       #  'loglevel': 1}
+                       # NB: transform_kwargs['batch_size'] is ignored and
+                       #     replaced with the **batch_size** param.
                    seed=None, log_file=LOG_FILE):
         """Method for finetuning base BERT model on custom data.
 
         Args:
+
+        **model**: the head model using after BERT.
+
+        **model_save_as**: the path where the head model will be stored.
+
+        **model_save_method**: the method using to save the model head. The
+        signature: `model_save_method(model_save_as).
 
         **train_sentences**: sequence of already tokenized sentences (of the
         `list([str])` format) that will be used to train the model.

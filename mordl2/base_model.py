@@ -31,9 +31,10 @@ class BaseModel(nn.Module):
 
         Args:
 
-        **f** (`str` | `file`): a file where config will be saved.
+        **f** (`str` | `file`): the file where the config should be saved.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
         """
         config = list(getattr(self, CONFIG_ATTR, []))
         device = next(self.parameters()).device
@@ -54,20 +55,23 @@ class BaseModel(nn.Module):
     @classmethod
     def create_from_config(cls, f, state_dict_f=None, device=None,
                            log_file=LOG_FILE):
-        """Creates model with parameters and state dictionary previouly saved
-        in the specified files.
+        """Creates model with parameters and a state dictionary previouly
+        saved in the specified files.
 
         Args:
 
-        **f** (`str` | `file`): a file where config will be saved.
+        **f** (`str` | `file`): the config file for the model creation.
 
-        **state_dict_f** (`str` | `file`): a the state dictionary file of the
-        previously saved PyTorch model.
+        **state_dict_f** (`str` | `file`; default is `None`): the state
+        dictionary file of the previously saved PyTorch model. If `None`, the
+        model is initialized by default.
 
-        **device**: device where the model will be loaded, e.g. `'cuda:2'`. By
-        default, the model is loaded to CPU.
+        **device** (`str`; default is `None`): the device where the model
+        should be loaded after it's created, e.g. `'cuda:2'`. If `None`, the
+        model is loaded to CPU.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
         """
         need_close = False
         if isinstance(f, str):
@@ -99,14 +103,16 @@ class BaseModel(nn.Module):
         return model
 
     def save_state_dict(self, f, log_file=LOG_FILE):
-        """Saves PyTorch model's state dictionary to a file to further use
-        for model inference.
+        """Saves the PyTorch model's state dictionary to a file for further use
+        in the inference.
 
         Args:
 
-        **f** (`str` : `file`): the file where state dictionary will be saved.
+        **f** (`str` | `file`): the file where the state dictionary should be
+        saved.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
         """
         if log_file:
             print('Saving state_dict...', end=' ', file=log_file)
@@ -116,14 +122,16 @@ class BaseModel(nn.Module):
             print('done.', file=log_file)
 
     def load_state_dict(self, f, log_file=LOG_FILE):
-        """Loads previously saved PyTorch model's state dictionary for
-        inference.
+        """Loads the previously saved PyTorch model's state dictionary for
+        the inference.
 
         Args:
 
-        **f**: a file from where state dictionary will be loaded.
+        **f** (`str` | `file`): the file from where the state dictionary
+        should be loaded.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
         """
         if log_file:
             print('Loading state_dict...', end=' ', file=log_file)
@@ -135,13 +143,14 @@ class BaseModel(nn.Module):
             print('done.', file=log_file)
 
     def save(self, f, log_file=LOG_FILE):
-        """Saves full model configuration to the single file.
+        """Saves the full model configuration to the single file.
 
         Args:
 
-        **f** (`str` : `file`): a file where the model will be saved.
+        **f** (`str` | `file`): the file where the model should be saved.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
         """
         if log_file:
             print('Saving model...', end=' ', file=log_file)
@@ -156,12 +165,15 @@ class BaseModel(nn.Module):
 
         Args:
 
-        **f** (`str` : `file`): a file where the model will be loaded from.
+        **f** (`str` | `file`): the file from where the model should be
+        loaded.
 
-        **device**: device where the model will be loaded, e.g. `'cuda:2'`. By
-        default, the model is loaded to CPU.
+        **device** (`str`; default is `None`): the device where the model
+        should be loaded, e.g. `'cuda:2'`. If `None`, the model is loaded to
+        CPU.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
         """
         if log_file:
             print('Loading model...', end=' ', file=log_file)
@@ -172,20 +184,15 @@ class BaseModel(nn.Module):
             print('done.', file=log_file)
         return model
 
-    def adjust_model_for_train(self, *args, lr=.0001, betas=(0.9, 0.999),
-                               eps=1e-08, weight_decay=0, amsgrad=False,
-                               **kwargs):
+    def adjust_model_for_train(self, lr=.0001, betas=(0.9, 0.999), eps=1e-08,
+                               weight_decay=0, amsgrad=False):
         """Creates model, criterion, optimizer and scheduler for training.
         Adam optimizer is used to train the model.
 
         Args:
 
-        **\*args**: args for the model creating.
-
-        **lr**, **betas**, **eps**, **weight_decay**, **amsgrad**: hyperparams
-        for Adam optimizer.
-
-        **\*\*kwargs**: keyword args for the model's class constructor.
+        **lr**, **betas**, **eps**, **weight_decay**, **amsgrad**: the
+        hyperparams for the torch.optim.Adam optimizer.
         """
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(
@@ -203,7 +210,7 @@ class BaseModel(nn.Module):
         Args:
 
         **lr**, **momentum**, **weight_decay**, **dampening**, **nesterov**:
-        hyperparams for the SGD optimizer.
+        the hyperparams for the torch.optim.SGD optimizer.
         """
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(

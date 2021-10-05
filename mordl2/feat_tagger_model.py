@@ -18,66 +18,79 @@ class FeatTaggerModel(BaseTaggerModel):
 
     Args:
 
-    **labels_num** (`int`): number of target labels.
+    **num_labels** (`int`): the number of target labels. Don't forget to add
+    `1` for padding.
 
-    **labels_pad_idx** (`int`): index of padding element in the label
+    **labels_pad_idx** (`int`; default=-100): the index of padding element in
+    the label vocabulary. You can specify here the real index of the padding
+    intent, but we recommend to keep it as is (with default fake index)
+    because in practice, learning on padding increasing the resulting model
+    performance. If you stil want to experiment, along with specifying the
+    real padding index, you may try not to add `1` to **num_labels** for the
+    padding intent. The model then put random labels as tags for the padding
+    part of the input, but they are ignored during the loss computation.
+
+    **vec_emb_dim** (`int`; default is `None`): the incoming word-level
+    embedding vector space dimensionality.
+
+    **alphabet_size** (`int`): the length of character vocabulary for the
+    internal character-level embedding layer. Relevant if either
+    **rnn_emb_dim** or **cnn_emb_dim** is not `None`.
+
+    **char_pad_idx** (`int`; default is `0`): the index of the padding element
+    in the character vocabulary of the internal character-level embedding
+    layer. Relevant if either **rnn_emb_dim** or **cnn_emb_dim** is not `None`.
+
+    **rnn_emb_dim** (`int`; default is `None`): the internal character RNN
+    (LSTM) embedding dimensionality. If `None`, the layer is skipped.
+
+    **cnn_emb_dim** (`int`; default is `None`): the internal character CNN
+    embedding dimensionality. If `None`, the layer is skipped.
+
+    **cnn_kernels** (`list([int])`; default is `[1, 2, 3, 4, 5, 6]`): CNN
+    kernel sizes of the internal CNN embedding layer. Relevant if
+    **cnn_emb_dim** is not `None`.
+
+    **upos_emb_dim** (`int`): the auxiliary UPOS label embedding
+    dimensionality. Default `upos_emb_dim=300`.
+
+    **upos_num** (`int`): the length of UPOS vocabulary.
+
+    **upos_pad_idx** (`int`): the index of padding element in the UPOS
     vocabulary.
 
-    **vec_emb_dim** (`int`): word-level embedding vector space dimensionality.
-     If `None`, the layer is skipped.
+    **emb_bn** (`bool`; default is 'True'): whether batch normalization layer
+    should be applied after the embedding concatenation.
 
-    **alphabet_size** (`int`): length of character vocabulary. Relevant with
-    not `None` **rnn_emb_dim** or **cnn_emb_dim**.
+    **emb_do** (`float`; default is '.2'): the dropout rate after the
+    embedding concatenation.
 
-    **char_pad_idx** (`int`): index of padding element in the character
-    vocabulary. Relevant with not `None` **rnn_emb_dim** or **cnn_emb_dim**.
+    **final_emb_dim** (`int`; default is `512`): the output dimesionality of
+    the linear transformation applying to concatenated embeddings.
 
-    **rnn_emb_dim** (`int`): character RNN (LSTM) embedding dimensionality. If
-    `None`, the layer is skipped.
+    **pre_bn** (`bool`; default is 'True'): whether batch normalization layer
+    should be applied before the main part of the algorithm.
 
-    **cnn_emb_dim** (`int`): character CNN embedding dimensionality. If
-    `None`, the layer is skipped.
+    **pre_do** (`float`; default is '.5'): the dropout rate before the main
+    part of the algorithm.
 
-    **cnn_kernels** (`list([int])`): CNN kernel sizes. By default,
-    `cnn_kernels=[1, 2, 3, 4, 5, 6]`. Relevant with not `None`
-    **cnn_emb_dim**.
+    **lstm_layers** (`int`; default is `1`): the number of Bidirectional LSTM
+    layers. If `None`, they are not created.
 
-    **upos_emb_dim** (`int`): auxiliary UPOS label embedding dimensionality.
-    Default `upos_emb_dim=200`.
+    **lstm_do** (`float`; default is `0`): the dropout between LSTM layers.
+    Only relevant, if `lstm_layers` > `1`.
 
-    **upos_num** (`int`): length of UPOS vocabulary.
+    **tran_layers** (`int`; default is `None`): the number of Transformer
+    Encoder layers. If `None`, they are not created.
 
-    **upos_pad_idx** (`int`): index of padding element in the UPOS vocabulary.
+    **tran_heads** (`int`; default is `8`): the number of attention heads of
+    Transformer Encoder layers. Only relevant, if `tran_layers` > `1`.
 
-    **emb_out_dim** (`int`): output embedding dimensionality. Default
-    `emb_out_dim=512`.
+    **post_bn** (`bool`; default is 'True'): whether batch normalization layer
+    should be applied after the main part of the algorithm.
 
-    **lstm_hidden_dim** (`int`): Bidirectional LSTM hidden size. Default
-    `lstm_hidden_dim=256`.
-
-    **lstm_layers** (`int`): number of Bidirectional LSTM layers. Default
-    `lstm_layers=1`.
-
-    **lstm_do** (`float`): dropout between LSTM layers. Only relevant, if
-    `lstm_layers` > `1`.
-
-    **bn1** (`bool`): whether batch normalization layer should be applied
-    after the embedding layer. Default `bn1=True`.
-
-    **do1** (`float`): dropout rate after the first batch normalization
-    layer `bn1`. Default `do1=.2`.
-
-    **bn2** (`bool`): whether batch normalization layer should be applied
-    after the linear layer before LSTM layer. Default `bn2=True`.
-
-    **do2** (`float`): dropout rate after the second batch normalization
-    layer `bn2`. Default `do2=.5`.
-
-    **bn3** (`bool`): whether batch normalization layer should be applied
-    after the LSTM layer. Default `bn3=True`.
-
-    **do3** (`float`): dropout rate after the third batch normalization
-    layer `bn3`. Default `do3=.4`.
+    **post_do** (`float`; default is '.4'): the dropout rate after the main
+    part of the algorithm.
     """
     def __init__(self, num_labels, labels_pad_idx=None, vec_emb_dim=None,
                  alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,
@@ -85,7 +98,7 @@ class FeatTaggerModel(BaseTaggerModel):
                  upos_emb_dim=300, upos_num=0, upos_pad_idx=0,
                  emb_bn=True, emb_do=.2,
                  final_emb_dim=512, pre_bn=True, pre_do=.5,
-                 lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
+                 lstm_layers=1, lstm_do=0, tran_layers=None, tran_heads=8,
                  post_bn=True, post_do=.4):
         if isinstance(cnn_kernels, Iterable):
             cnn_kernels = list(cnn_kernels)
