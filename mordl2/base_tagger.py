@@ -1084,7 +1084,8 @@ class BaseTagger(BaseParser):
                             (ds_train, ds_test),
                             (train[0], test[0]) if test else train[0],
                             best_score=best_score, control_metric=control_metric,
-                            log_file=log_file, **emb_tune_params  # save_as=None, max_epochs=3, batch_size=8
+                            transform_kwargs=transform_kwargs, log_file=log_file,
+                            **emb_tune_params  # save_as=None, max_epochs=3, batch_size=8
                         )
                     else:
                         raise ValueError(f"ERROR: Tune method for '{emb_type}' "
