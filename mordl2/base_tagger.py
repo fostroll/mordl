@@ -1185,7 +1185,7 @@ class BaseTagger(BaseParser):
             def tune_word_emb(emb_type, best_score=None):
                 res = None
                 if emb_type == 'bert':
-                    params = {} stage3_params is None else stage3_params
+                    params = {} if stage3_params is None else stage3_params
                     if 'save_as' not in params:
                         params['save_as'] = bert_header
 
