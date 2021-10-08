@@ -938,7 +938,15 @@ class BaseTagger(BaseParser):
 
         *Other options*:
 
-        **learn_on_padding** (`bool`; default is `True`)
+        **learn_on_padding** (`bool`; default is `True`): while training, we
+        can calculate loss taking in account predictions made for padding
+        tokens or without it. The common practice is don't use padding when
+        calculate loss. However, we note that using padding makes the
+        resulting model performance slightly better.
+
+        **remove_padding_intent** (`bool`; default is `False`): if you set
+        **learn_on_padding** param to `False`, 
+
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.
 
@@ -1001,7 +1009,9 @@ class BaseTagger(BaseParser):
                    self._get_filenames(load_from)
                 model.load_state_dict(model_fn_, log_file=log_file)
             criterion, optimizer, scheduler = \
-                model.adjust_model_for_train(stage1_params)
+                model.adjust_model_for_train(**(stage1_params
+                                                    if stage_params else
+                                                {}))
             best_epoch, best_score = (res['best_epoch'], res['best_score']) \
                                          if res else \
                                      (0, None)
@@ -1057,7 +1067,9 @@ class BaseTagger(BaseParser):
                    self._get_filenames(load_from)
                 model.load_state_dict(model_fn_, log_file=log_file)
             criterion, optimizer, scheduler = \
-                model.adjust_model_for_tune(**stage2_params)
+                model.adjust_model_for_tune(**(stage2_params
+                                                   if stage_params else
+                                               {}))
             best_epoch, best_score = (res['best_epoch'], res['best_score']) \
                                          if res else \
                                      (0, None)
@@ -1145,11 +1157,15 @@ class BaseTagger(BaseParser):
                             best_score=best_score,
                             control_metric=control_metric,
                             transform_kwargs=word_transform_kwargs,
-                            log_file=log_file, **stage3_params
+                            log_file=log_file, **(stage3_params
+                                                      if stage_params else
+                                                  {})
                         )
                     else:
-                        raise ValueError(f"ERROR: Tune method for '{emb_type}' "
-                                          'embeddings is not implemented')
+                        raise ValueError(
+                           f"ERROR: Tune method for '{emb_type}' "
+                            'embeddings is not implemented'
+                        )
                 else:
                     raise TypeError(
                         'ERROR: emb_tune_params is of incorrect type. '
