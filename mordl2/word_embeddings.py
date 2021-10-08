@@ -71,6 +71,7 @@ class WordEmbeddings:
                    save_as=None, max_epochs=3, batch_size=8,
                    lr=3e-5, betas=(0.9, 0.999), eps=1e-8,
                    weight_decay=.01, amsgrad=False, num_warmup_steps=0,
+                   max_grad_norm=1.,
                    #########################################
                    control_metric='accuracy', transform_kwargs=None,
                        # BertDataset.transform() # params:
@@ -122,6 +123,9 @@ class WordEmbeddings:
 
         **special_tokens** (`str`|`list(<str>)`): additional special tokens
         for BERT tokenizer.
+
+        **max_grad_norm** (`float`; default is `None`): the gradient clipping
+        parameter.
 
         **control_metric** (`str`): metric to control training. Allowed values
         are: 'accuracy', 'f1' and 'loss'. Default `control_metric=accuracy`.
@@ -255,7 +259,7 @@ class WordEmbeddings:
         optimizer = AdamW(optimizer_grouped_parameters, lr=lr, betas=betas,
                           eps=eps, weight_decay=weight_decay, amsgrad=amsgrad)
 
-        grad_norm_clip = 1.
+        max_grad_norm = max_grad_norm
 
         # Total number of training steps is
         # number of batches * number of epochs
@@ -276,9 +280,9 @@ class WordEmbeddings:
             model_args=list(range(len(next(iter(train_dl))) - 2)),
             model_kwargs={'labels': -2},
             output_logits_idx=0, output_loss_idx=1,
-            grad_norm_clip=grad_norm_clip,
-            optimizer=optimizer, scheduler=scheduler,
-            postprocess_method='strip_mask', save_ckpt_method=
+            max_grad_norm=max_grad_norm, optimizer=optimizer,
+            scheduler=scheduler, postprocess_method='strip_mask',
+            save_ckpt_method=
                 lambda model, paths: full_model.save_pretrained(paths)
         )
         trainer = Trainer(

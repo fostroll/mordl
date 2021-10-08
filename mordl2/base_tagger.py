@@ -771,11 +771,10 @@ class BaseTagger(BaseParser):
         return ct / nt if nt > 0 else 1.
 
     def train(self, field, add_fields, model_class, tag_emb_names, save_as,
-              device=None, max_epochs=None, min_epochs=0, bad_epochs=5,
-              batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
-              max_grad_norm=None, tags_to_remove=None,
-              word_emb_type='bert', word_emb_path=None,
-              word_transform_kwargs=None,
+              device=None, control_metric='accuracy', max_epochs=None,
+              min_epochs=0, bad_epochs=5, batch_size=TRAIN_BATCH_SIZE,
+              max_grad_norm=None, tags_to_remove=None, word_emb_type='bert',
+              word_emb_path=None, word_transform_kwargs=None,
                   # BertDataset.transform() (for BERT-descendant models)
                   # params:
                   # {'max_len': 0, 'batch_size': 64, 'hidden_ids': '10',
@@ -786,15 +785,21 @@ class BaseTagger(BaseParser):
                   # {'check_lower': True}
               stage1_params=None,
                   # {'lr': .0001, 'betas': (0.9, 0.999), 'eps': 1e-8,
-                  #  'weight_decay': 0, 'amsgrad': False}
+                  #  'weight_decay': 0, 'amsgrad': False,
+                  #  'max_epochs': None, 'min_epochs': None,
+                  #  'bad_epochs': None, 'batch_size': None,
+                  #  'max_grad_norm': None}
               stage2_params=None,
                   # {'lr': .001, 'momentum': .9, 'weight_decay': 0,
-                  #  'dampening': 0, 'nesterov': False}
+                  #  'dampening': 0, 'nesterov': False,
+                  #  'max_epochs': None, 'min_epochs': None,
+                  #  'bad_epochs': None, 'batch_size': None,
+                  #  'max_grad_norm': None}
               stage3_params=None,
                   # {'save_as': None, 'max_epochs': 3, 'batch_size': 8,
                   #  'lr': 3e-5, 'betas': (0.9, 0.999), 'eps': 1e-8,
                   #  'weight_decay': .01, 'amsgrad': False,
-                  #  'num_warmup_steps': 0}
+                  #  'num_warmup_steps': 0, 'max_grad_norm': None}
               stages=[1, 2, 3, 1, 2], save_stages=False, load_from=None,
               learn_on_padding=True, remove_padding_intent=False,
               seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
@@ -840,34 +845,37 @@ class BaseTagger(BaseParser):
         in the **add_fields** arg. You have to look into sources of the
         descendant classess if you really want to make sense of it.
 
-        **save_as** (`str`): the name using for save. Refer to the `.save()`
-        method's help for the broad definition (see the **name** arg there).
+        **save_as** (`str`): the name using for save the model's head. Refer
+        to the `.save()` method's help for the broad definition (see the
+        **name** arg there).
 
         **device** (`str`, default is `None`): the device for the model. E.g.:
         'cuda:0'. If `None`, we don't move the model to any device (it is
         placed right where it's created).
-
-        **max_epochs** (`int`; default is `None`): the maximal number of
-        epochs of the training. If `None` (default), the training would be
-        linger until **bad_epochs** has met, but no less than **min_epochs**.
-
-        **min_epochs** (`int`; default is `0`): the minimal number of training
-        epochs.
-
-        **bad_epochs** (`int`; default is `5`): the maximal allowed number of
-        bad epochs (epochs when chosen **control_metric** is not became
-        better) in a row.
-
-        **batch_size** (`int`; default is `32`): the number of sentences per
-        batch when training the model's head.
 
         **control_metric** (`str`; default is `accuracy`): the metric that
         control training. Any that is supported by the `junky.train()` method.
         In the moment, it is: 'accuracy', 'f1', 'loss', 'precision', and
         'recall'.
 
+        **max_epochs** (`int`; default is `None`): the maximal number of
+        epochs for the model's head training (stages types `1` and `2`). If
+        `None` (default), the training would be linger until **bad_epochs**
+        has met, but no less than **min_epochs**.
+
+        **min_epochs** (`int`; default is `0`): the minimal number of training
+        epochs for the model's head training (stages types `1` and `2`).
+
+        **bad_epochs** (`int`; default is `5`): the maximal allowed number of
+        bad epochs (epochs when chosen **control_metric** is not became
+        better) in a row for the model's head training (stages types `1` and
+        `2`).
+
+        **batch_size** (`int`; default is `32`): the number of sentences per
+        batch for the model's head training (stages types `1` and `2`).
+
         **max_grad_norm** (`float`; default is `None`): the gradient clipping
-        parameter when training the model's head.
+        parameter for the model's head training (stages types `1` and `2`).
 
         **tags_to_remove** (`dict({str: str}) | dict({str: list([str])})`;
         default is `None`): the tags, tokens with those must be removed from
@@ -897,11 +905,17 @@ class BaseTagger(BaseParser):
 
         **stage1_param** (`dict`; default is `None`): keyword arguments for
         the `BaseModel.adjust_model_for_train()` method. If `None`, the
-        defaults are used.
+        defaults are used. Also, you can specify here new values for the
+        arguments **max_epochs**, **min_epochs**, **bad_epochs**,
+        **batch_size**, and **max_grad_norm** that will be used only on stages
+        of type `1`.
 
         **stage2_param** (`dict`; default is `None`): keyword arguments for
         the `BaseModel.adjust_model_for_tune()` method. If `None`, the
-        defaults are used.
+        defaults are used. Also, you can specify here new values for the
+        arguments **max_epochs**, **min_epochs**, **bad_epochs**,
+        **batch_size**, and **max_grad_norm** that will be used only on stages
+        of type `2`.
 
         **stage3_param** (`dict`; default is `None`): keyword arguments for
         the `WordEmbeddings._full_tune()` method. If `None`, the defaults are
@@ -1022,6 +1036,15 @@ class BaseTagger(BaseParser):
             if seed:
                 junky.enforce_reproducibility(seed=seed)
 
+            train_params = {}
+            for param, value in zip(['max_epochs', 'min_epochs', 'bad_epochs',
+                                     'batch_size', 'max_grad_norm'],
+                                    [max_epochs, min_epochs, bad_epochs,
+                                     batch_size, max_grad_norm]):
+                value_ = stage1_params.pop(param, None)
+                train_params['epochs' if param == 'max_epochs' else param] = \
+                    value_ if value_ is not None else value
+
             if load_from:
                 _, model_fn_, _, _, _ = \
                    self._get_filenames(load_from)
@@ -1047,9 +1070,10 @@ class BaseTagger(BaseParser):
             res_ = junky.train(
                 None, model, criterion, optimizer, scheduler,
                 best_model_backup_method, datasets=(ds_train, ds_test),
-                epochs=max_epochs, min_epochs=min_epochs,
-                bad_epochs=bad_epochs, batch_size=batch_size,
-                control_metric=control_metric, max_grad_norm=max_grad_norm,
+                **train_params,
+                #epochs=max_epochs, min_epochs=min_epochs,
+                #bad_epochs=bad_epochs, batch_size=batch_size,
+                control_metric=control_metric,# max_grad_norm=max_grad_norm,
                 batch_to_device=False, best_score=best_score,
                 with_progress=log_file is not None, log_file=log_file
             )
@@ -1080,6 +1104,15 @@ class BaseTagger(BaseParser):
             if seed:
                 junky.enforce_reproducibility(seed=seed)
 
+            train_params = {}
+            for param, value in zip(['max_epochs', 'min_epochs', 'bad_epochs',
+                                     'batch_size', 'max_grad_norm'],
+                                    [max_epochs, min_epochs, bad_epochs,
+                                     batch_size, max_grad_norm]):
+                value_ = stage2_params.pop(param, None)
+                train_params['epochs' if param == 'max_epochs' else param] = \
+                    value_ if value_ is not None else value
+
             if load_from:
                 _, model_fn_, _, _, _ = \
                    self._get_filenames(load_from)
@@ -1102,12 +1135,13 @@ class BaseTagger(BaseParser):
                 model.save_state_dict(model_fn, log_file=log_file)
 
             change_load_from = False
-            res_= junky.train(
+            res_ = junky.train(
                 None, model, criterion, optimizer, scheduler,
                 best_model_backup_method, datasets=(ds_train, ds_test),
-                epochs=max_epochs, min_epochs=min_epochs,
-                bad_epochs=bad_epochs, batch_size=batch_size,
-                control_metric=control_metric, max_grad_norm=max_grad_norm,
+                **train_params,
+                #epochs=max_epochs, min_epochs=min_epochs,
+                #bad_epochs=bad_epochs, batch_size=batch_size,
+                control_metric=control_metric,# max_grad_norm=max_grad_norm,
                 batch_to_device=False, best_score=best_score,
                 with_progress=log_file is not None, log_file=log_file
             )
