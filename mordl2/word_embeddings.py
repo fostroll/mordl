@@ -67,13 +67,14 @@ class WordEmbeddings:
     @staticmethod
     def _full_tune(model, model_save_as, model_save_method,
                    datasets, sents_data, best_score=None,
+                   control_metric='accuracy',
                    # word_emb_tune_params ##################
                    save_as=None, max_epochs=3, batch_size=8,
                    lr=3e-5, betas=(0.9, 0.999), eps=1e-8,
                    weight_decay=.01, amsgrad=False, num_warmup_steps=0,
                    max_grad_norm=1.,
                    #########################################
-                   control_metric='accuracy', transform_kwargs=None,
+                   transform_kwargs=None,
                        # BertDataset.transform() # params:
                        # {'max_len': 0, 'batch_size': 64, 'hidden_ids': '10',
                        #  'aggregate_hiddens_op': 'cat',
