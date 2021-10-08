@@ -388,8 +388,17 @@ class LemmaTagger(BaseTagger):
               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
               max_grad_norm=None, tags_to_remove=None,
               word_emb_type='ft', word_emb_path=None,
-              word_emb_tune_params=None,
-                  # {'save_as': None, 'max_epochs': 3, 'batch_size': 8}
+              stage1_params=None,
+                  # {'lr': .0001, 'betas': (0.9, 0.999), 'eps': 1e-8,
+                  #  'weight_decay': 0, 'amsgrad': False}
+              stage2_params=None,
+                  # {'lr': .001, 'momentum': .9, 'weight_decay': 0,
+                  #  'dampening': 0, 'nesterov': False}
+              stage3_params=None,
+                  # {'save_as': None, 'max_epochs': 3, 'batch_size': 8,
+                  #  'lr': 3e-5, 'betas': (0.9, 0.999), 'eps': 1e-8,
+                  #  'weight_decay': .01, 'amsgrad': False,
+                  #  'num_warmup_steps': 0}
               word_transform_kwargs=None,
                   # BertDataset.transform() (for BERT-descendant models)
                   # params:
@@ -399,7 +408,8 @@ class LemmaTagger(BaseTagger):
                   #  'loglevel': 1}
                   # WordDataset.transform() (for other models) params:
                   # {'check_lower': True}
-              stages=[1, 2], load_from=None, save_stages=False,
+              stages=[1, 2], save_stages=False, load_from=None,
+              learn_on_padding=True, remove_padding_intent=False,
               seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
               upos_emb_dim=300, emb_bn=True, emb_do=.2,

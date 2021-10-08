@@ -43,10 +43,10 @@ class BaseTagger(BaseParser):
 
     Args:
 
-    **embs** (`dict({str: object}); default is `None`): with paths to the
-    embeddings file as keys and corresponding embeddings models as values. If
-    tagger needs to load any embeddings model, firstly, model is looked up it
-    in that `dict`.
+    **embs** (`dict({str: object}); default is `None`): the `dict` with paths
+    to embeddings files as keys and corresponding embedding models as values.
+    If the tagger needs to load any embedding model, firstly, the model is
+    looked up it in that `dict`.
 
     During init, **embs** is copied to the `embs` attribute of the creating
     object, and this attribute may be used further to share already loaded
@@ -88,17 +88,18 @@ class BaseTagger(BaseParser):
 
         Args:
 
-        **corpus**: a name of the file in *CoNLL-U* format or a list/iterator
-        of sentences in *Parsed CoNLL-U*.
+        **corpus**: either the name of the file in *CoNLL-U* format or the
+        `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-        **append** (`bool`): whether to add **corpus** to the already loaded
-        one(s).
+        **append** (`bool`; default is `False`): whether to add the **corpus**
+        to the already loaded one(s).
 
-        **test** (`float`): if not `None`, **corpus** will be shuffled and a
-        specified part of it stored as a test corpus.
+        **test** (`float`; default is `None`): if not `None`, the **corpus**
+        will be shuffled and the specified part of it stored as a test corpus.
 
-        **seed** (`int`): init value for the random number generator if you
-        need reproducibility. Used only if test is not `None`.
+        **seed** (`int`; default is `None`): the init value for the random
+        number generator if you need reproducibility. Only used if test is not
+        `None`.
         """
         args, kwargs = junky.get_func_params(BaseTagger.load_train_corpus,
                                              locals())
@@ -280,14 +281,15 @@ class BaseTagger(BaseParser):
 
         Args:
 
-        **name**: a name to save with.
+        **name**: the name to save with.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
 
-        The method creates a directory **name** that contains 5 files: two for
-        the tagger's model (`model.config.json` and `model.pt`) and two for
-        its dataset (`ds.config.json` and `ds.pt`). The 5th file
-        (`cdict.pickle`) is an internal state of
+        The method creates the directory **name** that contains 5 files: two
+        for the tagger's model (`model.config.json` and `model.pt`) and two
+        for its dataset (`ds.config.json` and `ds.pt`). The 5th file
+        (`cdict.pickle`) is an internal state of the
         [`corpuscula.CorpusDict`](https://github.com/fostroll/corpuscula/blob/master/doc/README_CDICT.md)
         object that is used by the tagger as a helper.
 
@@ -307,25 +309,27 @@ class BaseTagger(BaseParser):
 
     def load(self, model_class, name, device=None,
              dataset_emb_path=None, dataset_device=None, log_file=LOG_FILE):
-        """Loads tagger's internal state saved by its `.save()` method.
+        """Loads the tagger's internal state saved by its `.save()` method.
 
         Args:
 
-        **model_class**: a class of the model used for prediction. Must be
-        descendant of `BaseTaggerModel` class.
+        **model_class**: the class of the model used for prediction. Must be
+        descendant of the `BaseTaggerModel` class.
 
-        **name** (`str`): name of the previously saved internal state.
+        **name** (`str`): the name of the previously saved internal state.
 
-        **device**: a device for the loaded model if you want to override
-        the value from config.
+        **device** (`str`; default is `None`): the device for the loaded model
+        if you want to override the value from the config.
 
-        **dataset_emb_path**: a path where dataset's embeddings to load from
-        if you want to override the value from config.
+        **dataset_emb_path** (`str`; default is `None`): the path where the
+        dataset's embeddings to load from if you want to override the value
+        from the config.
 
-        **dataset_device**: a device for the loaded dataset if you want to
-        override the value from config.
+        **dataset_device** (`str`; default is `None`): the device for the
+        loaded dataset if you want to override the value from the config.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
         """
         self._load_dataset(name, emb_path=dataset_emb_path,
                            device=dataset_device, log_file=log_file)
@@ -360,46 +364,49 @@ class BaseTagger(BaseParser):
     def predict(self, field, add_fields, corpus, use_cdict_coef=False,
                 with_orig=False, batch_size=BATCH_SIZE, split=None,
                 clone_ds=False, save_to=None, log_file=LOG_FILE):
-        """Predicts tags in the specified fields for the corpus.
+        """Predicts tags for the specified fields of the corpus.
 
         Args:
 
         **field** and **add_field** must be the same that were used in the
         `.train()` method.
 
-        **corpus**: a corpus which will be used for feature extraction and
-        predictions. May be either a name of the file in *CoNLL-U* format or
-        list/iterator of sentences in *Parsed CoNLL-U*.
+        **corpus**: the corpus which will be used for the feature extraction
+        and predictions. May be either the name of the file in *CoNLL-U*
+        format or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-        **use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
-        prediction only. Elsewise, we replace our prediction to the value
-        returned by the `corpuscula.CorpusDict.predict_<field>()` method if
-        its `coef` >= `.99`. Also, you may specify your own threshold as the
-        value of the param.
+        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+        we use our prediction only. If `True`, we replace our prediction to
+        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+        method if its `coef` >= `.99`. Also, you can specify your own
+        threshold as the value of the param.
 
-        **with_orig** (`bool`): if `True`, instead of only a sequence with
-        predicted labels, returns a sequence of tuples where the first element
-        is a sentence with predicted labels and the second element is original
-        sentence. `with_orig` can be `True` only if `save_to` is `None`.
-        Default `with_orig=False`.
+        **with_orig** (`bool`; default is `False`): if `True`, instead of just
+        the sequence with predicted labels, return the sequence of tuples
+        where the first element is the sentence with predicted labels and the
+        second element is the original sentence. **with_orig** can be `True`
+        only if **save_to** is `None`.
 
-        **batch_size** (`int`): number of sentences per batch. Default
-        `batch_size=64`.
+        **batch_size** (`int`; default is `64`): the number of sentences per
+        batch.
 
-        **split** (`int`): number of lines in each split. Allows to process a
-        large dataset in pieces ("splits"). Default `split=None`, i.e. process
-        full dataset without splits.
+        **split** (`int`; default is `None`): the number of lines in sentences
+        split. Allows to process a large dataset in pieces ("splits"). If
+        **split** is `None` (default), all the dataset is processed without
+        splits.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and
-        transformed. If `False`, `transform_collate` is used without cloning
-        the dataset. There is no big differences between the variants. Both
-        should produce identical results.
+        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+        cloned and transformed. If `False`, `transform_collate` is used
+        without cloning the dataset. There is no big differences between the
+        variants. Both should produce identical results.
 
-        **save_to**: file name where the predictions will be saved.
+        **save_to** (`str`; default is `None`): the file name where the
+        predictions will be saved.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
 
-        Returns corpus with tag predictions in the specified field.
+        Returns the **corpus** with tag predictions in the specified field.
         """
         assert self._ds is not None, \
                "ERROR: The tagger doesn't have a dataset. Call the train() " \
@@ -499,41 +506,43 @@ class BaseTagger(BaseParser):
 
         **field** must be the same that was used in the `.train()` method.
 
-        **gold**: a corpus of sentences with actual target values to score the
-        tagger on. May be either a name of the file in *CoNLL-U* format or
-        list/iterator of sentences in *Parsed CoNLL-U*.
+        **gold**: the corpus of sentences with actual target values to score
+        the tagger on. May be either the name of the file in *CoNLL-U* format
+        or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-        **test**: a corpus of sentences with predicted target values. If
-        `None`, the **gold** corpus will be retagged on-the-fly, and the
-        result will be used **test**.
+        **test** (default is `None`): the corpus of sentences with predicted
+        target values. If `None` (default), the **gold** corpus will be
+        retagged on-the-fly, and the result will be used as the **test**.
 
-        **feats** (`str|list([str])`): one or several subfields of the
-        key-value type fields like `FEATS` or `MISC` to be evaluated.
+        **feats** (`str | list([str])`; default is `None`): one or several
+        subfields of the key-value type fields like `FEATS` or `MISC` to be
+        evaluated separatedly.
 
-        **label** (`str`): specific label of the target field to be evaluated,
-        e.g. `field='UPOS', label='VERB'` or
-        `field='FEATS:Animacy', label='Inan'`. Note that to evaluate key-value
-        type fields like `FEATS` or `MISC`.
+        **label** (`str`; default is `None`): the specific label of the target
+        field to be evaluated separatedly, e.g. `field='UPOS', label='VERB'`
+        or `field='FEATS:Animacy', label='Inan'`.
 
-        **use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
-        prediction only. Elsewise, we replace our prediction to the value
-        returned by the `corpuscula.CorpusDict.predict_<field>()` method if
-        its `coef` >= `.99`. Also, you may specify your own threshold as the
-        value of the param. Relevant if **test** is not `None`.
+        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+        we use our prediction only. If `True`, we replace our prediction to
+        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+        method if its `coef` >= `.99`. Also, you can specify your own
+        threshold as the value of the param.
 
-        **batch_size** (`int`): number of sentences per batch. Default
-        `batch_size=64`.
+        **batch_size** (`int`; default is `64`): the number of sentences per
+        batch.
 
-        **split** (`int`): number of lines in each split. Allows to process a
-        large dataset in pieces ("splits"). Default `split=None`, i.e. process
-        full dataset without splits.
+        **split** (`int`; default is `None`): the number of lines in sentences
+        split. Allows to process a large dataset in pieces ("splits"). If
+        **split** is `None` (default), all the dataset is processed without
+        splits.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and
-        transformed. If `False`, `transform_collate` is used without cloning
-        the dataset. There is no big differences between the variants. Both
-        should produce identical results.
+        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+        cloned and transformed. If `False`, `transform_collate` is used
+        without cloning the dataset. There is no big differences between the
+        variants. Both should produce identical results.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
 
         **\*\*ext_predict_kwargs**: extended keyword arguments for the
         `.predict()` method. Will be passed as is.
@@ -766,8 +775,6 @@ class BaseTagger(BaseParser):
               batch_size=TRAIN_BATCH_SIZE, control_metric='accuracy',
               max_grad_norm=None, tags_to_remove=None,
               word_emb_type='bert', word_emb_path=None,
-              word_emb_tune_params=None,
-                  # {'save_as': None, 'max_epochs': 3, 'batch_size': 8}
               word_transform_kwargs=None,
                   # BertDataset.transform() (for BERT-descendant models)
                   # params:
@@ -777,7 +784,19 @@ class BaseTagger(BaseParser):
                   #  'loglevel': 1}
                   # WordDataset.transform() (for other models) params:
                   # {'check_lower': True}
-              stages=[1, 2, 3, 1, 2], load_from=None, save_stages=False,
+              stage1_params=None,
+                  # {'lr': .0001, 'betas': (0.9, 0.999), 'eps': 1e-8,
+                  #  'weight_decay': 0, 'amsgrad': False}
+              stage2_params=None,
+                  # {'lr': .001, 'momentum': .9, 'weight_decay': 0,
+                  #  'dampening': 0, 'nesterov': False}
+              stage3_params=None,
+                  # {'save_as': None, 'max_epochs': 3, 'batch_size': 8,
+                  #  'lr': 3e-5, 'betas': (0.9, 0.999), 'eps': 1e-8,
+                  #  'weight_decay': .01, 'amsgrad': False,
+                  #  'num_warmup_steps': 0}
+              stages=[1, 2, 3, 1, 2], save_stages=False, load_from=None,
+              learn_on_padding=True, remove_padding_intent=False,
               seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
               **model_kwargs):
         """Creates and trains the tagger model.
@@ -790,103 +809,136 @@ class BaseTagger(BaseParser):
         *Training's args*:
 
         **field** (`str`): the name of the field which needs to be predicted
-        by the training tagger. May contain up to 3 elements, separated by a
+        by the training tagger. May contain up to 3 elements, separated by the
         colon (`:`). Format is:
         `'<field name>:<feat name>:<replacement for None>'`. The replacement
-        is used during the training time as a filler for a fields without a
-        value for that we could predict them, too. In the *CoNLL-U* format the
-        replacer is `'_'` sign, so we use it, too, as a default replacement.
-        You'll hardly have a reason to change it. Examples:<br/>
+        is used during the training time as a filler for the fields without a
+        value for that we could predict them, too. In the *CoNLL-U* format,
+        the replacement is the `'_'` sign, so we use it as the default
+        replacement. You hardly have a reason to change it. Examples:<br/>
         `'UPOS'` - predict the *UPOS* field;<br/>
         `'FEATS:Animacy'` - predict only the *Animacy* feat of the *FEATS*
         field;<br/>
-        `'FEATS:Animacy:_O'` - likewise the above, but if feat value is
+        `'FEATS:Animacy:_O'` - likewise the above, but if the feat value is
         `None`, it will be replaced by `'_O'` during training;<br/>
-        `'XPOS::_O'` - predict the *XPOS* field and use `'_O'` as replacement
-        for `None`.
+        `'XPOS::_O'` - predict the *XPOS* field and use `'_O'` as the
+        replacement for `None`.
 
-        **add_fields** (`None|str|list([str])`): any auxiliary fields to use
-        with the *FORM* field for predictions. If `None`, only *FORM* field is
-        used for predictions. To use additional fields for predicitons, pass a
-        field name (e.g. `'UPOS'`) or a list of field names (e.g. `['UPOS',
+        **add_fields** (`None` | `str` | `list([str])`): any auxiliary fields
+        to use along with the *FORM* field for the prediction. If `None`, only
+        the *FORM* field is used. To use additional fields, pass the field
+        name (e.g. `'UPOS'`) or the `list` of field names (e.g. `['UPOS',
         'LEMMA']`). These fields are included in the dataset. The format of
-        each element of **add_fields** is equal to the **field** format.
+        each element of the **add_fields** is equal to the **field** format.
 
-        **model_class**: a class of the model used for prediction. Must be
-        descendant of `BaseTaggerModel` class.
+        **model_class**: the class of the model using for the prediction. Must
+        be a descendant of the `BaseTaggerModel` class.
 
         **tag_emb_names** (`str|list([str])`): prefixes of the model args,
-        using instead of `tag_emb_params` `dict` of the `BaseTaggerModel`
-        class. Each name refers to the corresponding field in the
-        **add_fields** arg. You have to look into sources of the descendant
-        classess included to the project if you really want to make sense of
-        it.
+        using instead of the **tag_emb_params** `dict` in the
+        `BaseTaggerModel` class. Each name refers to the corresponding field
+        in the **add_fields** arg. You have to look into sources of the
+        descendant classess if you really want to make sense of it.
 
         **save_as** (`str`): the name using for save. Refer to the `.save()`
         method's help for the broad definition (see the **name** arg there).
 
-        **device**: device for the model. E.g.: 'cuda:0'.
+        **device** (`str`, default is `None`): the device for the model. E.g.:
+        'cuda:0'. If `None`, we don't move the model to any device (it is
+        placed right where it's created).
 
-        **epochs** (`int`): number of epochs to train. If `None` (default),
-        train until `bad_epochs` is met, but no less than `min_epochs`.
+        **max_epochs** (`int`; default is `None`): the maximal number of
+        epochs of the training. If `None` (default), the training would be
+        linger until **bad_epochs** has met, but no less than **min_epochs**.
 
-        **min_epochs** (`int`): minimum number of training epochs. Default is
-        `0`
+        **min_epochs** (`int`; default is `0`): the minimal number of training
+        epochs.
 
-        **bad_epochs** (`int`): maximum allowed number of bad epochs (epochs
-        when selected **control_metric** is became not better) in a row.
-        Default is `5`.
+        **bad_epochs** (`int`; default is `5`): the maximal allowed number of
+        bad epochs (epochs when chosen **control_metric** is not became
+        better) in a row.
 
-        **batch_size** (`int`): number of sentences per batch. For training,
-        default `batch_size=32`.
+        **batch_size** (`int`; default is `32`): the number of sentences per
+        batch when training the model's head.
 
-        **control_metric** (`str`): metric to control training. Any that is
-        supported by the `junky.train()` method. In the moment it is:
-        'accuracy', 'f1' and 'loss'. Default `control_metric=accuracy`.
+        **control_metric** (`str`; default is `accuracy`): the metric that
+        control training. Any that is supported by the `junky.train()` method.
+        In the moment, it is: 'accuracy', 'f1', 'loss', 'precision', and
+        'recall'.
 
-        **max_grad_norm** (`float`): gradient clipping parameter, used with
-        `torch.nn.utils.clip_grad_norm_()`.
+        **max_grad_norm** (`float`; default is `None`): the gradient clipping
+        parameter when training the model's head.
 
-        **tags_to_remove** (`dict({str: str})|dict({str: list([str])})`):
-        tags, tokens with those must be removed from the corpus. It's a `dict`
-        with field names as keys and with value you want to remove. Applied
-        only to fields with atomic values (like UPOS). This argument may be
-        used, for example, to remove some infrequent or just excess tags from
-        the corpus. Note, that we remove the tokens from the train corpus as a
-        whole, not just replace those tags to `None`.
+        **tags_to_remove** (`dict({str: str}) | dict({str: list([str])})`;
+        default is `None`): the tags, tokens with those must be removed from
+        the corpus. It's the `dict` with field names as keys and values you
+        want to remove. Applied only to fields with atomic values (like
+        *UPOS*). This argument may be used, for example, to remove some
+        infrequent or just excess tags from the corpus. Note, that we remove
+        the tokens from the train corpus completely, not just replace those
+        tags to `None`.
 
         *Word embedding params*:
 
-        **word_emb_type** (`str`): one of ('bert'|'glove'|'ft'|'w2v') embedding
-        types.
+        **word_emb_type** (`str`; default is `'bert'`): one of (`'bert'` |
+        `'glove'` | `'ft'` | `'w2v'`) embedding types.
 
-        **word_emb_model_device**: the torch device where the model of word
-        embeddings are placed. Relevant only with embedding types, models of
-        which use devices (currently, only 'bert'). `None` means
-        **word_emb_model_device** = **device**
+        **word_emb_path** (`str`): the path to the word embeddings storage.
 
-        **word_emb_path** (`str`): path to word embeddings storage.
+        **word_transform_kwargs** (`dict`; default is `None`): keyword
+        arguments for the `.transform()` method of the dataset created for
+        sentences to word embeddings conversion. See the `.transform()` method
+        of either `junky.datasets.BertDataset` (if **word_emb_path** is
+        `'bert'`) or `junky.datasets.WordDataset` (otherwise) if you want to
+        learn allowed values for the parameter. If `None`, the `.transform()`
+        method use its defaults.
 
-        **word_emb_tune_params**: parameters for word embeddings finetuning.
-        For now, only BERT embeddings finetuning is supported with
-        `mordl.WordEmbeddings.bert_tune()`. So, **word_emb_tune_params** is a
-        `dict` of keyword args for this method. You can replace any except
-        `test_data`.
+        *Training stages params*:
 
-        **word_transform_kwargs** (`dict`): keyword arguments for
-        `.transform()` method of the dataset created for sentences to word
-        embeddings conversion. See the `.transform()` method of
-        `junky.datasets.BertDataset` for the the description of the
-        parameters.
+        **stage1_param** (`dict`; default is `None`): keyword arguments for
+        the `BaseModel.adjust_model_for_train()` method. If `None`, the
+        defaults are used.
 
-        **word_next_emb_params**: if you want to use several different
-        embedding models at once, pass parameters of the additional model as a
-        dictionary with keys `(emb_path, emb_model_device, transform_kwargs)`;
-        or a list of such dictionaries if you need more than one additional
-        model.
+        **stage2_param** (`dict`; default is `None`): keyword arguments for
+        the `BaseModel.adjust_model_for_tune()` method. If `None`, the
+        defaults are used.
+
+        **stage3_param** (`dict`; default is `None`): keyword arguments for
+        the `WordEmbeddings._full_tune()` method. If `None`, the defaults are
+        used.
+
+        **stages** (`list([int]`; default is `[1, 2, 3, 1, 2]`): what stages
+        we should use during training and in which order. On the stage `1` the
+        model head is trained with *Adam* optimizer; the stage `2` is similar,
+        but the optimizer is *SGD*; stage `3` is only relevant when
+        **word_emb_type** is `'bert'` and we want to tune the whole model.
+        Stage `0` defines the skip-stage, i.e. there would be no real training
+        on it. It is used when you need reproducibility and want to continue
+        train the model from some particular stage. In this case, you specify
+        the name of the model saved on that stage in the parametere
+        **load_from**, and put zeros into the **stages** list on the places of
+        already finished ones. One more time: it is used for reproducibility
+        only, i.e. when you put some particular value to the **seed** param
+        and want the data order in bathes be equivalent with data on the
+        stages from the past trainings.
+
+        **save_stages** (`bool`; default is `False`): if we need to keep the
+        best model of each stage beside of the overall best model. The names
+        of these models would have the suffix `_<idx>(stage<stage_type>)`
+        where `<idx>` is an ordinal number of the stage. We can then use it to
+        continue training from any particular stage number (changing next
+        stages or their parameters) using the parameter **load_from**. Note
+        that we save only stages of the head model. The embedding model as a
+        part of the full model usually tune only once, so we don't make its
+        copy.
+
+        **load_from** (`str`; default is `None`): if you want to continue
+        training from one of previously saved stages, you can specify the name
+        of the model from that stage.
 
         *Other options*:
 
+        **learn_on_padding** (`bool`; default is `True`)
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.
 
@@ -896,9 +948,10 @@ class BaseTagger(BaseParser):
         **keep_embs**: by default, after creating `Dataset` objects, we remove
         word embedding models to free memory. With `keep_embs=False` this
         operation is omitted, and you can use `.embs` attribute for share
-        embeddings models with other objects.
+        embedding models with other objects.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
 
         **\*\*model_kwargs**: keyword arguments for the model creating. Will
         be passed as is to the **model_class** constructor.
@@ -906,6 +959,9 @@ class BaseTagger(BaseParser):
         The method returns the train statistics.
         """
         assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
+        assert not (learn_on_padding and remove_padding_intent), \
+            'ERROR: Either `learn_on_padding` or `remove_padding_intent` ' \
+            'must be `False`.'
 
         if seed:
             junky.enforce_reproducibility(seed=seed)
@@ -944,7 +1000,8 @@ class BaseTagger(BaseParser):
                 _, model_fn_, _, _, _ = \
                    self._get_filenames(load_from)
                 model.load_state_dict(model_fn_, log_file=log_file)
-            criterion, optimizer, scheduler = model.adjust_model_for_train()
+            criterion, optimizer, scheduler = \
+                model.adjust_model_for_train(stage1_params)
             best_epoch, best_score = (res['best_epoch'], res['best_score']) \
                                          if res else \
                                      (0, None)
@@ -999,7 +1056,8 @@ class BaseTagger(BaseParser):
                 _, model_fn_, _, _, _ = \
                    self._get_filenames(load_from)
                 model.load_state_dict(model_fn_, log_file=log_file)
-            criterion, optimizer, scheduler = model.adjust_model_for_tune()
+            criterion, optimizer, scheduler = \
+                model.adjust_model_for_tune(**stage2_params)
             best_epoch, best_score = (res['best_epoch'], res['best_score']) \
                                          if res else \
                                      (0, None)
@@ -1087,7 +1145,7 @@ class BaseTagger(BaseParser):
                             best_score=best_score,
                             control_metric=control_metric,
                             transform_kwargs=word_transform_kwargs,
-                            log_file=log_file, **emb_tune_params  # save_as=None, max_epochs=3, batch_size=8
+                            log_file=log_file, **stage3_params
                         )
                     else:
                         raise ValueError(f"ERROR: Tune method for '{emb_type}' "
@@ -1210,11 +1268,13 @@ class BaseTagger(BaseParser):
 
             ds_ = ds_train.get_dataset('y')
             model_args = [len(ds_.transform_dict)]
-            if hasattr(ds_, 'pad'):
+            if hasattr(ds_, 'pad') and not learn_on_padding:
                 model_kwargs['labels_pad_idx'] = ds_.pad
             if word_emb_type:
                 ds_ = ds_train.get_dataset('x')
-                model_kwargs['vec_emb_dim'] = ds_.vec_size
+                model_kwargs['vec_emb_dim'] = \
+                    ds_.vec_size - 1 if remove_padding_intent else \
+                    ds_.vec_size
             if model_kwargs.get('rnn_emb_dim') \
             or model_kwargs.get('cnn_emb_dim'):
                 ds_ = ds_train.get_dataset('x_ch')

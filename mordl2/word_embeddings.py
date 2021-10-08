@@ -69,6 +69,8 @@ class WordEmbeddings:
                    datasets, sents_data, best_score=None,
                    # word_emb_tune_params ##################
                    save_as=None, max_epochs=3, batch_size=8,
+                   lr=3e-5, betas=(0.9, 0.999), eps=1e-8,
+                   weight_decay=.01, amsgrad=False, num_warmup_steps=0,
                    #########################################
                    control_metric='accuracy', transform_kwargs=None,
                        # BertDataset.transform() # params:
@@ -250,9 +252,8 @@ class WordEmbeddings:
             {'params': list(full_model.model_head.parameters())}
         )
 
-        optimizer = AdamW(optimizer_grouped_parameters, lr=3e-5,
-                          betas=(0.9, 0.999), eps=1e-8, weight_decay=0.01,
-                          amsgrad=False)
+        optimizer = AdamW(optimizer_grouped_parameters, lr=lr, betas=betas,
+                          eps=eps, weight_decay=weight_decay, amsgrad=amsgrad)
 
         grad_norm_clip = 1.
 
@@ -264,7 +265,8 @@ class WordEmbeddings:
         scheduler = get_linear_schedule_with_warmup(
         # scheduler = get_cosine_schedule_with_warmup(
             optimizer,
-            num_warmup_steps=0,
+            num_warmup_steps=num_warmup_steps if num_warmup_steps >= 1 else
+                             num_warmup_steps * total_steps,
             num_training_steps=total_steps
         )
 
