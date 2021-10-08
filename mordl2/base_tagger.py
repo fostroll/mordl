@@ -1180,54 +1180,41 @@ class BaseTagger(BaseParser):
                                          if res else \
                                      (0, None)
 
-            def tune_word_emb(emb_type, best_score=None,
-                              emb_tune_params=None):
+            def tune_word_emb(emb_type, best_score=None):
                 res = None
-                if not emb_tune_params:
-                    emb_tune_params = {}
-                elif isinstance(emb_tune_params, str):
-                    emb_tune_params = {'save_as': emb_tune_params}
-                if isinstance(emb_tune_params, dict):
-                    if emb_type == 'bert':
-                        emb_path = emb_tune_params['save_as'] \
-                                       if 'save_as' in emb_tune_params else \
-                                   bert_header
+                if emb_type == 'bert':
+                    if stage3_params is None:
+                        stage3_params = {}
+                    if 'save_as' not in stage3_params:
+                        stage3_params['save_as'] = bert_header
 
-                        def model_save_method(_):
-                            config = getattr(self._ds.get_dataset('x'),
-                                             CONFIG_ATTR)
-                            config['emb_path'] = emb_path
-                            self._save_dataset(save_to)
-                            self._save_cdict(cdict_fn)
-                            model.save_config(model_config_fn, log_file=log_file)
-                            model.save_state_dict(model_fn, log_file=log_file)
+                    def model_save_method(_):
+                        config = getattr(self._ds.get_dataset('x'),
+                                         CONFIG_ATTR)
+                        config['emb_path'] = stage3_params['save_as']
+                        self._save_dataset(save_to)
+                        self._save_cdict(cdict_fn)
+                        model.save_config(model_config_fn, log_file=log_file)
+                        model.save_state_dict(model_fn, log_file=log_file)
 
-                        res = WordEmbeddings._full_tune(
-                            model, save_to, model_save_method,
-                            (ds_train, ds_test),
-                            (train[0], test[0]) if test else train[0],
-                            best_score=best_score,
-                            control_metric=control_metric,
-                            transform_kwargs=word_transform_kwargs,
-                            log_file=log_file, **(stage3_params
-                                                      if stage3_params else
-                                                  {})
-                        )
-                    else:
-                        raise ValueError(
-                           f"ERROR: Tune method for '{emb_type}' "
-                            'embeddings is not implemented'
-                        )
-                else:
-                    raise TypeError(
-                        'ERROR: emb_tune_params is of incorrect type. '
-                        'It can be either dict, str or None.'
+                    res = WordEmbeddings._full_tune(
+                        model, save_to, model_save_method,
+                        (ds_train, ds_test),
+                        (train[0], test[0]) if test else train[0],
+                        best_score=best_score,
+                        control_metric=control_metric,
+                        transform_kwargs=word_transform_kwargs,
+                        log_file=log_file, **(stage3_params
+                                                  if stage3_params else
+                                              {})
                     )
+                else:
+                    raise ValueError(f"ERROR: Tune method for '{emb_type}' "
+                                      'embeddings is not implemented')
                 return res
 
             change_load_from = False
-            res_ = tune_word_emb(word_emb_type, best_score=best_score,
-                                 emb_tune_params=word_emb_tune_params)
+            res_ = tune_word_emb(word_emb_type, best_score=best_score)
             if res_ and res_['best_epoch'] is not None:
                 change_load_from = True
                 if save_to2 and save_to2 != save_to:
