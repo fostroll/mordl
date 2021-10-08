@@ -908,19 +908,19 @@ class BaseTagger(BaseParser):
         used.
 
         **stages** (`list([int]`; default is `[1, 2, 3, 1, 2]`): what stages
-        we should use during training and in which order. On the stage `1` the
-        model head is trained with *Adam* optimizer; the stage `2` is similar,
-        but the optimizer is *SGD*; stage `3` is only relevant when
-        **word_emb_type** is `'bert'` and we want to tune the whole model.
-        Stage `0` defines the skip-stage, i.e. there would be no real training
-        on it. It is used when you need reproducibility and want to continue
-        train the model from some particular stage. In this case, you specify
-        the name of the model saved on that stage in the parametere
-        **load_from**, and put zeros into the **stages** list on the places of
-        already finished ones. One more time: it is used for reproducibility
-        only, i.e. when you put some particular value to the **seed** param
-        and want the data order in bathes be equivalent with data on the
-        stages from the past trainings.
+        we should use during training and in which order. On the stage type
+        `1` the model head is trained with *Adam* optimizer; the stage type
+        `2` is similar, but the optimizer is *SGD*; the stage type `3` is only
+        relevant when **word_emb_type** is `'bert'` and we want to tune the
+        whole model. Stage type `0` defines the skip-stage, i.e. there would
+        be no real training on it. It is used when you need reproducibility
+        and want to continue train the model from some particular stage. In
+        this case, you specify the name of the model saved on that stage in
+        the parametere **load_from**, and put zeros into the **stages** list
+        on the places of already finished ones. One more time: it is used for
+        reproducibility only, i.e. when you put some particular value to the
+        **seed** param and want the data order in bathes be equivalent with
+        data on the stages from the past trainings.
 
         **save_stages** (`bool`; default is `False`): if we need to keep the
         best model of each stage beside of the overall best model. The names
@@ -934,7 +934,19 @@ class BaseTagger(BaseParser):
 
         **load_from** (`str`; default is `None`): if you want to continue
         training from one of previously saved stages, you can specify the name
-        of the model from that stage.
+        of the model from that stage. Note, that if your model is already
+        trained on stage type `3`, then you want to set param
+        **word_emb_path** to `None`. Otherwise, you'll load wrong embedding
+        model. Any other params of the model may be overwritten (and most
+        likely, this would cause error), but they are equivalent when the
+        training is just starts and when it's continues. But the
+        **word_emb_path** is different if you already passed stage type `3`,
+        so don't forget to set it to `None` in that case. (Example: you want
+        to repeat training on stage no `5`, so you specify in the
+        **load_from** param something like `'model_4(stage1)'` and set the
+        **word_emb_path** to `None` and the **stages_param** to
+        `'[0, 0, 0, 0, 2]'` (or, if you don't care of reproducibility, you
+        could just specify `[2]` here).
 
         *Other options*:
 
@@ -948,10 +960,13 @@ class BaseTagger(BaseParser):
         **learn_on_padding** param to `False`, you may want not to use padding
         intent during training at all. I.e. padding tokens would be tagged
         with some of real tags, and they would just ignored during computing
-        loss. As result, the model would have the dimensionality of 
+        loss. As a result, the model would have the output dimensionality of
+        the final layer less by one. Theoretically, it could increase the
+        performance, but in our experiments, we have not seen such effect.
 
         **seed** (`int`): init value for the random number generator if you
-        need reproducibility.
+        need reproducibility. Note that each stage will have its own seed
+        value, and the **seed** param is used to calculate these values.
 
         **start_time** (`float`): result of `time.time()` to start with. If
         `None` (default), the arg will be init anew.
