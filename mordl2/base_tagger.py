@@ -945,7 +945,10 @@ class BaseTagger(BaseParser):
         resulting model performance slightly better.
 
         **remove_padding_intent** (`bool`; default is `False`): if you set
-        **learn_on_padding** param to `False`, 
+        **learn_on_padding** param to `False`, you may want not to use padding
+        intent during training at all. I.e. padding tokens would be tagged
+        with some of real tags, and they would just ignored during computing
+        loss. As result, the model would have the dimensionality of 
 
         **seed** (`int`): init value for the random number generator if you
         need reproducibility.
@@ -1010,7 +1013,7 @@ class BaseTagger(BaseParser):
                 model.load_state_dict(model_fn_, log_file=log_file)
             criterion, optimizer, scheduler = \
                 model.adjust_model_for_train(**(stage1_params
-                                                    if stage_params else
+                                                    if stage1_params else
                                                 {}))
             best_epoch, best_score = (res['best_epoch'], res['best_score']) \
                                          if res else \
@@ -1068,7 +1071,7 @@ class BaseTagger(BaseParser):
                 model.load_state_dict(model_fn_, log_file=log_file)
             criterion, optimizer, scheduler = \
                 model.adjust_model_for_tune(**(stage2_params
-                                                   if stage_params else
+                                                   if stage2_params else
                                                {}))
             best_epoch, best_score = (res['best_epoch'], res['best_score']) \
                                          if res else \
@@ -1158,7 +1161,7 @@ class BaseTagger(BaseParser):
                             control_metric=control_metric,
                             transform_kwargs=word_transform_kwargs,
                             log_file=log_file, **(stage3_params
-                                                      if stage_params else
+                                                      if stage3_params else
                                                   {})
                         )
                     else:
