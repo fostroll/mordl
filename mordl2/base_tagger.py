@@ -1041,7 +1041,8 @@ class BaseTagger(BaseParser):
                                      'batch_size', 'max_grad_norm'],
                                     [max_epochs, min_epochs, bad_epochs,
                                      batch_size, max_grad_norm]):
-                value_ = stage1_params.pop(param, None)
+                value_ = \
+                    stage1_params.pop(param, None) if stage1_params else None
                 train_params['epochs' if param == 'max_epochs' else param] = \
                     value_ if value_ is not None else value
 
@@ -1109,7 +1110,8 @@ class BaseTagger(BaseParser):
                                      'batch_size', 'max_grad_norm'],
                                     [max_epochs, min_epochs, bad_epochs,
                                      batch_size, max_grad_norm]):
-                value_ = stage2_params.pop(param, None)
+                value_ = \
+                    stage2_params.pop(param, None) if stage2_params else None
                 train_params['epochs' if param == 'max_epochs' else param] = \
                     value_ if value_ is not None else value
 

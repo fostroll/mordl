@@ -89,21 +89,24 @@ class WordEmbeddings:
 
         **model**: the head model using after BERT.
 
-        **model_save_as**: the path where the head model will be stored.
+        **model_save_as** (`str`): the path where the head model will be
+        stored.
 
         **model_save_method**: the method using to save the model head. The
-        signature: `model_save_method(model_save_as).
+        signature: `model_save_method(model_save_as)`.
 
-        **train_sentences**: sequence of already tokenized sentences (of the
-        `list([str])` format) that will be used to train the model.
+        **datasets**: the train and test datasets
 
-        **train_labels**: list of labels (of `str`) that will be used to
+        **train_sentences**: the sequence of already tokenized sentences (of
+        the `list([str])` format) that will be used to train the model.
+
+        **train_labels**: the `list` of labels (of `str`) that will be used to
         train the model.
 
-        **test_data** (`tuple(<sentences>, <labels>)`): development test set to
-        validate the model during training.
+        **test_data** (`tuple(<sentences>, <labels>)`): the development test
+        set to validate the model during training.
 
-        **model_name** (`str`): pre-trained BERT model name or path to the
+        **model_name** (`str`): the pre-trained BERT model name or path to the
         model. Default `model_name='bert-base-multilingual-cased'`.
 
         **device**: device for the BERT model. Default device is CPU.
