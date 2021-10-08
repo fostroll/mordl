@@ -796,8 +796,8 @@ class BaseTagger(BaseParser):
                   #  'bad_epochs': None, 'batch_size': None,
                   #  'max_grad_norm': None}
               stage3_params=None,
-                  # {'save_as': None, 'max_epochs': 3, 'batch_size': 8,
-                  #  'lr': 3e-5, 'betas': (0.9, 0.999), 'eps': 1e-8,
+                  # {'save_as': None, 'epochs': 3, 'batch_size': 8,
+                  #  'lr': 5e-5, 'betas': (0.9, 0.999), 'eps': 1e-8,
                   #  'weight_decay': .01, 'amsgrad': False,
                   #  'num_warmup_steps': 0, 'max_grad_norm': 1.}
               stages=[1, 2, 3, 1, 2], save_stages=False, load_from=None,
@@ -1185,15 +1185,14 @@ class BaseTagger(BaseParser):
             def tune_word_emb(emb_type, best_score=None):
                 res = None
                 if emb_type == 'bert':
-                    if stage3_params is None:
-                        stage3_params = {}
-                    if 'save_as' not in stage3_params:
-                        stage3_params['save_as'] = bert_header
+                    params = {} stage3_params is None else stage3_params
+                    if 'save_as' not in params:
+                        params['save_as'] = bert_header
 
                     def model_save_method(_):
                         config = getattr(self._ds.get_dataset('x'),
                                          CONFIG_ATTR)
-                        config['emb_path'] = stage3_params['save_as']
+                        config['emb_path'] = params['save_as']
                         self._save_dataset(save_to)
                         self._save_cdict(cdict_fn)
                         model.save_config(model_config_fn, log_file=log_file)
@@ -1203,10 +1202,8 @@ class BaseTagger(BaseParser):
                         model, save_to, model_save_method,
                         (ds_train, ds_test),
                         (train[0], test[0]) if test else train[0],
-                        best_score=best_score,
-                        control_metric=control_metric,
-                        **(stage3_params if stage3_params else {}),
-                        transform_kwargs=word_transform_kwargs,
+                        control_metric=control_metric, best_score=best_score,
+                        **params, transform_kwargs=word_transform_kwargs,
                         seed=None, log_file=log_file
                             # we've already initialized seed earlier
                     )
