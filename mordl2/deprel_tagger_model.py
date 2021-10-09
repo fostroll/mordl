@@ -91,7 +91,7 @@ class DeprelTaggerModel(BaseTaggerSequenceModel):
     **post_do** (`float`; default is '.4'): the dropout rate after the main
     part of the algorithm.
     """
-    def __init__(self, num_labels, labels_pad_idx=None, vec_emb_dim=None,
+    def __init__(self, num_labels, labels_pad_idx=-100, vec_emb_dim=None,
                  alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,
                  cnn_emb_dim=None, cnn_kernels=[1, 2, 3, 4, 5, 6],
                  upos_emb_dim=300, upos_num=0, upos_pad_idx=0,
