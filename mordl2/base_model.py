@@ -185,7 +185,8 @@ class BaseModel(nn.Module):
         return model
 
     def adjust_model_for_train(self, lr=.0001, betas=(0.9, 0.999), eps=1e-8,
-                               weight_decay=0, amsgrad=False):
+                               weight_decay=0, amsgrad=False,
+                               labels_pad_idx=-100):
         """Creates model, criterion, optimizer and scheduler for training.
         Adam optimizer is used to train the model.
 
@@ -193,8 +194,11 @@ class BaseModel(nn.Module):
 
         **lr**, **betas**, **eps**, **weight_decay**, **amsgrad**: the
         hyperparams for the torch.optim.Adam optimizer.
+
+        **labels_pad_idx** (`int`; default=-100): the index of padding element
+        in the label vocabulary.
         """
-        criterion = nn.CrossEntropyLoss()
+        criterion = nn.CrossEntropyLoss(ignore_index=labels_pad_idx)
         optimizer = torch.optim.Adam(
             self.parameters(), lr=lr, betas=betas, eps=eps,
             weight_decay=weight_decay, amsgrad=amsgrad
@@ -203,7 +207,8 @@ class BaseModel(nn.Module):
         return criterion, optimizer, scheduler
 
     def adjust_model_for_tune(self, lr=.001, momentum=.9, weight_decay=0,
-                              dampening=0, nesterov=False):
+                              dampening=0, nesterov=False,
+                              labels_pad_idx=-100):
         """Ajusts model for post-train finetuning. Optimizer is changed to
         SGD to finetune the model.
 
@@ -211,8 +216,11 @@ class BaseModel(nn.Module):
 
         **lr**, **momentum**, **weight_decay**, **dampening**, **nesterov**:
         the hyperparams for the torch.optim.SGD optimizer.
+
+        **labels_pad_idx** (`int`; default=-100): the index of padding element
+        in the label vocabulary.
         """
-        criterion = nn.CrossEntropyLoss()
+        criterion = nn.CrossEntropyLoss(ignore_index=labels_pad_idx)
         optimizer = torch.optim.SGD(
             self.parameters(), lr=lr, momentum=momentum,
             weight_decay=weight_decay, dampening=dampening, nesterov=nesterov

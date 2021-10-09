@@ -1036,23 +1036,28 @@ class BaseTagger(BaseParser):
             if seed:
                 junky.enforce_reproducibility(seed=seed)
 
+            stage1_params_ = deepcopy(stage1_params)
             train_params = {}
             for param, value in zip(['max_epochs', 'min_epochs', 'bad_epochs',
                                      'batch_size', 'max_grad_norm'],
                                     [max_epochs, min_epochs, bad_epochs,
                                      batch_size, max_grad_norm]):
-                value_ = \
-                    stage1_params.pop(param, None) if stage1_params else None
+                value_ = stage1_params_.pop(param, None) \
+                             if stage1_params_ else \
+                         None
                 train_params['epochs' if param == 'max_epochs' else param] = \
                     value_ if value_ is not None else value
+            ds_ = ds_train.get_dataset('y')
+            if hasattr(ds_, 'pad') and not learn_on_padding:
+                train_params['labels_pad_idx'] = ds_.pad
 
             if load_from:
                 _, model_fn_, _, _, _ = \
                    self._get_filenames(load_from)
                 model.load_state_dict(model_fn_, log_file=log_file)
             criterion, optimizer, scheduler = \
-                model.adjust_model_for_train(**(stage1_params
-                                                    if stage1_params else
+                model.adjust_model_for_train(**(stage1_params_
+                                                    if stage1_params_ else
                                                 {}))
             best_epoch, best_score = (res['best_epoch'], res['best_score']) \
                                          if res else \
@@ -1067,9 +1072,6 @@ class BaseTagger(BaseParser):
                 model.save_config(model_config_fn, log_file=log_file)
                 model.save_state_dict(model_fn, log_file=log_file)
 
-            ds_ = ds_train.get_dataset('y')
-            if hasattr(ds_, 'pad') and not learn_on_padding:
-                train_params['labels_pad_idx'] = ds_.pad
             change_load_from = False
             res_ = junky.train(
                 None, model, criterion, optimizer, scheduler,
@@ -1105,15 +1107,20 @@ class BaseTagger(BaseParser):
             if seed:
                 junky.enforce_reproducibility(seed=seed)
 
+            stage2_params_ = deepcopy(stage1_params)
             train_params = {}
             for param, value in zip(['max_epochs', 'min_epochs', 'bad_epochs',
                                      'batch_size', 'max_grad_norm'],
                                     [max_epochs, min_epochs, bad_epochs,
                                      batch_size, max_grad_norm]):
-                value_ = \
-                    stage2_params.pop(param, None) if stage2_params else None
+                value_ = stage2_params_.pop(param, None) \
+                             if stage2_params_ else \
+                         None
                 train_params['epochs' if param == 'max_epochs' else param] = \
                     value_ if value_ is not None else value
+            ds_ = ds_train.get_dataset('y')
+            if hasattr(ds_, 'pad') and not learn_on_padding:
+                train_params['labels_pad_idx'] = ds_.pad
 
             if load_from:
                 _, model_fn_, _, _, _ = \
@@ -1136,9 +1143,6 @@ class BaseTagger(BaseParser):
                 model.save_config(model_config_fn, log_file=log_file)
                 model.save_state_dict(model_fn, log_file=log_file)
 
-            ds_ = ds_train.get_dataset('y')
-            if hasattr(ds_, 'pad') and not learn_on_padding:
-                train_params['labels_pad_idx'] = ds_.pad
             change_load_from = False
             res_ = junky.train(
                 None, model, criterion, optimizer, scheduler,
