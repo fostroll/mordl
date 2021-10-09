@@ -1067,14 +1067,14 @@ class BaseTagger(BaseParser):
                 model.save_config(model_config_fn, log_file=log_file)
                 model.save_state_dict(model_fn, log_file=log_file)
 
+            ds_ = ds_train.get_dataset('y')
+            if hasattr(ds_, 'pad') and not learn_on_padding:
+                train_params['labels_pad_idx'] = ds_.pad
             change_load_from = False
             res_ = junky.train(
                 None, model, criterion, optimizer, scheduler,
                 best_model_backup_method, datasets=(ds_train, ds_test),
-                **train_params,
-                #epochs=max_epochs, min_epochs=min_epochs,
-                #bad_epochs=bad_epochs, batch_size=batch_size,
-                control_metric=control_metric,# max_grad_norm=max_grad_norm,
+                **train_params, control_metric=control_metric,
                 batch_to_device=False, best_score=best_score,
                 with_progress=log_file is not None, log_file=log_file
             )
@@ -1136,14 +1136,14 @@ class BaseTagger(BaseParser):
                 model.save_config(model_config_fn, log_file=log_file)
                 model.save_state_dict(model_fn, log_file=log_file)
 
+            ds_ = ds_train.get_dataset('y')
+            if hasattr(ds_, 'pad') and not learn_on_padding:
+                train_params['labels_pad_idx'] = ds_.pad
             change_load_from = False
             res_ = junky.train(
                 None, model, criterion, optimizer, scheduler,
                 best_model_backup_method, datasets=(ds_train, ds_test),
-                **train_params,
-                #epochs=max_epochs, min_epochs=min_epochs,
-                #bad_epochs=bad_epochs, batch_size=batch_size,
-                control_metric=control_metric,# max_grad_norm=max_grad_norm,
+                **train_params, control_metric=control_metric,
                 batch_to_device=False, best_score=best_score,
                 with_progress=log_file is not None, log_file=log_file
             )
