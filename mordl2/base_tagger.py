@@ -918,7 +918,7 @@ class BaseTagger(BaseParser):
         of type `2`.
 
         **stage3_param** (`dict`; default is `None`): keyword arguments for
-        the `WordEmbeddings._full_tune()` method. If `None`, the defaults are
+        the `WordEmbeddings.full_tune()` method. If `None`, the defaults are
         used.
 
         **stages** (`list([int]`; default is `[1, 2, 3, 1, 2]`): what stages
@@ -978,17 +978,18 @@ class BaseTagger(BaseParser):
         the final layer less by one. Theoretically, it could increase the
         performance, but in our experiments, we have not seen such effect.
 
-        **seed** (`int`): init value for the random number generator if you
-        need reproducibility. Note that each stage will have its own seed
-        value, and the **seed** param is used to calculate these values.
+        **seed** (`int`; default is `None`): init value for the random number
+        generator if you need reproducibility. Note that each stage will have
+        its own seed value, and the **seed** param is used to calculate these
+        values.
 
-        **start_time** (`float`): result of `time.time()` to start with. If
-        `None` (default), the arg will be init anew.
+        **start_time** (`float`; default is `None`): the result of
+        `time.time()` to start with. If `None`, the arg will be init anew.
 
-        **keep_embs**: by default, after creating `Dataset` objects, we remove
-        word embedding models to free memory. With `keep_embs=False` this
-        operation is omitted, and you can use `.embs` attribute for share
-        embedding models with other objects.
+        **keep_embs** (`bool`; default is `False`): by default, after creating
+        `Dataset` objects, we remove word embedding models to free memory. With
+        `keep_embs=False` this operation is omitted, and you can use `.embs`
+        attribute for share embedding models with other objects.
 
         **log_file** (`file`; default is `sys.stdout`): the stream for info
         messages.
@@ -1202,7 +1203,7 @@ class BaseTagger(BaseParser):
                         model.save_config(model_config_fn, log_file=log_file)
                         model.save_state_dict(model_fn, log_file=log_file)
 
-                    res = WordEmbeddings._full_tune(
+                    res = WordEmbeddings.full_tune(
                         model, save_to, model_save_method,
                         (ds_train, ds_test),
                         (train[0], test[0]) if test else train[0],

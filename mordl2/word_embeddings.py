@@ -65,24 +65,24 @@ class WordEmbeddings:
     """
 
     @staticmethod
-    def _full_tune(model, model_save_as, model_save_method,
-                   datasets, sents_data, control_metric='accuracy',
-                   best_score=None,
-                   # word_emb_tune_params ##################
-                   save_as=None, epochs=3, batch_size=8,
-                   lr=5e-5, betas=(0.9, 0.999), eps=1e-8,
-                   weight_decay=.01, amsgrad=False,
-                   num_warmup_steps=0, max_grad_norm=1.,
-                   #########################################
-                   transform_kwargs=None,
-                       # BertDataset.transform() # params:
-                       # {'max_len': 0, 'batch_size': 64, 'hidden_ids': '10',
-                       #  'aggregate_hiddens_op': 'cat',
-                       #  'aggregate_subtokens_op': 'absmax', 'to': junky.CPU,
-                       #  'loglevel': 1}
-                       # NB: transform_kwargs['batch_size'] is ignored and
-                       #     replaced with the **batch_size** param.
-                   seed=None, log_file=LOG_FILE):
+    def full_tune(model, model_save_as, model_save_method,
+                  datasets, sents_data, control_metric='accuracy',
+                  best_score=None,
+                  # word_emb_tune_params ##################
+                  save_as=None, epochs=3, batch_size=8,
+                  lr=5e-5, betas=(0.9, 0.999), eps=1e-8,
+                  weight_decay=.01, amsgrad=False,
+                  num_warmup_steps=0, max_grad_norm=1.,
+                  #########################################
+                  transform_kwargs=None,
+                      # BertDataset.transform() # params:
+                      # {'max_len': 0, 'batch_size': 64, 'hidden_ids': '10',
+                      #  'aggregate_hiddens_op': 'cat',
+                      #  'aggregate_subtokens_op': 'absmax', 'to': junky.CPU,
+                      #  'loglevel': 1}
+                      # NB: transform_kwargs['batch_size'] is ignored and
+                      #     replaced with the **batch_size** param.
+                  seed=None, log_file=LOG_FILE):
         """The method for finetuning base BERT model on custom data.
 
         Args:
@@ -125,12 +125,21 @@ class WordEmbeddings:
         **eps** (default is `1e-8`), **weight_decay** (default is `0.01`),
         **amsgrad** (default is `False`): params for *AdamW* optimizer.
 
-        **num_warmup_steps** (`int` | `float`): TODO
+        **num_warmup_steps** (`int` | `float`): the number of warmup steps for
+        the scheduler.
 
         **max_grad_norm** (`float`; default is `None`): the gradient clipping
         parameter.
 
-        **seed** (`int`): random seed.
+        **transform_kwargs** (`dict`; default is `None`): keyword arguments
+        for the `.transform()` method of `junky.datasets.BertDataset` if you
+        want to learn allowed values for the parameter. If `None`, the
+        `.transform()` method use its defaults.
+
+        **seed** (`int`; default is `None`): init value for the random number
+        generator if you need reproducibility. Note that each stage will have
+        its own seed value, and the **seed** param is used to calculate these
+        values.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
