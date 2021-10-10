@@ -1265,7 +1265,7 @@ class BaseTagger(BaseParser):
             torch.cuda.set_device(device)
 
         # 2. Create datasets
-        def stage_ds():
+        def stage_ds(idx):
             if log_file:
                 print('\nDATASETS CREATION', file=log_file)
             log_file_ = sys.stderr if log_file else None
@@ -1292,6 +1292,16 @@ class BaseTagger(BaseParser):
                                 ds=ds_test, log_file=log_file_)
             else:
                 ds_test = None
+
+            # remove emb models to free memory:
+            if not keep_embs and 3 not in stages[idx:]:
+                self._ds._pull_xtrn()
+                ds_train._pull_xtrn()
+                if ds_test is not None:
+                    ds_test._pull_xtrn()
+                self._embs = {}
+                gc.collect()
+
             return ds_train, ds_test
 
         # 3. Create model
@@ -1304,7 +1314,7 @@ class BaseTagger(BaseParser):
                       log_file=log_file)
             model = self._model
 
-            ds_train, ds_test = stage_ds()
+            ds_train, ds_test = stage_ds(1)
 
             if ds_test:
                 res = junky.train(
@@ -1326,14 +1336,14 @@ class BaseTagger(BaseParser):
                 junky.enforce_reproducibility(seed=seed)
 
             ds_ = ds_train.get_dataset('y')
-            model_args = [len(ds_.transform_dict)]
+            num_labels = len(ds_.transform_dict)
+            model_args = [num_labels - 1 if remove_padding_intent else 
+                          num_labels]
             if hasattr(ds_, 'pad') and not learn_on_padding:
                 model_kwargs['labels_pad_idx'] = ds_.pad
             if word_emb_type:
                 ds_ = ds_train.get_dataset('x')
-                model_kwargs['vec_emb_dim'] = \
-                    ds_.vec_size - 1 if remove_padding_intent else \
-                    ds_.vec_size
+                model_kwargs['vec_emb_dim'] = ds_.vec_size
             if model_kwargs.get('rnn_emb_dim') \
             or model_kwargs.get('cnn_emb_dim'):
                 ds_ = ds_train.get_dataset('x_ch')
@@ -1355,14 +1365,6 @@ class BaseTagger(BaseParser):
             if device:
                 model.to(device)
 
-        # remove emb models to free memory:
-        #if not keep_embs:
-        #    ds_train._pull_xtrn()
-        #    if ds_test is not None:
-        #        ds_test._pull_xtrn()
-        #    self._embs = {}
-        #    gc.collect()
-
         # 4. Train
         need_ds = False
         seeds = [random.randrange(1, 2**32) if seed else None
@@ -1378,7 +1380,7 @@ class BaseTagger(BaseParser):
                     ds_train = ds_test = None
                     gc.collect()
                     #torch.cuda.empty_cache()
-                    ds_train, ds_test = stage_ds()
+                    ds_train, ds_test = stage_ds(idx)
                 res, change_load_from = stage_method(
                    load_from, save_to, res, save_to2=save_to2, seed=seed
                 )

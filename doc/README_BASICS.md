@@ -3,7 +3,7 @@
 
 ## MorDL Basics
 
-This chapter gives an overview on ***MorDL*** taggers and the basic pipeline.
+This chapter provides an overview on ***MorDL*** taggers and the basic pipeline.
 
 ### Table of Contents
 
@@ -26,14 +26,15 @@ to the specific tagger documentation for detailed information:
 
 First of all, you need to create the tagger object. For example, to create a
 part-of-speech tagger, call:
+
 ```python
 from mordl import UposTagger
 
 tagger = UposTagger()
 ```
 
-To find the descriptions for creation of the taggers of other types, refer to
-the corresponding chapters.
+The exhausting list of the constructor paramters, also as the descriptions of
+the taggers of other types, one can find in the corresponding chapters.
 
 ### Load Train and Test Data<a name="data"></a>
 
@@ -79,7 +80,7 @@ of sentences in *Parsed CoNLL-U*.
 All our taggers contain 3 main methods: `.train()`, `.evaluate()` and
 `.predict()`. Parameters vary slightly for each tagger and are described in
 the corresponding chapters:
-* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_UPOS.md#start)
+* [POS-tagger](https://github.com/fostroll/mordl/blob/master/doc/README_POS.md#start)
 * [FEAT](https://github.com/fostroll/mordl/blob/master/doc/README_FEAT.md#start)
 * [FEATS](https://github.com/fostroll/mordl/blob/master/doc/README_FEATS.md#start)
 * [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md#start)
