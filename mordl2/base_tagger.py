@@ -1049,7 +1049,7 @@ class BaseTagger(BaseParser):
                     value_ if value_ is not None else value
             ds_ = ds_train.get_dataset('y')
             if hasattr(ds_, 'pad') and not learn_on_padding:
-                train_params['labels_pad_idx'] = ds_.pad
+                stage1_params_['labels_pad_idx'] = ds_.pad
 
             if load_from:
                 _, model_fn_, _, _, _ = \
@@ -1120,15 +1120,15 @@ class BaseTagger(BaseParser):
                     value_ if value_ is not None else value
             ds_ = ds_train.get_dataset('y')
             if hasattr(ds_, 'pad') and not learn_on_padding:
-                train_params['labels_pad_idx'] = ds_.pad
+                stage2_params_['labels_pad_idx'] = ds_.pad
 
             if load_from:
                 _, model_fn_, _, _, _ = \
                    self._get_filenames(load_from)
                 model.load_state_dict(model_fn_, log_file=log_file)
             criterion, optimizer, scheduler = \
-                model.adjust_model_for_tune(**(stage2_params
-                                                   if stage2_params else
+                model.adjust_model_for_tune(**(stage2_params_
+                                                   if stage2_params_ else
                                                {}))
             best_epoch, best_score = (res['best_epoch'], res['best_score']) \
                                          if res else \
