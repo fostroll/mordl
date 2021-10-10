@@ -1328,7 +1328,7 @@ class BaseTagger(BaseParser):
                 print(f"\nBest score: {res['best_score']}")
 
         else:
-            ds_train, ds_test = stage_ds()
+            ds_train, ds_test = stage_ds(1)
 
             if log_file:
                 print('\nMODEL CREATION', file=log_file)
