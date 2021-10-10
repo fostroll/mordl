@@ -1036,7 +1036,7 @@ class BaseTagger(BaseParser):
             if seed:
                 junky.enforce_reproducibility(seed=seed)
 
-            stage1_params_ = deepcopy(stage1_params)
+            stage1_params_ = deepcopy(stage1_params) or {}
             train_params = {}
             for param, value in zip(['max_epochs', 'min_epochs', 'bad_epochs',
                                      'batch_size', 'max_grad_norm'],
@@ -1107,7 +1107,7 @@ class BaseTagger(BaseParser):
             if seed:
                 junky.enforce_reproducibility(seed=seed)
 
-            stage2_params_ = deepcopy(stage1_params)
+            stage2_params_ = deepcopy(stage1_params) or {}
             train_params = {}
             for param, value in zip(['max_epochs', 'min_epochs', 'bad_epochs',
                                      'batch_size', 'max_grad_norm'],
@@ -1189,7 +1189,7 @@ class BaseTagger(BaseParser):
             def tune_word_emb(emb_type, best_score=None):
                 res = None
                 if emb_type == 'bert':
-                    params = {} if stage3_params is None else stage3_params
+                    params = deepcopy(stage3_params) or {}
                     if 'save_as' not in params:
                         params['save_as'] = bert_header
 
