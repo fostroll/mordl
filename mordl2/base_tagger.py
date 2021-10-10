@@ -987,9 +987,9 @@ class BaseTagger(BaseParser):
         `time.time()` to start with. If `None`, the arg will be init anew.
 
         **keep_embs** (`bool`; default is `False`): by default, after creating
-        `Dataset` objects, we remove word embedding models to free memory. With
-        `keep_embs=False` this operation is omitted, and you can use `.embs`
-        attribute for share embedding models with other objects.
+        `Dataset` objects, we remove word embedding models to free memory.
+        With `keep_embs=False` this operation is omitted, and you can use
+        `.embs` attribute for share embedding models with other objects.
 
         **log_file** (`file`; default is `sys.stdout`): the stream for info
         messages.
