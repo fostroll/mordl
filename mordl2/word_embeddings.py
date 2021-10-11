@@ -1372,7 +1372,7 @@ class WordEmbeddings:
             else:
                 emb_path = cfg['emb_path']
             if device:
-                cfg.get['emb_model_device'] = device
+                cfg['emb_model_device'] = device
             else:
                 device = cfg.get('emb_model_device')
             transform_kwargs = cfg.get('transform_kwargs', {})
