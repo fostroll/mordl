@@ -1367,13 +1367,17 @@ class WordEmbeddings:
         embs, xtrn = {} if embs is None else embs, []
         for cfg in config:
             emb_type = cfg['emb_type']
-            if emb_path is None:
+            if emb_path:
+                cfg['emb_path'] = emb_path
+            else:
                 emb_path = cfg['emb_path']
-            emb_model_device = device if device else \
-                               cfg.get('emb_model_device')
+            if device:
+                cfg.get['emb_model_device'] = device
+            else:
+                device = cfg.get('emb_model_device')
             transform_kwargs = cfg.get('transform_kwargs', {})
             model = cls.load(emb_type, emb_path,
-                             emb_model_device=emb_model_device,
+                             emb_model_device=device,
                              embs=embs)
             xtrn.append(model)
 
