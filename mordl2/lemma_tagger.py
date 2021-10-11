@@ -437,7 +437,7 @@ class LemmaTagger(BaseTagger):
               final_emb_dim=512, pre_bn=True, pre_do=.5,
               lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
               post_bn=True, post_do=.4):
-        """Creates and trains a LEMMA prediction model.
+        """Creates and trains the LEMMA prediction model.
 
         During training, the best model is saved after each successful epoch.
 

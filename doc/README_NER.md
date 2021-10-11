@@ -3,14 +3,16 @@
 
 ## Named-entity Recognition
 
-With ***MorDL***, you can create and train biLSTM-based NER models, make
-predictions and evaluate them. You can train a NER model with any custom named
-entities from your training corpus. The tagger searches for NE tags in the
-feature 'NE' of MISC field, such as 'Organization', 'Person', etc.
+With ***MorDL***, you can create and train BiLSTM or Transformer Encoder based
+NER models, make predictions and evaluate them. You can train the NER model
+with any custom named entities from your training corpus. The tagger searches
+for NE tags in the feature 'NE' of the MISC field, such as 'Organization',
+'Person', etc.
 
 ### Initialization
 
-First of all, you need to create a tagger object:
+First of all, you need to create the tagger object:
+
 ```python
 from mordl import NeTagger
 
@@ -49,26 +51,28 @@ propose to look into corresponding sections of the ancestor class:
 
 **Note**, that if you labeled your training corpus with a
 [*brat*](https://brat.nlplab.org/) tool, you may converts its annotations to
-the format of `NeTagger` with a way provided by ***Toxine*** project:
+the format of `NeTagger` with a method provided by our ***Toxine*** project:
+
 ```python
 from toxine.brat import brat_to_ne
 
 brat_to_ne(txt_fn, ann_fn, save_to=None)
 ```
 
-Params **txt_fn**, **ann_fn** are paths to the *brat* `txt` and `ann` files.
+The params **txt_fn**, **ann_fn** are paths to the *brat* `txt` and `ann`
+files.
 
-Param **save_to** is a path where the result will be stored. If not specified,
-the function returns the result as a generator of
+The param **save_to** is a path where the result will be stored. If not
+specified, the function returns the result as a generator of
 [*Parsed CoNLL-U*](https://github.com/fostroll/corpuscula/blob/master/doc/README_PARSED_CONLLU.md)
 data.
 
-Refer to
+Refer to the
 [***Toxine*** *brat* annotations support](https://github.com/fostroll/toxine/blob/master/doc/README_BRAT.md)
 if you need more help.
 
 Also, note, that before you can make NE tagging, you should make UPOS and
-FEATS tagging. See the **MISC:NE** pipeline in our
+FEATS tagging are done. See the **MISC:NE** pipeline in our
 [example notebook](https://github.com/fostroll/mordl/blob/master/examples/mordl.ipynb)
 example notebook.
 

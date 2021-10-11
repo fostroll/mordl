@@ -71,7 +71,8 @@ class FeatsJointTagger(BaseTagger):
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE,
                 **_):
-        """Predicts feature keys and values in the FEATS field of the corpus.
+        """Predicts feature keys and values in the key-value type field of the
+        corpus.
 
         Args:
 
@@ -239,7 +240,7 @@ class FeatsJointTagger(BaseTagger):
               final_emb_dim=512, pre_bn=True, pre_do=.5,
               lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
               post_bn=True, post_do=.4):
-        """Creates and trains a key-value type field tagger model.
+        """Creates and trains the key-value type field tagger model.
 
         During training, the best model is saved after each successful epoch.
 
@@ -774,7 +775,7 @@ class FeatsSeparateTagger(BaseTagger):
               final_emb_dim=512, pre_bn=True, pre_do=.5,
               lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
               post_bn=True, post_do=.4):
-        """Creates and trains a separate feature tagger model.
+        """Creates and trains the separate feature tagger model.
 
         *Training's args*:
 

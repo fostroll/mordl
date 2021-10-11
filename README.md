@@ -1,4 +1,4 @@
-<h2 align="center">MorDL: Morphological Parser (POS, lemmata, NER etc.)</h2>
+<h2 align="center">MorDL: Morphological Tagger (POS, lemmata, NER etc.)</h2>
 <a name="start"></a>
 
 [![PyPI Version](https://img.shields.io/pypi/v/mordl?color=blue)](https://pypi.org/project/mordl/)

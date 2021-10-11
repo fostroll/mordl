@@ -139,8 +139,8 @@ class FeatTagger(BaseTagger):
     def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, save_to=None, log_file=LOG_FILE,
                 **_):
-        """Predicts tags in the specified feature of the FEATS field of the
-        corpus.
+        """Predicts values in the certain feature of the key-value type field
+        of the specified **corpus**.
 
         Args:
 
@@ -171,7 +171,7 @@ class FeatTagger(BaseTagger):
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
         Returns the corpus with predicted values of certain feature in the
-        FEATS field.
+        key-value type field.
         """
         assert self._ds is not None, \
                "ERROR: The tagger doesn't have a dataset. Call the train() " \
@@ -280,7 +280,7 @@ class FeatTagger(BaseTagger):
               final_emb_dim=512, pre_bn=True, pre_do=.5,
               lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
               post_bn=True, post_do=.4):
-        """Creates and trains a feature tagger model.
+        """Creates and trains the feature tagger model.
 
         During training, the best model is saved after each successful epoch.
 

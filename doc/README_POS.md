@@ -16,7 +16,8 @@ predictions.
 
 ### Initialization and Data Loading<a name="init"></a>
 
-First of all, you need to create a tagger object:
+First of all, you need to create the tagger object:
+
 ```python
 from mordl import UposTagger
 
@@ -38,25 +39,24 @@ During init, **embs** is copied to the `embs` attribute of the creating
 object, and this attribute may be used further to share already loaded
 embeddings with another taggers.
 
-Afterwards, load train and development test corpora into the created tagger
-object:
+Afterwards, load the train and the development test corpora into the created
+tagger object:
 ```python
 tagger.load_train_corpus(corpus, append=False, test=None, seed=None)
 tagger.load_test_corpus(corpus, append=False)
 ```
 For detailed info on `.load_train_corpus()` and `.load_test_corpus()`,
-refer to
+refer to the
 [***MorDL*** Basics: Load Train and Test Data](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#data)
 chapter.
 
 ### Training<a name="train"></a>
 
-***MorDL*** allows you to train either a custom BiLSTM POS-tagging model or a
-Transformer Encoder model. The latter has slightly better performance, though
-on very long sentences it may cause *CUDA out of memory* error on the
-inference.
+***MorDL*** allows you to train either the BiLSTM or the Transformer Encoder
+based POS-tagging model. The latter has slightly better performance, though on
+very long sentences it may cause *CUDA out of memory* error on the inference.
 
-**NB:** By this step, you should have a tagger object created and training
+**NB:** By this step, you should have the tagger object created and training
 data loaded.
 
 ```python
@@ -311,14 +311,14 @@ tagger.load(model_class, name, device=None, dataset_emb_path=None,
 ```
 Normally, you don't need to call the method `.save()` because the data is
 saved automatically during training. Though, there are cases when this method
-could be useful. For detailed info on `.save()` and `.load()`, refer to
+could be useful. For detailed info on `.save()` and `.load()`, refer to the
 [MorDL Basics: Save and Load the Internal State of the Tagger](https://github.com/fostroll/mordl/blob/master/doc/README_BASICS.md#save)
 chapter.
 
 ### Evaluation<a name="eval"></a>
 
-When the training has done, you may evaluate the model quality using the test
-or the development test corpora:
+When the training is done, you may evaluate the model quality using either
+the test or the development test corpus:
 ```python
 tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
                 split=None, clone_ds=False, log_file=LOG_FILE)
@@ -326,30 +326,39 @@ tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
 
 Args:
 
-**gold**: a corpus of sentences with actual target values to score the
-tagger on. May be either a name of the file in *CoNLL-U* format or a
-list/iterator of sentences in *Parsed CoNLL-U*.
+**gold**: the corpus of sentences with actual target values to score
+the tagger on. May be either the name of the file in *CoNLL-U* format
+or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-**test**: a corpus of sentences with predicted target values. If
-`None`, the **gold** corpus will be retagged on-the-fly, and the
-result will be used as **test**.
+**test** (default is `None`): the corpus of sentences with predicted
+target values. If `None` (default), the **gold** corpus will be
+retagged on-the-fly, and the result will be used as the **test**.
 
-**label** (`str`): specific label of the target field to be evaluated,
-e.g. label='VERB'`.
+**label** (`str`; default is `None`): the specific label of the target
+field to be evaluated separatedly, e.g. `field='UPOS', label='VERB'`
+or `field='FEATS:Animacy', label='Inan'`.
 
-**batch_size** (`int`): number of sentences per batch. Default
-`batch_size=64`.
+**use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+we use our prediction only. If `True`, we replace our prediction to
+the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+method if its `coef` >= `.99`. Also, you can specify your own
+threshold as the value of the param.
 
-**split** (`int`): number of lines in each split. Allows to process a
-large dataset in pieces ("splits"). Default `split=None`, i.e. process
-full dataset without splits.
+**batch_size** (`int`; default is `64`): the number of sentences per
+batch.
 
-**clone_ds** (`bool`): if `True`, the dataset is cloned and
-transformed. If `False`, `transform_collate` is used without cloning
-the dataset. There is no big differences between the variants. Both
-should produce identical results.
+**split** (`int`; default is `None`): the number of lines in sentences
+split. Allows to process a large dataset in pieces ("splits"). If
+**split** is `None` (default), all the dataset is processed without
+splits.
 
-**log_file**: a stream for info messages. Default is `sys.stdout`.
+**clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+cloned and transformed. If `False`, `transform_collate` is used
+without cloning the dataset. There is no big differences between the
+variants. Both should produce identical results.
+
+**log_file** (`file`; default is `sys.stdout`): the stream for info
+messages.
 
 The method prints metrics and returns evaluation accuracy.
 
@@ -363,30 +372,39 @@ tagger.predict(corpus, with_orig=False, batch_size=BATCH_SIZE, split=None,
 
 Args:
 
-**corpus**: a corpus which will be used for feature extraction and
-predictions. May be either a name of the file in *CoNLL-U* format or a
-list/iterator of sentences in *Parsed CoNLL-U*.
+**corpus**: the corpus which will be used for the feature extraction
+and predictions. May be either the name of the file in *CoNLL-U*
+format or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-**with_orig** (`bool`): if `True`, instead of only a sequence with
-predicted labels, returns a sequence of tuples where the first element
-is a sentence with predicted labels and the second element is the
-original sentence. `with_orig` can be `True` only if `save_to` is
-`None`. Default `with_orig=False`.
+**use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+we use our prediction only. If `True`, we replace our prediction to
+the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+method if its `coef` >= `.99`. Also, you can specify your own
+threshold as the value of the param.
 
-**batch_size** (`int`): number of sentences per batch. Default
-`batch_size=64`.
+**with_orig** (`bool`; default is `False`): if `True`, instead of just
+the sequence with predicted labels, return the sequence of tuples
+where the first element is the sentence with predicted labels and the
+second element is the original sentence. **with_orig** can be `True`
+only if **save_to** is `None`.
 
-**split** (`int`): number of lines in each split. Allows to process a
-large dataset in pieces ("splits"). Default `split=None`, i.e. process
-full dataset without splits.
+**batch_size** (`int`; default is `64`): the number of sentences per
+batch.
 
-**clone_ds** (`bool`): if `True`, the dataset is cloned and
-transformed. If `False`, `transform_collate` is used without cloning
-the dataset. There is no big differences between the variants. Both
-should produce identical results.
+**split** (`int`; default is `None`): the number of lines in sentences
+split. Allows to process a large dataset in pieces ("splits"). If
+**split** is `None` (default), all the dataset is processed without
+splits.
 
-**save_to**: file name where the predictions will be saved.
+**clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+cloned and transformed. If `False`, `transform_collate` is used
+without cloning the dataset. There is no big differences between the
+variants. Both should produce identical results.
 
-**log_file**: a stream for info messages. Default is `sys.stdout`.
+**save_to** (`str`; default is `None`): the file name where the
+predictions will be saved.
 
-Returns corpus with tags predicted in the UPOS field.
+**log_file** (`file`; default is `sys.stdout`): the stream for info
+messages.
+
+Returns the corpus with tags predicted in the UPOS field.
