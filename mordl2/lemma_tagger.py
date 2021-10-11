@@ -27,22 +27,23 @@ class LemmaTagger(BaseTagger):
 
     Args:
 
-    **field**: a name of the *CoNLL-U* field with values that are derivatives
-    of the FORM field, like `'LEMMA'` (default value).
+    **field** (`str`; default is `LEMMA`): the name of the *CoNLL-U* field
+    with values that are derivatives of the FORM field, like `'LEMMA'`.
 
-    **feats_prune_coef** (`int`): feature prunning coefficient which allows to
-    eliminate all features that have a low frequency. For each UPOS tag, we
-    get a number of occurences of the most frequent feature from FEATS field,
-    divide it by **feats_prune_coef** and use only those features, number of
-    occurences of which is greater than that value, to improve the prediction
-    quality.
+    **feats_prune_coef** (`int`; default is `6`): the feature prunning
+    coefficient which allows to eliminate all features that have a low
+    frequency. To improve the prediction quality, we get a number of
+    occurences of the most frequent feature from the FEATS field for each UPOS
+    tag, divide that number by **feats_prune_coef**, and use only those
+    features, the number of occurences of which is greater than that value.
     * `feats_prune_coef=0` means "do not use feats";
     * `feats_prune_coef=None` means "use all feats";
     * default `feats_prune_coef=6`.
 
-    **embs**: `dict` with paths to the embeddings file as keys and
-    corresponding embeddings models as values. If tagger needs to load any
-    embeddings model, firstly, model is looked up it in that `dict`.
+    **embs** (`dict({str: object}); default is `None`): the `dict` with paths
+    to embeddings files as keys and corresponding embedding models as values.
+    If the tagger needs to load any embedding model, firstly, the model is
+    looked up it in that `dict`.
 
     During init, **embs** is copied to the `embs` attribute of the creating
     object, and this attribute may be used further to share already loaded
@@ -61,13 +62,13 @@ class LemmaTagger(BaseTagger):
 
         Args:
 
-        **lower** (`bool`): if `True`, then the return values will be always
-        in lower case. Elsewise, we compare strings in lower case but return
+        **lower** (`bool`): if `True`, the return values will be always in
+        lower case. Elsewise, we compare strings in lower case but return
         values will be in original case.
 
-        Returns prefix, common part, suffix/flexion of **form**, as well as
-        prefix, common part, suffix/flexion of **lemma** (tuple of 6 `str`
-        values).
+        Returns the prefix, the common part, the suffix/flexion of **form**,
+        as well as the prefix, the common part, the suffix/flexion of
+        **lemma** (the `tuple` of 6 `str` values).
         """
         if lower:
             lex = form = form.lower()
@@ -140,16 +141,16 @@ class LemmaTagger(BaseTagger):
 
         Args:
 
-        **str_from** (`str`): source string.
+        **str_from** (`str`): the source string.
 
-        **str_to** (`str`): target string.
+        **str_to** (`str`): the target string.
 
-        **allow_replace** (`bool`): whether to allow **replace** edit
+        **allow_replace** (`bool`): whether to allow the **replace** edit
         operation.
 
-        **allow_copy** (`bool`): whether to allow **copy** edit operation.
+        **allow_copy** (`bool`): whether to allow the **copy** edit operation.
 
-        Return a tuple of edit operation that is needed to transform
+        Return the `tuple` of edit operations that is needed to transform
         **str_from** to **str_to**.
         """
         res = []
@@ -181,9 +182,9 @@ class LemmaTagger(BaseTagger):
 
         Args:
 
-        **str_from** (`str`): source string to apply edit operations to.
+        **str_from** (`str`): the source string to apply edit operations to.
 
-        **ops** (`tuple([str])`): tuple or list with edit operations.
+        **ops** (`tuple([str])`): the `tuple` or `list` with edit operations.
 
         Returns **str_from** with **ops** applied.
         """
@@ -205,18 +206,20 @@ class LemmaTagger(BaseTagger):
 
         Args:
 
-        **name** (`str`): name of the previously saved internal state.
+        **name** (`str`): the name of the previously saved internal state.
 
-        **device**: a device for the loaded model if you want to override its
-        previously saved value.
+        **device** (`str`; default is `None`): the device for the loaded model
+        if you want to override the value from the config.
 
-        **dataset_emb_path**: a path where dataset's embeddings to load from
-        if you want to override the value from config.
+        **dataset_emb_path** (`str`; default is `None`): the path where the
+        dataset's embeddings to load from if you want to override the value
+        from the config.
 
-        **dataset_device**: a device for the loaded dataset if you want to
-        override its previously saved value.
+        **dataset_device** (`str`; default is `None`): the device for the
+        loaded dataset if you want to override the value from the config.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
         """
         args, kwargs = get_func_params(LemmaTagger.load, locals())
         super().load(FeatTaggerModel, *args, **kwargs)
@@ -228,39 +231,42 @@ class LemmaTagger(BaseTagger):
 
         Args:
 
-        **corpus**: a corpus which will be used for feature extraction and
-        predictions. May be either a name of the file in *CoNLL-U* format or
-        list/iterator of sentences in *Parsed CoNLL-U*.
+        **corpus**: the corpus which will be used for the feature extraction
+        and predictions. May be either the name of the file in *CoNLL-U*
+        format or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-        **use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
-        prediction only. Elsewise, we replace our prediction to the value
-        returned by the `corpuscula.CorpusDict.predict_lemma()` method if its
-        `coef` >= `.99`. Also, you may specify your own threshold as the value
-        of the param.
+        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+        we use our prediction only. If `True`, we replace our prediction to
+        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+        method if its `coef` >= `.99`. Also, you can specify your own
+        threshold as the value of the param.
 
-        **with_orig** (`bool`): if `True`, instead of only a sequence with
-        predicted labels, returns a sequence of tuples where the first element
-        is a sentence with predicted labels and the second element is the
-        original sentence. `with_orig` can be `True` only if `save_to` is
-        `None`. Default `with_orig=False`.
+        **with_orig** (`bool`; default is `False`): if `True`, instead of just
+        the sequence with predicted labels, return the sequence of tuples
+        where the first element is the sentence with predicted labels and the
+        second element is the original sentence. **with_orig** can be `True`
+        only if **save_to** is `None`.
 
-        **batch_size** (`int`): number of sentences per batch. Default
-        `batch_size=64`.
+        **batch_size** (`int`; default is `64`): the number of sentences per
+        batch.
 
-        **split** (`int`): number of lines in each split. Allows to process a
-        large dataset in pieces ("splits"). Default `split=None`, i.e. process
-        full dataset without splits.
+        **split** (`int`; default is `None`): the number of lines in sentences
+        split. Allows to process a large dataset in pieces ("splits"). If
+        **split** is `None` (default), all the dataset is processed without
+        splits.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and
-        transformed. If `False`, `transform_collate` is used without cloning
-        the dataset. There is no big differences between the variants. Both
-        should produce identical results.
+        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+        cloned and transformed. If `False`, `transform_collate` is used
+        without cloning the dataset. There is no big differences between the
+        variants. Both should produce identical results.
 
-        **save_to**: file name where the predictions will be saved.
+        **save_to** (`str`; default is `None`): the file name where the
+        predictions will be saved.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
 
-        Returns corpus with lemmata predicted.
+        Returns the corpus with lemmata predicted.
         """
         assert self._ds is not None, \
                "ERROR: The tagger doesn't have a dataset. Call the train() " \
@@ -348,33 +354,43 @@ class LemmaTagger(BaseTagger):
 
         Args:
 
-        **gold**: a corpus of sentences with actual target values to score the
-        tagger on. May be either a name of the file in *CoNLL-U* format or a
-        list/iterator of sentences in *Parsed CoNLL-U*.
+        **gold**: the corpus of sentences with actual target values to score
+        the tagger on. May be either the name of the file in *CoNLL-U* format
+        or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-        **test**: a corpus of sentences with predicted target values. If
-        `None`, the **gold** corpus will be retagged on-the-fly, and the
-        result will be used as **test**.
+        **test** (default is `None`): the corpus of sentences with predicted
+        target values. If `None` (default), the **gold** corpus will be
+        retagged on-the-fly, and the result will be used as the **test**.
 
-        **use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
-        prediction only. Elsewise, we replace our prediction to the value
-        returned by the `corpuscula.CorpusDict.predict_lemma()` method if its
-        `coef` >= `.99`. Also, you may specify your own threshold as the value
-        of the param. Relevant if **test** is not `None`.
+        **feats** (`str | list([str])`; default is `None`): one or several
+        subfields of the key-value type fields like `FEATS` or `MISC` to be
+        evaluated separatedly.
 
-        **batch_size** (`int`): number of sentences per batch. Default
-        `batch_size=64`.
+        **label** (`str`; default is `None`): the specific label of the target
+        field to be evaluated separatedly, e.g. `field='UPOS', label='VERB'`
+        or `field='FEATS:Animacy', label='Inan'`.
 
-        **split** (`int`): number of lines in each split. Allows to process a
-        large dataset in pieces ("splits"). Default `split=None`, i.e. process
-        full dataset without splits.
+        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+        we use our prediction only. If `True`, we replace our prediction to
+        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+        method if its `coef` >= `.99`. Also, you can specify your own
+        threshold as the value of the param.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and
-        transformed. If `False`, `transform_collate` is used without cloning
-        the dataset. There is no big differences between the variants. Both
-        should produce identical results.
+        **batch_size** (`int`; default is `64`): the number of sentences per
+        batch.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **split** (`int`; default is `None`): the number of lines in sentences
+        split. Allows to process a large dataset in pieces ("splits"). If
+        **split** is `None` (default), all the dataset is processed without
+        splits.
+
+        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+        cloned and transformed. If `False`, `transform_collate` is used
+        without cloning the dataset. There is no big differences between the
+        variants. Both should produce identical results.
+
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
 
         The method prints metrics and returns evaluation accuracy.
         """
@@ -576,7 +592,7 @@ class LemmaTagger(BaseTagger):
         **log_file** (`file`; default is `sys.stdout`): the stream for info
         messages.
 
-        `FeatTaggerModel` constructor params:
+        *The model hyperparameters*:
 
         **rnn_emb_dim** (`int`; default is `None`): the internal character RNN
         (LSTM) embedding dimensionality. If `None`, the layer is skipped.

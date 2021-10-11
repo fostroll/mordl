@@ -23,13 +23,14 @@ class UposTagger(BaseTagger):
 
     Args:
 
-    **field**: a name of the *CoNLL-U* field, values of which needs to be
-    predicted. With this tagger, you can predict only fields with atomic
-    values, like UPOS.
+    **field** (`str`; default is `UPOS`): the name of the *CoNLL-U* field,
+    values of which needs to be predicted. With this tagger, you can predict
+    only fields with atomicvalues, like UPOS.
 
-    **embs**: `dict` with paths to the embeddings file as keys and
-    corresponding embeddings models as values. If tagger needs to load any
-    embeddings model, firstly, model is looked up it in that `dict`.
+    **embs** (`dict({str: object}); default is `None`): the `dict` with paths
+    to embeddings files as keys and corresponding embedding models as values.
+    If the tagger needs to load any embedding model, firstly, the model is
+    looked up it in that `dict`.
 
     During init, **embs** is copied to the `embs` attribute of the creating
     object, and this attribute may be used further to share already loaded
@@ -45,18 +46,20 @@ class UposTagger(BaseTagger):
 
         Args:
 
-        **name** (`str`): name of the previously saved internal state.
+        **name** (`str`): the name of the previously saved internal state.
 
-        **device**: a device for the loaded model if you want to override
-        the value from config.
+        **device** (`str`; default is `None`): the device for the loaded model
+        if you want to override the value from the config.
 
-        **dataset_emb_path**: a path where dataset's embeddings to load from
-        if you want to override the value from config.
+        **dataset_emb_path** (`str`; default is `None`): the path where the
+        dataset's embeddings to load from if you want to override the value
+        from the config.
 
-        **dataset_device**: a device for the loaded dataset if you want to
-        override the value from config.
+        **dataset_device** (`str`; default is `None`): the device for the
+        loaded dataset if you want to override the value from the config.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
         """
         args, kwargs = get_func_params(UposTagger.load, locals())
         super().load(UposTaggerModel, *args, **kwargs)
@@ -85,39 +88,42 @@ class UposTagger(BaseTagger):
 
         Args:
 
-        **corpus**: a corpus which will be used for feature extraction and
-        predictions. May be either a name of the file in *CoNLL-U* format or a
-        list/iterator of sentences in *Parsed CoNLL-U*.
+        **corpus**: the corpus which will be used for the feature extraction
+        and predictions. May be either the name of the file in *CoNLL-U*
+        format or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-        **use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
-        prediction only. Elsewise, we replace our prediction to the value
-        returned by the `corpuscula.CorpusDict.predict_tag()` method if its
-        `coef` >= `.99`. Also, you may specify your own threshold as the value
-        of the param.
+        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+        we use our prediction only. If `True`, we replace our prediction to
+        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+        method if its `coef` >= `.99`. Also, you can specify your own
+        threshold as the value of the param.
 
-        **with_orig** (`bool`): if `True`, instead of only a sequence with
-        predicted labels, returns a sequence of tuples where the first element
-        is a sentence with predicted labels and the second element is the
-        original sentence. `with_orig` can be `True` only if `save_to` is
-        `None`. Default `with_orig=False`.
+        **with_orig** (`bool`; default is `False`): if `True`, instead of just
+        the sequence with predicted labels, return the sequence of tuples
+        where the first element is the sentence with predicted labels and the
+        second element is the original sentence. **with_orig** can be `True`
+        only if **save_to** is `None`.
 
-        **batch_size** (`int`): number of sentences per batch. Default
-        `batch_size=64`.
+        **batch_size** (`int`; default is `64`): the number of sentences per
+        batch.
 
-        **split** (`int`): number of lines in each split. Allows to process a
-        large dataset in pieces ("splits"). Default `split=None`, i.e. process
-        full dataset without splits.
+        **split** (`int`; default is `None`): the number of lines in sentences
+        split. Allows to process a large dataset in pieces ("splits"). If
+        **split** is `None` (default), all the dataset is processed without
+        splits.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and
-        transformed. If `False`, `transform_collate` is used without cloning
-        the dataset. There is no big differences between the variants. Both
-        should produce identical results.
+        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+        cloned and transformed. If `False`, `transform_collate` is used
+        without cloning the dataset. There is no big differences between the
+        variants. Both should produce identical results.
 
-        **save_to**: file name where the predictions will be saved.
+        **save_to** (`str`; default is `None`): the file name where the
+        predictions will be saved.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
 
-        Returns corpus with tags predicted in the UPOS field.
+        Returns the corpus with tags predicted in the UPOS field.
         """
         assert self._field == 'UPOS' or use_cdict_coef in [None, False], \
             'ERROR: "use_cdict_coef" param may be used only with UPOS field'
@@ -131,36 +137,39 @@ class UposTagger(BaseTagger):
 
         Args:
 
-        **gold**: a corpus of sentences with actual target values to score the
-        tagger on. May be either a name of the file in *CoNLL-U* format or a
-        list/iterator of sentences in *Parsed CoNLL-U*.
+        **gold**: the corpus of sentences with actual target values to score
+        the tagger on. May be either the name of the file in *CoNLL-U* format
+        or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-        **test**: a corpus of sentences with predicted target values. If
-        `None`, the **gold** corpus will be retagged on-the-fly, and the
-        result will be used as **test**.
+        **test** (default is `None`): the corpus of sentences with predicted
+        target values. If `None` (default), the **gold** corpus will be
+        retagged on-the-fly, and the result will be used as the **test**.
 
-        **label** (`str`): specific label of the target field to be evaluated,
-        e.g. label='VERB'`.
+        **label** (`str`; default is `None`): the specific label of the target
+        field to be evaluated separatedly, e.g. `field='UPOS', label='VERB'`
+        or `field='FEATS:Animacy', label='Inan'`.
 
-        **use_cdict_coef** (`bool`|`float`): if `False` (default), we use our
-        prediction only. Elsewise, we replace our prediction to the value
-        returned by the `corpuscula.CorpusDict.predict_tag()` method if its
-        `coef` >= `.99`. Also, you may specify your own threshold as the value
-        of the param. Relevant if **test** is not `None`.
+        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+        we use our prediction only. If `True`, we replace our prediction to
+        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+        method if its `coef` >= `.99`. Also, you can specify your own
+        threshold as the value of the param.
 
-        **batch_size** (`int`): number of sentences per batch. Default
-        `batch_size=64`.
+        **batch_size** (`int`; default is `64`): the number of sentences per
+        batch.
 
-        **split** (`int`): number of lines in each split. Allows to process a
-        large dataset in pieces ("splits"). Default `split=None`, i.e. process
-        full dataset without splits.
+        **split** (`int`; default is `None`): the number of lines in sentences
+        split. Allows to process a large dataset in pieces ("splits"). If
+        **split** is `None` (default), all the dataset is processed without
+        splits.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and
-        transformed. If `False`, `transform_collate` is used without cloning
-        the dataset. There is no big differences between the variants. Both
-        should produce identical results.
+        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+        cloned and transformed. If `False`, `transform_collate` is used
+        without cloning the dataset. There is no big differences between the
+        variants. Both should produce identical results.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
 
         The method prints metrics and returns evaluation accuracy.
         """
@@ -247,7 +256,7 @@ class UposTagger(BaseTagger):
         default is `None`): the tags, tokens with those must be removed from
         the corpus. It's the `dict` with field names as keys and values you
         want to remove. Applied only to fields with atomic values (like
-        *UPOS*). This argument may be used, for example, to remove some
+        UPOS). This argument may be used, for example, to remove some
         infrequent or just excess tags from the corpus. Note, that we remove
         the tokens from the train corpus completely, not just replace those
         tags to `None`.
@@ -360,7 +369,7 @@ class UposTagger(BaseTagger):
         **log_file** (`file`; default is `sys.stdout`): the stream for info
         messages.
 
-        `UposTaggerModel` constructor params:
+        *The model hyperparameters*:
 
         **rnn_emb_dim** (`int`; default is `None`): the internal character RNN
         (LSTM) embedding dimensionality. If `None`, the layer is skipped.

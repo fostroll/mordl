@@ -26,24 +26,25 @@ class DeprelTagger(FeatTagger):
 
     Args:
 
-    **feats_prune_coef** (`int`): feature prunning coefficient which allows to
-    eliminate all features that have a low frequency. For each UPOS tag, we
-    get a number of occurences of the most frequent feature from FEATS field,
-    divide it by **feats_prune_coef** and use only those features, number of
-    occurences of which is greater than that value, to improve the prediction
-    quality.
+    **feats_prune_coef** (`int`; default is `6`): the feature prunning
+    coefficient which allows to eliminate all features that have a low
+    frequency. To improve the prediction quality, we get a number of
+    occurences of the most frequent feature from the FEATS field for each UPOS
+    tag, divide that number by **feats_prune_coef**, and use only those
+    features, the number of occurences of which is greater than that value.
     * `feats_prune_coef=0` means "do not use feats";
     * `feats_prune_coef=None` means "use all feats";
     * default `feats_prune_coef=6`.
 
-    **supp_tagger**: an object of another DEPREL tagger which method
-    `.predict()` has the same signature as `DeprelTagger.predict()` and no
-    excess `'root'` tags in the return. Object of `DeprelSeqTagger` may be
-    used here.
+    **supp_tagger** (default is `None`): an object of another DEPREL tagger
+    which method `.predict()` has the same signature as
+    `DeprelTagger.predict()` and no excess `'root'` tags in the return. The
+    instance of `DeprelSeqTagger` class may be used here.
 
-    **embs**: `dict` with paths to the embeddings file as keys and
-    corresponding embeddings models as values. If tagger needs to load any
-    embeddings model, firstly, model is looked up it in that `dict`.
+    **embs** (`dict({str: object}); default is `None`): the `dict` with paths
+    to embeddings files as keys and corresponding embedding models as values.
+    If the tagger needs to load any embedding model, firstly, the model is
+    looked up it in that `dict`.
 
     During init, **embs** is copied to the `embs` attribute of the creating
     object, and this attribute may be used further to share already loaded
@@ -60,33 +61,42 @@ class DeprelTagger(FeatTagger):
 
         Args:
 
-        **corpus**: a corpus which will be used for feature extraction and
-        predictions. May be either a name of the file in *CoNLL-U* format or a
-        list/iterator of sentences in *Parsed CoNLL-U*.
+        **corpus**: the corpus which will be used for the feature extraction
+        and predictions. May be either the name of the file in *CoNLL-U*
+        format or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-        **with_orig** (`bool`): if `True`, instead of only a sequence with
-        predicted labels, returns a sequence of tuples where the first element
-        is a sentence with predicted labels and the second element is the
-        original sentence. `with_orig` can be `True` only if `save_to` is
-        `None`. Default `with_orig=False`.
+        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+        we use our prediction only. If `True`, we replace our prediction to
+        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+        method if its `coef` >= `.99`. Also, you can specify your own
+        threshold as the value of the param.
 
-        **batch_size** (`int`): number of sentences per batch. Default
-        `batch_size=64`.
+        **with_orig** (`bool`; default is `False`): if `True`, instead of just
+        the sequence with predicted labels, return the sequence of tuples
+        where the first element is the sentence with predicted labels and the
+        second element is the original sentence. **with_orig** can be `True`
+        only if **save_to** is `None`.
 
-        **split** (`int`): number of lines in each split. Allows to process a
-        large dataset in pieces ("splits"). Default `split=None`, i.e. process
-        full dataset without splits.
+        **batch_size** (`int`; default is `64`): the number of sentences per
+        batch.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and
-        transformed. If `False`, `transform_collate` is used without cloning
-        the dataset. There is no big differences between the variants. Both
-        should produce identical results.
+        **split** (`int`; default is `None`): the number of lines in sentences
+        split. Allows to process a large dataset in pieces ("splits"). If
+        **split** is `None` (default), all the dataset is processed without
+        splits.
 
-        **save_to**: file name where the predictions will be saved.
+        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+        cloned and transformed. If `False`, `transform_collate` is used
+        without cloning the dataset. There is no big differences between the
+        variants. Both should produce identical results.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **save_to** (`str`; default is `None`): the file name where the
+        predictions will be saved.
 
-        Returns corpus with tags predicted in the DEPREL field.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
+
+        Returns the corpus with tags predicted in the DEPREL field.
         """
         assert self._ds is not None, \
                "ERROR: The tagger doesn't have a dataset. Call the train() " \
@@ -597,7 +607,7 @@ class DeprelSeqTagger(FeatTagger):
         **log_file** (`file`; default is `sys.stdout`): the stream for info
         messages.
 
-        `FeatTaggerModel` constructor params:
+        *The model hyperparameters*:
 
         **rnn_emb_dim** (`int`; default is `None`): the internal character RNN
         (LSTM) embedding dimensionality. If `None`, the layer is skipped.

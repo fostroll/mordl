@@ -994,6 +994,8 @@ class BaseTagger(BaseParser):
         **log_file** (`file`; default is `sys.stdout`): the stream for info
         messages.
 
+        *The model hyperparameters*:
+
         **\*\*model_kwargs**: keyword arguments for the model creating. Will
         be passed as is to the **model_class** constructor.
 

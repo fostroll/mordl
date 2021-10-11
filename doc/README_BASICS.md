@@ -24,7 +24,7 @@ to the specific tagger documentation for detailed information:
 * [`mordl.LemmaTagger`: Lemmata Prediction](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md#start)
 * [`mordl.NeTagger`: Named-entity Recognition](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md#start)
 
-First of all, you need to create the tagger object. For example, to create a
+First of all, you need to create the tagger object. For example, to create the
 part-of-speech tagger, call:
 
 ```python
@@ -48,17 +48,18 @@ tagger.load_train_corpus(corpus, append=False, test=None, seed=None)
 
 Args:
 
-**corpus**: a name of the file in *CoNLL-U* format or a list/iterator
-of sentences in *Parsed CoNLL-U*.
+**corpus**: either the name of the file in *CoNLL-U* format or the
+`list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-**append** (`bool`): whether to add **corpus** to the already loaded
-one(s).
+**append** (`bool`; default is `False`): whether to add the **corpus**
+to the already loaded one(s).
 
-**test** (`float`): if not `None`, **corpus** will be shuffled and a
-specified part of it stored as a test corpus.
+**test** (`float`; default is `None`): if not `None`, the **corpus**
+will be shuffled and the specified part of it stored as a test corpus.
 
-**seed** (`int`): init value for the random number generator if you
-need reproducibility. Used only if test is not `None`.
+**seed** (`int`; default is `None`): the init value for the random
+number generator if you need reproducibility. Only used if test is not
+`None`.
 
 To load the development test corpus, call:
 ```python
@@ -70,10 +71,11 @@ the quality of the model is at its highest.
 
 Args:
 
-**corpus** a name of the file in *CoNLL-U* format or a list/iterator
-of sentences in *Parsed CoNLL-U*.
+**corpus**: either the name of the file in *CoNLL-U* format or the
+`list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-**param append** add corpus to already loaded one(s).
+**append** (`bool`; default is `False`): whether to add the **corpus**
+to the already loaded one(s).
 
 ### Usage: Training - Evaluation - Inference<a name="usage"></a>
 
@@ -86,7 +88,7 @@ the corresponding chapters:
 * [Lemmata](https://github.com/fostroll/mordl/blob/master/doc/README_LEMMA.md#start)
 * [NER](https://github.com/fostroll/mordl/blob/master/doc/README_NER.md#start)
 
-### Save and Load the Internal State of the Tagger<a name="save"></a>
+### Saveing and Loading of the Internal State of the Tagger<a name="save"></a>
 
 Normally, you don't need to save the state of the tagger intentionally. During
 training, the state is saved automatically after each successful epoch.
@@ -100,14 +102,15 @@ tagger.save(name, log_file=LOG_FILE)
 
 Args:
 
-**name**: a name to save with.
+**name**: the name to save with.
 
-**log_file**: a stream for info messages. Default is `sys.stdout`.
+**log_file** (`file`; default is `sys.stdout`): the stream for info
+messages.
 
-The method creates a directory **name** that contains 5 files: two for
-the tagger's model (`model.config.json` and `model.pt`) and two for
-its dataset (`ds.config.json` and `ds.pt`). The 5th file
-(`cdict.pickle`) is an internal state of
+The method creates the directory **name** that contains 5 files: two
+for the tagger's model (`model.config.json` and `model.pt`) and two
+for its dataset (`ds.config.json` and `ds.pt`). The 5th file
+(`cdict.pickle`) is an internal state of the
 [`corpuscula.CorpusDict`](https://github.com/fostroll/corpuscula/blob/master/doc/README_CDICT.md)
 object that is used by the tagger as a helper.
 
@@ -123,18 +126,20 @@ tagger.load(name, device=None, dataset_emb_path=None, dataset_device=None,
 
 Args:
 
-**name** (`str`): name of the previously saved internal state.
+**name** (`str`): the name of the previously saved internal state.
 
-**device**: a device for the loaded model if you want to override its
-previously saved value.
+**device** (`str`; default is `None`): the device for the loaded model
+if you want to override the value from the config.
 
-**dataset_emb_path**: a path where dataset's embeddings to load from if you
-want to override the value from config.
+**dataset_emb_path** (`str`; default is `None`): the path where the
+dataset's embeddings to load from if you want to override the value
+from the config.
 
-**dataset_device**: a device for the loaded dataset if you want to
-override its previously saved value.
+**dataset_device** (`str`; default is `None`): the device for the
+loaded dataset if you want to override the value from the config.
 
-**log_file**: a stream for info messages. Default is `sys.stdout`.
+**log_file** (`file`; default is `sys.stdout`): the stream for info
+messages.
 
 ### MorDL Supplements<a name="suppl"></a>
 

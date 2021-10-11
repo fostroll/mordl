@@ -22,18 +22,19 @@ from typing import Iterator
 
 class FeatsJointTagger(BaseTagger):
     """
-    The class for prediction the content of a key-value type field. Joint
-    implementation (predict all the content of the field at once).
+    The class for prediction of the content of a key-value type field. The
+    joint implementation (predicts all the content of the field at once).
 
     Args:
 
-    **field** (`str`): a name of the *CoNLL-U* key-value type field, content
-    of which needs to be predicted. With the tagger, you can predict only
-    key-value type fields, like FEATS.
+    **field** (`str`; default is `FEATS`): the name of the *CoNLL-U* key-value
+    type field, content of which needs to be predicted. With this tagger, you
+    can predict only key-value type fields, like FEATS.
 
-    **embs**: `dict` with paths to the embeddings file as keys and
-    corresponding embeddings models as values. If tagger needs to load any
-    embeddings model, firstly, model is looked up it in that `dict`.
+    **embs** (`dict({str: object}); default is `None`): the `dict` with paths
+    to embeddings files as keys and corresponding embedding models as values.
+    If the tagger needs to load any embedding model, firstly, the model is
+    looked up it in that `dict`.
 
     During init, **embs** is copied to the `embs` attribute of the creating
     object, and this attribute may be used further to share already loaded
@@ -49,18 +50,20 @@ class FeatsJointTagger(BaseTagger):
 
         Args:
 
-        **name** (`str`): name of the previously saved internal state.
+        **name** (`str`): the name of the previously saved internal state.
 
-        **device**: a device for the loaded model if you want to override
-        the value from config.
+        **device** (`str`; default is `None`): the device for the loaded model
+        if you want to override the value from the config.
 
-        **dataset_emb_path**: a path where dataset's embeddings to load from
-        if you want to override the value from config.
+        **dataset_emb_path** (`str`; default is `None`): the path where the
+        dataset's embeddings to load from if you want to override the value
+        from the config.
 
-        **dataset_device**: a device for the loaded dataset if you want to
-        override the value from config.
+        **dataset_device** (`str`; default is `None`): the device for the
+        loaded dataset if you want to override the value from the config.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
         """
         args, kwargs = get_func_params(FeatsJointTagger.load, locals())
         super().load(FeatTaggerModel, *args, **kwargs)
@@ -72,33 +75,42 @@ class FeatsJointTagger(BaseTagger):
 
         Args:
 
-        **corpus**: a corpus which will be used for feature extraction and
-        predictions. May be either a name of the file in *CoNLL-U* format or
-        list/iterator of sentences in *Parsed CoNLL-U*.
+        **corpus**: the corpus which will be used for the feature extraction
+        and predictions. May be either the name of the file in *CoNLL-U*
+        format or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-        **with_orig** (`bool`): if `True`, instead of only a sequence with
-        predicted labels, returns a sequence of tuples where the first element
-        is a sentence with predicted labels and the second element is the
-        original sentence. `with_orig` can be `True` only if `save_to` is
-        `None`. Default `with_orig=False`.
+        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+        we use our prediction only. If `True`, we replace our prediction to
+        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+        method if its `coef` >= `.99`. Also, you can specify your own
+        threshold as the value of the param.
 
-        **batch_size** (`int`): number of sentences per batch. Default
-        `batch_size=64`.
+        **with_orig** (`bool`; default is `False`): if `True`, instead of just
+        the sequence with predicted labels, return the sequence of tuples
+        where the first element is the sentence with predicted labels and the
+        second element is the original sentence. **with_orig** can be `True`
+        only if **save_to** is `None`.
 
-        **split** (`int`): number of lines in each split. Allows to process a
-        large dataset in pieces ("splits"). Default `split=None`, i.e. process
-        full dataset without splits.
+        **batch_size** (`int`; default is `64`): the number of sentences per
+        batch.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and
-        transformed. If `False`, `transform_collate` is used without cloning
-        the dataset. There is no big differences between the variants. Both
-        should produce identical results.
+        **split** (`int`; default is `None`): the number of lines in sentences
+        split. Allows to process a large dataset in pieces ("splits"). If
+        **split** is `None` (default), all the dataset is processed without
+        splits.
 
-        **save_to**: file name where the predictions will be saved.
+        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+        cloned and transformed. If `False`, `transform_collate` is used
+        without cloning the dataset. There is no big differences between the
+        variants. Both should produce identical results.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **save_to** (`str`; default is `None`): the file name where the
+        predictions will be saved.
 
-        Returns corpus with feature keys and values predicted in the FEATS
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
+
+        Returns the corpus with feature keys and values predicted in the FEATS
         field.
         """
         assert not with_orig or save_to is None, \
@@ -135,36 +147,43 @@ class FeatsJointTagger(BaseTagger):
 
         Args:
 
-        **gold**: a corpus of sentences with actual target values to score the
-        tagger on. May be either a name of the file in *CoNLL-U* format or
-        list/iterator of sentences in *Parsed CoNLL-U*.
+        **gold**: the corpus of sentences with actual target values to score
+        the tagger on. May be either the name of the file in *CoNLL-U* format
+        or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-        **test**: a corpus of sentences with predicted target values. If
-        `None`, the **gold** corpus will be retagged on-the-fly, and the
-        result will be used **test**.
+        **test** (default is `None`): the corpus of sentences with predicted
+        target values. If `None` (default), the **gold** corpus will be
+        retagged on-the-fly, and the result will be used as the **test**.
 
-        **feats** (`str|list([str])`): one or several feature names of the
-        key-value type fields like `FEATS` or `MISC` to be evaluated.
+        **feats** (`str | list([str])`; default is `None`): one or several
+        subfields of the key-value type fields like `FEATS` or `MISC` to be
+        evaluated separatedly.
 
-        **label** (`str`): specific label of the target feature value to be
-        evaluated, e.g. `label='Inan'`. If you specify a value here, you must
-        also specify the feature name as **feats** param (e.g.:
-        `feats=`'Animacy'`). Note, that in that case the param **feats** must
-        contain only one feature name.
+        **label** (`str`; default is `None`): the specific label of the target
+        field to be evaluated separatedly, e.g. `field='UPOS', label='VERB'`
+        or `field='FEATS:Animacy', label='Inan'`.
 
-        **batch_size** (`int`): number of sentences per batch. Default
-        `batch_size=64`.
+        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+        we use our prediction only. If `True`, we replace our prediction to
+        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+        method if its `coef` >= `.99`. Also, you can specify your own
+        threshold as the value of the param.
 
-        **split** (`int`): number of lines in each split. Allows to process a
-        large dataset in pieces ("splits"). Default `split=None`, i.e. process
-        full dataset without splits.
+        **batch_size** (`int`; default is `64`): the number of sentences per
+        batch.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and
-        transformed. If `False`, `transform_collate` is used without cloning
-        the dataset. There is no big differences between the variants. Both
-        should produce identical results.
+        **split** (`int`; default is `None`): the number of lines in sentences
+        split. Allows to process a large dataset in pieces ("splits"). If
+        **split** is `None` (default), all the dataset is processed without
+        splits.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+        cloned and transformed. If `False`, `transform_collate` is used
+        without cloning the dataset. There is no big differences between the
+        variants. Both should produce identical results.
+
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
 
         The method prints metrics and returns evaluation accuracy.
         """
@@ -375,7 +394,7 @@ class FeatsJointTagger(BaseTagger):
         **log_file** (`file`; default is `sys.stdout`): the stream for info
         messages.
 
-        `FeatTaggerModel` constructor params:
+        *The model hyperparameters*:
 
         **rnn_emb_dim** (`int`; default is `None`): the internal character RNN
         (LSTM) embedding dimensionality. If `None`, the layer is skipped.
@@ -459,20 +478,21 @@ class FeatsJointTagger(BaseTagger):
 
 class FeatsSeparateTagger(BaseTagger):
     """
-    A class for prediction a content ot a key-value type field. Separate
-    implementation (for each feature, creates its own tagger).
+    A class for the prediction of the content ot a key-value type field.
+    Separate implementation (for each feature, creates its own tagger).
 
     Args:
 
-    **field** (`str`): a name of the *CoNLL-U* key-value type field, content
-    of which needs to be predicted. With the tagger, you can predict only
-    key-value type fields, like FEATS.
+    **field** (`str`; default is `FEATS`): the name of the *CoNLL-U* key-value
+    type field, content of which needs to be predicted. With this tagger, you
+    can predict only key-value type fields, like FEATS.
 
-    **embs**: `dict` with paths to the embeddings file as keys and
-    corresponding embeddings models as values. If tagger needs to load any
-    embeddings model, firstly, model is looked up it in that `dict`.
+    **embs** (`dict({str: object}); default is `None`): the `dict` with paths
+    to embeddings files as keys and corresponding embedding models as values.
+    If the tagger needs to load any embedding model, firstly, the model is
+    looked up it in that `dict`.
 
-    During init, **embs** is copied to the `emb` attribute of the creating
+    During init, **embs** is copied to the `embs` attribute of the creating
     object, and this attribute may be used further to share already loaded
     embeddings with another taggers.
     """
@@ -488,9 +508,10 @@ class FeatsSeparateTagger(BaseTagger):
 
         Args:
 
-        **name**: a name to save with.
+        **name**: the name to save with.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
         """
         if not name.endswith(CONFIG_EXT):
             name += CONFIG_EXT
@@ -507,6 +528,10 @@ class FeatsSeparateTagger(BaseTagger):
 
         Args:
 
+        **name** (`str`): the name of the previously saved internal state.
+
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
         **name**: a name of the tagger's config.
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
@@ -536,44 +561,42 @@ class FeatsSeparateTagger(BaseTagger):
 
         Args:
 
-        **corpus**: a corpus which will be used for feature extraction and
-        predictions. May be either a name of the file in *CoNLL-U* format or
-        list/iterator of sentences in *Parsed CoNLL-U*.
+        **corpus**: the corpus which will be used for the feature extraction
+        and predictions. May be either the name of the file in *CoNLL-U*
+        format or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-        **feats** (`str|list([str)`): exact features to be predicted.
+        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+        we use our prediction only. If `True`, we replace our prediction to
+        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+        method if its `coef` >= `.99`. Also, you can specify your own
+        threshold as the value of the param.
 
-        **remove_excess_feats** (`bool`): if `True` (default), the tagger
-        removes all unrelevant features from predicted field ("unrelevant"
-        means, that the tagger don't have a models for them). For example, if
-        you trained the tagger only for "Case" and "Gender" features, the
-        tagger predict only them (or, only one of them, if you specify it in
-        **feats** field) and remove all the rest. If
-        `remove_excess_feats=False`, all unrelevant feats will be stayed
-        intact.
+        **with_orig** (`bool`; default is `False`): if `True`, instead of just
+        the sequence with predicted labels, return the sequence of tuples
+        where the first element is the sentence with predicted labels and the
+        second element is the original sentence. **with_orig** can be `True`
+        only if **save_to** is `None`.
 
-        **with_orig** (`bool`): if `True`, instead of only a sequence with
-        predicted labels, returns a sequence of tuples where the first element
-        is a sentence with predicted labels and the second element is the
-        original sentence. `with_orig` can be `True` only if `save_to` is
-        `None`. Default `with_orig=False`.
+        **batch_size** (`int`; default is `64`): the number of sentences per
+        batch.
 
-        **batch_size** (`int`): number of sentences per batch. Default
-        `batch_size=64`.
+        **split** (`int`; default is `None`): the number of lines in sentences
+        split. Allows to process a large dataset in pieces ("splits"). If
+        **split** is `None` (default), all the dataset is processed without
+        splits.
 
-        **split** (`int`): number of lines in each split. Allows to process a
-        large dataset in pieces ("splits"). Default `split=None`, i.e. process
-        full dataset without splits.
+        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+        cloned and transformed. If `False`, `transform_collate` is used
+        without cloning the dataset. There is no big differences between the
+        variants. Both should produce identical results.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and
-        transformed. If `False`, `transform_collate` is used without cloning
-        the dataset. There is no big differences between the variants. Both
-        should produce identical results.
+        **save_to** (`str`; default is `None`): the file name where the
+        predictions will be saved.
 
-        **save_to**: file name where the predictions will be saved.
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
-
-        Returns corpus with feature keys and values predicted in the FEATS
+        Returns the corpus with feature keys and values predicted in the FEATS
         field.
         """
         args, kwargs = get_func_params(FeatsSeparateTagger.predict, locals())
@@ -659,36 +682,43 @@ class FeatsSeparateTagger(BaseTagger):
 
         Args:
 
-        **gold**: a corpus of sentences with actual target values to score the
-        tagger on. May be either a name of the file in *CoNLL-U* format or a
-        list/iterator of sentences in *Parsed CoNLL-U*.
+        **gold**: the corpus of sentences with actual target values to score
+        the tagger on. May be either the name of the file in *CoNLL-U* format
+        or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
 
-        **test**: a corpus of sentences with predicted target values. If
-        `None`, the **gold** corpus will be retagged on-the-fly, and the
-        result will be used as **test**.
+        **test** (default is `None`): the corpus of sentences with predicted
+        target values. If `None` (default), the **gold** corpus will be
+        retagged on-the-fly, and the result will be used as the **test**.
 
-        **feats** (`str|list([str])`): one or several feature names of the
-        key-value type fields like `FEATS` or `MISC` to be evaluated.
+        **feats** (`str | list([str])`; default is `None`): one or several
+        subfields of the key-value type fields like `FEATS` or `MISC` to be
+        evaluated separatedly.
 
-        **label** (`str`): specific label of the target feature value to be
-        evaluated, e.g. `label='Inan'`. If you specify a value here, you must
-        also specify the feature name as **feats** param (e.g.:
-        `feats='Animacy'`). Note, that in that case the param **feats** must
-        contain only one feature name.
+        **label** (`str`; default is `None`): the specific label of the target
+        field to be evaluated separatedly, e.g. `field='UPOS', label='VERB'`
+        or `field='FEATS:Animacy', label='Inan'`.
 
-        **batch_size** (`int`): number of sentences per batch. Default
-        `batch_size=64`.
+        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+        we use our prediction only. If `True`, we replace our prediction to
+        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+        method if its `coef` >= `.99`. Also, you can specify your own
+        threshold as the value of the param.
 
-        **split** (`int`): number of lines in each split. Allows to process a
-        large dataset in pieces ("splits"). Default `split=None`, i.e. process
-        full dataset without splits.
+        **batch_size** (`int`; default is `64`): the number of sentences per
+        batch.
 
-        **clone_ds** (`bool`): if `True`, the dataset is cloned and
-        transformed. If `False`, `transform_collate` is used without cloning
-        the dataset. There is no big difference between the variants. Both
-        should produce identical results.
+        **split** (`int`; default is `None`): the number of lines in sentences
+        split. Allows to process a large dataset in pieces ("splits"). If
+        **split** is `None` (default), all the dataset is processed without
+        splits.
 
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
+        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+        cloned and transformed. If `False`, `transform_collate` is used
+        without cloning the dataset. There is no big differences between the
+        variants. Both should produce identical results.
+
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
 
         The method prints metrics and returns evaluation accuracy.
         """
@@ -897,7 +927,7 @@ class FeatsSeparateTagger(BaseTagger):
         **log_file** (`file`; default is `sys.stdout`): the stream for info
         messages.
 
-        `FeatTaggerModel` constructor params:
+        *The model hyperparameters*:
 
         **rnn_emb_dim** (`int`; default is `None`): the internal character RNN
         (LSTM) embedding dimensionality. If `None`, the layer is skipped.
