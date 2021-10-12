@@ -44,7 +44,7 @@ features, the number of occurences of which is greater than that value.
 * `feats_prune_coef=None` means "use all feats";
 * default `feats_prune_coef=6`.
 
-**embs** (`dict({str: object}); default is `None`): the `dict` with paths
+**embs** (`dict({str: object})`; default is `None`): the `dict` with paths
 to embeddings files as keys and corresponding embedding models as values.
 If the tagger needs to load any embedding model, firstly, the model is
 looked up it in that `dict`.

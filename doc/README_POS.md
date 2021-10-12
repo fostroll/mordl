@@ -30,7 +30,7 @@ Args:
 predicted. With this tagger, you can predict only fields with atomic
 values, like UPOS.
 
-**embs** (`dict({str: object}); default is `None`): the `dict` with paths
+**embs** (`dict({str: object})`; default is `None`): the `dict` with paths
 to embeddings files as keys and corresponding embedding models as values.
 If the tagger needs to load any embedding model, firstly, the model is
 looked up it in that `dict`.

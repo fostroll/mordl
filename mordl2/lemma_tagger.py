@@ -62,13 +62,13 @@ class LemmaTagger(BaseTagger):
 
         Args:
 
-        **lower** (`bool`): if `True`, the return values will be always in
-        lower case. Elsewise, we compare strings in lower case but return
-        values will be in original case.
+        **lower** (`bool`; default is `False`): if `True`, return values will
+        be always in lower case. Elsewise, we compare strings in lower case
+        but return values will be in original case.
 
-        Returns the prefix, the common part, the suffix/flexion of **form**,
-        as well as the prefix, the common part, the suffix/flexion of
-        **lemma** (the `tuple` of 6 `str` values).
+        Returns the prefix, the common part, the suffix/flexion of the
+        **form**, as well as the prefix, the common part, the suffix/flexion
+        of the **lemma** (i.e. the `tuple` of 6 `str` values).
         """
         if lower:
             lex = form = form.lower()
@@ -135,9 +135,9 @@ class LemmaTagger(BaseTagger):
 
     @staticmethod
     def get_editops(str_from, str_to, allow_replace=True, allow_copy=True):
-        """Get edit operations from `str_from` to `str_to` according to
-        Levenstein distance. Supported edit operations: 'delete', 'insert',
-        'replace', 'copy'.
+        """Gets edit operations from **str_from** to **str_to** according to
+        Levenstein distance. Supported edit operations are: `'delete'`,
+        `'insert'`, `'replace'`, `'copy'`.
 
         Args:
 
@@ -145,12 +145,13 @@ class LemmaTagger(BaseTagger):
 
         **str_to** (`str`): the target string.
 
-        **allow_replace** (`bool`): whether to allow the **replace** edit
-        operation.
+        **allow_replace** (`bool`; default is `True`): whether to allow the
+        **replace** edit operation.
 
-        **allow_copy** (`bool`): whether to allow the **copy** edit operation.
+        **allow_copy** (`bool`; default is `True`): whether to allow the
+        **copy** edit operation.
 
-        Return the `tuple` of edit operations that is needed to transform
+        Returns the `tuple` of edit operations that is needed to transform
         **str_from** to **str_to**.
         """
         res = []
@@ -178,13 +179,13 @@ class LemmaTagger(BaseTagger):
 
     @staticmethod
     def apply_editops(str_from, ops):
-        """Apply edit operations to the **str_from**.
+        """Applies edit operations to the **str_from**.
 
         Args:
 
-        **str_from** (`str`): the source string to apply edit operations to.
+        **str_from** (`str`): the source string to apply edit operations.
 
-        **ops** (`tuple([str])`): the `tuple` or `list` with edit operations.
+        **ops** (`tuple([str])`): the `tuple`/`list` with edit operations.
 
         Returns **str_from** with **ops** applied.
         """

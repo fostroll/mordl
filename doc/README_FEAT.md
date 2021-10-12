@@ -53,7 +53,7 @@ features, the number of occurences of which is greater than that value.
 
 **NB**: the argument is relevant only if **feat** is not from FEATS field.
 
-**embs** (`dict({str: object}); default is `None`): the `dict` with paths
+**embs** (`dict({str: object})`; default is `None`): the `dict` with paths
 to embeddings files as keys and corresponding embedding models as values.
 If the tagger needs to load any embedding model, firstly, the model is
 looked up it in that `dict`.
