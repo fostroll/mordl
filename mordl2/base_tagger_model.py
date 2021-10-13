@@ -219,15 +219,16 @@ class BaseTaggerModel(BaseModel):
             self.lstm_l = None
 
         if tran_layers > 0:
+            norm1 = nn.LayerNorm(normalized_shape=final_emb_dim,
+                                 eps=1e-5, elementwise_affine=True)
             tran_enc_l = nn.TransformerEncoderLayer(
-                final_emb_dim, tran_heads,
-                dim_feedforward=2048, dropout=0.1, activation='relu',
-                layer_norm_eps=1e-05
+                final_emb_dim, tran_heads, dim_feedforward=2048,
+                dropout=0.1, activation='relu', norm=norm1
             )
-            tran_norm_l = nn.LayerNorm(normalized_shape=final_emb_dim,
-                                       eps=1e-6, elementwise_affine=True)
+            norm2 = nn.LayerNorm(normalized_shape=final_emb_dim,
+                                 eps=1e-5, elementwise_affine=True)
             self.tran_l = nn.TransformerEncoder(
-                tran_enc_l, tran_layers, norm=tran_norm_l
+                tran_enc_l, tran_layers, norm=norm2
             )
         else:
             self.tran_l = None
