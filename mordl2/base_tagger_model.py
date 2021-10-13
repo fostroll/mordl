@@ -293,7 +293,8 @@ class BaseTaggerModel(BaseModel):
         if self.tran_l:
             src_key_padding_mask = (
                 torch.arange(x.shape[1], device=device).expand(x.shape[:-1])
-             >= x_lens.view(1, -1).transpose(0, 1).expand(x.shape[:-1])
+             >= x_lens.to(device).view(1, -1).transpose(0, 1)
+                                             .expand(x.shape[:-1])
             )
             x.transpose_(0, 1)  # (N, L, C) to (L, N, C)
             x = self.tran_l(x, src_key_padding_mask=src_key_padding_mask)
