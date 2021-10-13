@@ -283,7 +283,7 @@ class WordEmbeddings:
         # scheduler = get_cosine_schedule_with_warmup(
             optimizer,
             num_warmup_steps=num_warmup_steps if num_warmup_steps >= 1 else
-                             num_warmup_steps * total_steps,
+                             int(num_warmup_steps * total_steps),
             num_training_steps=total_steps
         )
 
