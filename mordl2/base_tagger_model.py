@@ -226,7 +226,7 @@ class BaseTaggerModel(BaseModel):
                 dropout=0.1, activation='relu', norm=norm1
             )
             norm2 = nn.LayerNorm(normalized_shape=final_emb_dim,
-                                 eps=1e-5, elementwise_affine=True)
+                                 eps=1e-6, elementwise_affine=True)
             self.tran_l = nn.TransformerEncoder(
                 tran_enc_l, tran_layers, norm=norm2
             )
