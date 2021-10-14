@@ -70,9 +70,9 @@ class WordEmbeddings:
                   best_score=None,
                   # word_emb_tune_params ##################
                   save_as=None, epochs=3, batch_size=8,
-                  lr=5e-5, betas=(0.9, 0.999), eps=1e-8,
+                  lr=2e-5, betas=(0.9, 0.999), eps=1e-8,
                   weight_decay=.01, amsgrad=False,
-                  num_warmup_steps=0, max_grad_norm=1.,
+                  num_warmup_steps=3, max_grad_norm=1.,
                   #########################################
                   transform_kwargs=None,
                       # BertDataset.transform() # params:

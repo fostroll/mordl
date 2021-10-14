@@ -795,11 +795,11 @@ class BaseTagger(BaseParser):
                   #  'max_epochs': None, 'min_epochs': None,
                   #  'bad_epochs': None, 'batch_size': None,
                   #  'max_grad_norm': None}
-              stage3_params=None,
+              stage3_params={'save_as': None},
                   # {'save_as': None, 'epochs': 3, 'batch_size': 8,
-                  #  'lr': 5e-5, 'betas': (0.9, 0.999), 'eps': 1e-8,
+                  #  'lr': 2e-5, 'betas': (0.9, 0.999), 'eps': 1e-8,
                   #  'weight_decay': .01, 'amsgrad': False,
-                  #  'num_warmup_steps': 0, 'max_grad_norm': 1.}
+                  #  'num_warmup_steps': 3, 'max_grad_norm': 1.}
               stages=[1, 2, 3, 1, 2], save_stages=False, load_from=None,
               learn_on_padding=True, remove_padding_intent=False,
               seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
