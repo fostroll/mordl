@@ -976,7 +976,7 @@ class BaseTagger(BaseParser):
         with some of real tags, and they would just ignored during computing
         loss. As a result, the model would have the output dimensionality of
         the final layer less by one. Theoretically, it could increase the
-        performance, but in our experiments, we have not seen such effect.
+        performance, but in our experiments, such effect appeared not always.
 
         **seed** (`int`; default is `None`): init value for the random number
         generator if you need reproducibility. Note that each stage will have

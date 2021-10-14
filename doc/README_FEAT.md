@@ -76,9 +76,10 @@ chapter.
 ### Training<a name="train"></a>
 
 ***MorDL*** allows you to train either the BiLSTM or the Transformer Encoder
-base single morphological feature prediction model. The latter has slightly
-better performance, though on very long sentences it may cause *CUDA out of
-memory* error on the inference.
+base single morphological feature prediction model. The latter may have
+slightly better performance (but to achieve it, you have to tune other params
+too), though on very long sentences it may cause *CUDA out of memory* error on
+the inference.
 
 **NB:** By this step, you should have the tagger object created and training
 data loaded.
@@ -260,7 +261,7 @@ intent during training at all. I.e. padding tokens would be tagged
 with some of real tags, and they would just ignored during computing
 loss. As a result, the model would have the output dimensionality of
 the final layer less by one. Theoretically, it could increase the
-performance, but in our experiments, we have not seen such effect.
+performance, but in our experiments, such effect appeared not always.
 
 **seed** (`int`; default is `None`): init value for the random number
 generator if you need reproducibility. Note that each stage will have

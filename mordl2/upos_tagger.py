@@ -180,7 +180,7 @@ class UposTagger(BaseTagger):
               device=None, control_metric='accuracy', max_epochs=None,
               min_epochs=0, bad_epochs=5, batch_size=TRAIN_BATCH_SIZE,
               max_grad_norm=None, tags_to_remove=None, word_emb_type='bert',
-              word_emb_path=None, word_transform_kwargs=None,
+              word_emb_path='xlm-roberta-base', word_transform_kwargs=None,
                   # BertDataset.transform() (for BERT-descendant models)
                   # params:
                   # {'max_len': 0, 'batch_size': 64, 'hidden_ids': '10',
@@ -201,11 +201,13 @@ class UposTagger(BaseTagger):
                   #  'max_epochs': None, 'min_epochs': None,
                   #  'bad_epochs': None, 'batch_size': None,
                   #  'max_grad_norm': None}
-              stage3_params=None,
+              stage3_params={
+                  'save_as': None, 'lr': 2e-5, 'num_warmup_steps': 3
                   # {'save_as': None, 'epochs': 3, 'batch_size': 8,
                   #  'lr': 5e-5, 'betas': (0.9, 0.999), 'eps': 1e-8,
                   #  'weight_decay': .01, 'amsgrad': False,
                   #  'num_warmup_steps': 0, 'max_grad_norm': 1.}
+              },
               stages=[1, 2, 3, 1, 2], save_stages=False, load_from=None,
               learn_on_padding=True, remove_padding_intent=False,
               seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
@@ -351,7 +353,7 @@ class UposTagger(BaseTagger):
         with some of real tags, and they would just ignored during computing
         loss. As a result, the model would have the output dimensionality of
         the final layer less by one. Theoretically, it could increase the
-        performance, but in our experiments, we have not seen such effect.
+        performance, but in our experiments, such effect appeared not always.
 
         **seed** (`int`; default is `None`): init value for the random number
         generator if you need reproducibility. Note that each stage will have
