@@ -206,7 +206,7 @@ class FeatsJointTagger(BaseTagger):
               device=None, control_metric='accuracy', max_epochs=None,
               min_epochs=0, bad_epochs=5, batch_size=TRAIN_BATCH_SIZE,
               max_grad_norm=None, tags_to_remove=None, word_emb_type='bert',
-              word_emb_path=None, word_transform_kwargs=None,
+              word_emb_path='xlm-roberta-base', word_transform_kwargs=None,
                   # BertDataset.transform() (for BERT-descendant models)
                   # params:
                   # {'max_len': 0, 'batch_size': 64, 'hidden_ids': '10',
