@@ -236,7 +236,7 @@ class FeatsJointTagger(BaseTagger):
               learn_on_padding=True, remove_padding_intent=False,
               seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              upos_emb_dim=300, emb_bn=True, emb_do=.2,
+              upos_emb_dim=200, emb_bn=True, emb_do=.2,
               final_emb_dim=512, pre_bn=True, pre_do=.5,
               lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
               post_bn=True, post_do=.4):
