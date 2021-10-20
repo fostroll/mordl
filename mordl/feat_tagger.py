@@ -1,31 +1,44 @@
 # -*- coding: utf-8 -*-
-# MorDL project: UPOS tagger
+# MorDL project: FEATS:feat tagger
 #
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
-Provides a UPOS tagger class.
+Provides a single-tag FEAT tagger class.
 """
 from corpuscula import CorpusDict
+from difflib import get_close_matches
 from junky import get_func_params
-from mordl2.base_tagger import BaseTagger
-from mordl2.defaults import BATCH_SIZE, CDICT_COEF_THRESH ,LOG_FILE, \
-                           TRAIN_BATCH_SIZE
-from mordl2.upos_tagger_model import UposTaggerModel
+from mordl.base_tagger import BaseTagger
+from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
+from mordl.feat_tagger_model import FeatTaggerModel
 import time
 
-_CDICT_COEF_THRESH = .99
 
-
-class UposTagger(BaseTagger):
+class FeatTagger(BaseTagger):
     """
-    The UPOS tagger class.
+    The class of single-feature tagger.
 
     Args:
 
-    **field** (`str`; default is `UPOS`): the name of the *CoNLL-U* field,
-    values of which needs to be predicted. With this tagger, you can predict
-    only fields with atomicvalues, like UPOS.
+    **feat** (`str`): the name of the feat which needs to be predicted by the
+    tagger. May contains a prefix, separated by the colon (`:`). In that case,
+    the prefix is treated as a field name. Also, if **feat** starts with the
+    colon, we get `'FEATS'` as a field name. Otherwise, if **feat** contains
+    no colon, the field name set to **feat** itself. Examples: `'MISC:NE'`,
+    `':Animacy'`, `'DEPREL'`.
+
+    **feats_prune_coef** (`int`; default is `6`): the feature prunning
+    coefficient which allows to eliminate all features that have a low
+    frequency. To improve the prediction quality, we get a number of
+    occurences of the most frequent feature from the FEATS field for each UPOS
+    tag, divide that number by **feats_prune_coef**, and use only those
+    features, the number of occurences of which is greater than that value.
+    * `feats_prune_coef=0` means "do not use feats";
+    * `feats_prune_coef=None` means "use all feats";
+    * default `feats_prune_coef=6`.
+
+    **NB**: the argument is relevant only if **feat** is not from FEATS field.
 
     **embs** (`dict({str: object}); default is `None`): the `dict` with paths
     to embeddings files as keys and corresponding embedding models as values.
@@ -36,9 +49,68 @@ class UposTagger(BaseTagger):
     object, and this attribute may be used further to share already loaded
     embeddings with another taggers.
     """
-    def __init__(self, field='UPOS', embs=None):
+    def __init__(self, feat, feats_prune_coef=6, embs=None):
+        assert feat != 'UPOS', 'ERROR: for UPOS field use UposTagger class'
         super().__init__(embs=embs)
-        self._field = field
+        if feat[0] == ':':
+            feat = 'FEATS' + feat
+        self._field = feat
+        if feat.startswith('FEATS:'):
+            feats_prune_coef = 0
+        self._feats_prune_coef = feats_prune_coef
+        self._model_class = FeatTaggerModel
+
+    def _transform_upos(self, corpus, key_vals=None):
+        rel_feats = {}
+        prune_coef = self._feats_prune_coef
+        if prune_coef != 0:
+            tags = self._cdict.get_tags_freq()
+            if tags:
+                thresh = tags[0][1] / prune_coef if prune_coef else 0
+                tags = [x[0] for x in tags if x[1] > thresh]
+            for tag in tags:
+                feats_ = rel_feats[tag] = set()
+                tag_feats = self._cdict.get_feats_freq(tag)
+                if tag_feats:
+                    thresh = tag_feats[0][1] / prune_coef if prune_coef else 0
+                    [feats_.add(x[0]) for x in tag_feats if x[1] > thresh]
+
+        for sent in corpus:
+            for tok in sent[0] if isinstance(sent, tuple) else sent:
+                upos = tok['UPOS']
+                if upos:
+                    upos = upos_ = upos.split(' ')[0]
+                    feats = tok['FEATS']
+                    if feats:
+                        rel_feats_ = rel_feats.get(upos)
+                        if rel_feats_:
+                            for feat, val in sorted(feats.items()):
+                                if feat in rel_feats_:
+                                    upos_ += ' ' + feat + ':' + val
+                        upos = upos_ \
+                                   if not key_vals or upos_ in key_vals else \
+                               [*get_close_matches(upos_,
+                                                   key_vals, n=1), upos][0]
+                    tok['UPOS'] = upos
+            yield sent
+
+    @staticmethod
+    def _restore_upos(corpus, with_orig=False):
+        def restore_upos(sent):
+            if isinstance(sent, tuple):
+                sent = sent[0]
+            for tok in sent:
+                upos = tok['UPOS']
+                if upos:
+                    tok['UPOS'] = upos.split(' ')[0]
+        for sent in corpus:
+            for tok in sent:
+                if with_orig:
+                    restore_upos(sent[0])
+                    restore_upos(sent[1])
+                else:
+                    restore_upos(sent)
+            yield sent
 
     def load(self, name, device=None,
              dataset_emb_path=None, dataset_device=None, log_file=LOG_FILE):
@@ -61,36 +133,20 @@ class UposTagger(BaseTagger):
         **log_file** (`file`; default is `sys.stdout`): the stream for info
         messages.
         """
-        args, kwargs = get_func_params(UposTagger.load, locals())
-        super().load(UposTaggerModel, *args, **kwargs)
-
-    def _check_cdict(self, sentence, use_cdict_coef):
-        if use_cdict_coef not in [None, False]:
-            isfirst = True
-            for token in sentence[0] if isinstance(sentence, tuple) else \
-                sentence:
-                id_, form = token['ID'], token['FORM']
-                if form and '-' not in id_:
-                    guess, coef = \
-                        self._cdict.predict_tag(form, isfirst=isfirst)
-                    isfirst = False
-                    if coef is not None \
-                   and coef >= (CDICT_COEF_THRESH
-                                    if use_cdict_coef is True else
-                                use_cdict_coef):
-                        token['UPOS'] = guess
-        return sentence
+        args, kwargs = get_func_params(FeatTagger.load, locals())
+        super().load(FeatTaggerModel, *args, **kwargs)
 
     def predict(self, corpus, use_cdict_coef=False, with_orig=False,
                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                save_to=None, log_file=LOG_FILE):
-        """Predicts tags in the UPOS field of the corpus.
+                save_to=None, log_file=LOG_FILE, **_):
+        """Predicts values in the certain feature of the key-value type field
+        of the specified **corpus**.
 
         Args:
 
-        **corpus**: the corpus which will be used for the feature extraction
-        and predictions. May be either the name of the file in *CoNLL-U*
-        format or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
+        **corpus**: a corpus which will be used for feature extraction and
+        predictions. May be either a name of the file in *CoNLL-U* format or a
+        list/iterator of sentences in *Parsed CoNLL-U*.
 
         **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
         we use our prediction only. If `True`, we replace our prediction to
@@ -98,37 +154,54 @@ class UposTagger(BaseTagger):
         method if its `coef` >= `.99`. Also, you can specify your own
         threshold as the value of the param.
 
-        **with_orig** (`bool`; default is `False`): if `True`, instead of just
-        the sequence with predicted labels, return the sequence of tuples
-        where the first element is the sentence with predicted labels and the
-        second element is the original sentence. **with_orig** can be `True`
-        only if **save_to** is `None`.
+        **with_orig** (`bool`): if `True`, instead of only a sequence with
+        predicted labels, returns a sequence of tuples where the first element
+        is a sentence with predicted labels and the second element is the
+        original sentence. `with_orig` can be `True` only if `save_to` is
+        `None`. Default `with_orig=False`.
 
-        **batch_size** (`int`; default is `64`): the number of sentences per
-        batch.
+        **batch_size** (`int`): number of sentences per batch. Default
+        `batch_size=64`.
 
-        **split** (`int`; default is `None`): the number of lines in sentences
-        split. Allows to process a large dataset in pieces ("splits"). If
-        **split** is `None` (default), all the dataset is processed without
-        splits.
+        **split** (`int`): number of lines in each split. Allows to process a
+        large dataset in pieces ("splits"). Default `split=None`, i.e. process
+        full dataset without splits.
 
-        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
-        cloned and transformed. If `False`, `transform_collate` is used
-        without cloning the dataset. There is no big differences between the
-        variants. Both should produce identical results.
+        **clone_ds** (`bool`): if `True`, the dataset is cloned and
+        transformed. If `False`, `transform_collate` is used without cloning
+        the dataset. There is no big differences between the variants. Both
+        should produce identical results.
 
-        **save_to** (`str`; default is `None`): the file name where the
-        predictions will be saved.
+        **save_to**: file name where the predictions will be saved.
 
-        **log_file** (`file`; default is `sys.stdout`): the stream for info
-        messages.
+        **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Returns the corpus with tags predicted in the UPOS field.
+        Returns the corpus with predicted values of certain feature in the
+        key-value type field.
         """
-        assert self._field == 'UPOS' or use_cdict_coef in [None, False], \
-            'ERROR: "use_cdict_coef" param may be used only with UPOS field'
-        args, kwargs = get_func_params(UposTagger.predict, locals())
-        return super().predict(self._field, None, *args, **kwargs)
+        assert self._ds is not None, \
+               "ERROR: The tagger doesn't have a dataset. Call the train() " \
+               'method first'
+        assert not with_orig or save_to is None, \
+               'ERROR: `with_orig` can be True only if save_to is None'
+        args, kwargs = get_func_params(FeatTagger.predict, locals())
+
+        if self._feats_prune_coef != 0:
+            kwargs['save_to'] = None
+            key_vals = self._ds.get_dataset('t_0').transform_dict
+            corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
+            corpus = self._transform_upos(corpus, key_vals=key_vals)
+
+        corpus = super().predict(self._field, 'UPOS', corpus, **kwargs)
+
+        if self._feats_prune_coef != 0:
+            corpus = self._restore_upos(corpus)
+
+            if save_to:
+                self.save_conllu(corpus, save_to, log_file=None)
+                corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
+
+        return corpus
 
     def evaluate(self, gold, test=None, label=None, use_cdict_coef=False,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
@@ -173,7 +246,7 @@ class UposTagger(BaseTagger):
 
         The method prints metrics and returns evaluation accuracy.
         """
-        args, kwargs = get_func_params(UposTagger.evaluate, locals())
+        args, kwargs = get_func_params(FeatTagger.evaluate, locals())
         return super().evaluate(self._field, *args, **kwargs)
 
     def train(self, save_as,
@@ -210,11 +283,11 @@ class UposTagger(BaseTagger):
               learn_on_padding=True, remove_padding_intent=False,
               seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
               rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              emb_bn=True, emb_do=.2,
+              upos_emb_dim=300, emb_bn=True, emb_do=.2,
               final_emb_dim=512, pre_bn=True, pre_do=.5,
               lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
               post_bn=True, post_do=.4):
-        """Creates and trains the UPOS tagger model.
+        """Creates and trains the feature tagger model.
 
         During training, the best model is saved after each successful epoch.
 
@@ -256,7 +329,7 @@ class UposTagger(BaseTagger):
         default is `None`): the tags, tokens with those must be removed from
         the corpus. It's the `dict` with field names as keys and values you
         want to remove. Applied only to fields with atomic values (like
-        UPOS). This argument may be used, for example, to remove some
+        *UPOS*). This argument may be used, for example, to remove some
         infrequent or just excess tags from the corpus. Note, that we remove
         the tokens from the train corpus completely, not just replace those
         tags to `None`.
@@ -381,6 +454,9 @@ class UposTagger(BaseTagger):
         kernel sizes of the internal CNN embedding layer. Relevant if
         **cnn_emb_dim** is not `None`.
 
+        **upos_emb_dim** (`int`; default is `300`): the auxiliary UPOS label
+        embedding dimensionality.
+
         **emb_bn** (`bool`; default is `True`): whether batch normalization
         layer should be applied after the embedding concatenation.
 
@@ -418,15 +494,38 @@ class UposTagger(BaseTagger):
         """
         if not start_time:
             start_time = time.time()
-        args, kwargs = get_func_params(UposTagger.train, locals())
+        args, kwargs = get_func_params(FeatTagger.train, locals())
 
-        self._cdict = CorpusDict(
-            corpus=(x for x in [self._train_corpus,
-                                self._test_corpus if self._test_corpus else
-                                []]
-                      for x in x),
-            format='conllu_parsed', log_file=log_file
-        )
+        if self._feats_prune_coef != 0:
+            for _ in (
+                x.update({'LEMMA': x['FORM']})
+                    for x in [self._train_corpus,
+                              self._test_corpus if self._test_corpus else []]
+                    for x in x
+                    for x in x
+            ):
+                pass
+            self._cdict = CorpusDict(
+                corpus=(x for x in [self._train_corpus,
+                                    self._test_corpus
+                                        if self._test_corpus else
+                                    []]
+                          for x in x),
+                format='conllu_parsed', log_file=log_file
+            )
+            self._save_cdict(save_as + '.cdict.pickle')
+            if log_file:
+                print(file=log_file)
 
-        return super().train(self._field, None, UposTaggerModel, None,
+            if self._test_corpus:
+                for _ in self._transform_upos(self._train_corpus):
+                    pass
+                key_vals = set(x['UPOS'] for x in self._train_corpus
+                                         for x in x
+                                   if x['FORM'] and x['UPOS']
+                                                and '-' not in x['ID'])
+                for _ in self._transform_upos(self._test_corpus, key_vals):
+                    pass
+
+        return super().train(self._field, 'UPOS', self._model_class, 'upos',
                              *args, **kwargs)

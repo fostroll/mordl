@@ -2,12 +2,12 @@ import os
 from setuptools import setup, find_packages
 
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
-version_file_contents = open(os.path.join(SCRIPT_DIR, 'mordl2/_version.py'),
+version_file_contents = open(os.path.join(SCRIPT_DIR, 'mordl/_version.py'),
                              'rt', encoding='utf-8').read()
 VERSION = version_file_contents.strip()[len('__version__ = "'):-1]
 
 setup(
-    name='mordl2',
+    name='mordl',
     version=VERSION,
     description='Morphological parser (POS, lemmata, NER etc.)',
     long_description=open('README.md', 'rt', encoding='utf-8').read(),

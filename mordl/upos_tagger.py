@@ -1,44 +1,31 @@
 # -*- coding: utf-8 -*-
-# MorDL project: LEMMA generator
+# MorDL project: UPOS tagger
 #
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
-Provides a class for lemmata generation.
+Provides a UPOS tagger class.
 """
-from Levenshtein import editops
 from corpuscula import CorpusDict
-from difflib import SequenceMatcher, get_close_matches
 from junky import get_func_params
-from mordl2.base_tagger import BaseTagger
-from mordl2.defaults import BATCH_SIZE, CDICT_COEF_THRESH, LOG_FILE, \
+from mordl.base_tagger import BaseTagger
+from mordl.defaults import BATCH_SIZE, CDICT_COEF_THRESH ,LOG_FILE, \
                            TRAIN_BATCH_SIZE
-from mordl2.feat_tagger_model import FeatTaggerModel
+from mordl.upos_tagger_model import UposTaggerModel
 import time
 
-_OP_C_ASIS = 'asis'
-_OP_C_TITLE = 'title'
-_OP_C_LOWER = 'lower'
+_CDICT_COEF_THRESH = .99
 
 
-class LemmaTagger(BaseTagger):
+class UposTagger(BaseTagger):
     """
-    The lemmata generation class.
+    The UPOS tagger class.
 
     Args:
 
-    **field** (`str`; default is `LEMMA`): the name of the *CoNLL-U* field
-    with values that are derivatives of the FORM field, like `'LEMMA'`.
-
-    **feats_prune_coef** (`int`; default is `6`): the feature prunning
-    coefficient which allows to eliminate all features that have a low
-    frequency. To improve the prediction quality, we get a number of
-    occurences of the most frequent feature from the FEATS field for each UPOS
-    tag, divide that number by **feats_prune_coef**, and use only those
-    features, the number of occurences of which is greater than that value.
-    * `feats_prune_coef=0` means "do not use feats";
-    * `feats_prune_coef=None` means "use all feats";
-    * default `feats_prune_coef=6`.
+    **field** (`str`; default is `UPOS`): the name of the *CoNLL-U* field,
+    values of which needs to be predicted. With this tagger, you can predict
+    only fields with atomicvalues, like UPOS.
 
     **embs** (`dict({str: object}); default is `None`): the `dict` with paths
     to embeddings files as keys and corresponding embedding models as values.
@@ -49,157 +36,9 @@ class LemmaTagger(BaseTagger):
     object, and this attribute may be used further to share already loaded
     embeddings with another taggers.
     """
-    def __init__(self, field='LEMMA', feats_prune_coef=6, embs=None):
+    def __init__(self, field='UPOS', embs=None):
         super().__init__(embs=embs)
         self._field = field
-        self._feats_prune_coef = feats_prune_coef
-
-    @staticmethod
-    def find_affixes(form, lemma, lower=False):
-        """Finds the longest common part of the given **form** and **lemma**
-        and returns concurrent and distinct parts of both **form** and
-        **lemma** given.
-
-        Args:
-
-        **lower** (`bool`; default is `False`): if `True`, return values will
-        be always in lower case. Elsewise, we compare strings in lower case
-        but return values will be in original case.
-
-        Returns the prefix, the common part, the suffix/flexion of the
-        **form**, as well as the prefix, the common part, the suffix/flexion
-        of the **lemma** (i.e. the `tuple` of 6 `str` values).
-        """
-        if lower:
-            lex = form = form.lower()
-            lem = lemma = lemma.lower()
-        else:
-            lex = form.lower()
-            lem = lemma.lower()
-        a, b, size = SequenceMatcher(None, lex, lem, False) \
-                         .find_longest_match(0, len(lex), 0, len(lem))
-        return form[:a], form[a:a + size], form[a + size:], \
-               lemma[:b], lemma[b:b + size], lemma[b + size:]
-
-    def _transform_upos(self, corpus, key_vals=None):
-        rel_feats = {}
-        prune_coef = self._feats_prune_coef
-        if prune_coef != 0:
-            tags = self._cdict.get_tags_freq()
-            if tags:
-                thresh = tags[0][1] / prune_coef if prune_coef else 0
-                tags = [x[0] for x in tags if x[1] > thresh]
-            for tag in tags:
-                feats_ = rel_feats[tag] = set()
-                tag_feats = self._cdict.get_feats_freq(tag)
-                if tag_feats:
-                    thresh = tag_feats[0][1] / prune_coef if prune_coef else 0
-                    [feats_.add(x[0]) for x in tag_feats if x[1] > thresh]
-
-        for sent in corpus:
-            for tok in sent[0] if isinstance(sent, tuple) else sent:
-                upos = tok['UPOS']
-                if upos:
-                    upos = upos_ = upos.split(' ')[0]
-                    feats = tok['FEATS']
-                    if feats:
-                        rel_feats_ = rel_feats.get(upos)
-                        if rel_feats_:
-                            for feat, val in sorted(feats.items()):
-                                if feat in rel_feats_:
-                                    upos_ += ' ' + feat + ':' + val
-                        upos = upos_ \
-                                   if not key_vals or upos_ in key_vals else \
-                               [*get_close_matches(upos_,
-                                                   key_vals, n=1), upos][0]
-                    tok['UPOS'] = upos
-            yield sent
-
-    @staticmethod
-    def _restore_upos(corpus, with_orig=False):
-        def restore_upos(sent):
-            if isinstance(sent, tuple):
-                sent = sent[0]
-            for tok in sent:
-                upos = tok['UPOS']
-                if upos:
-                    tok['UPOS'] = upos.split(' ')[0]
-        for sent in corpus:
-            for tok in sent:
-                if with_orig:
-                    restore_upos(sent[0])
-                    restore_upos(sent[1])
-                else:
-                    restore_upos(sent)
-            yield sent
-
-    @staticmethod
-    def get_editops(str_from, str_to, allow_replace=True, allow_copy=True):
-        """Gets edit operations from **str_from** to **str_to** according to
-        Levenstein distance. Supported edit operations are: `'delete'`,
-        `'insert'`, `'replace'`, `'copy'`.
-
-        Args:
-
-        **str_from** (`str`): the source string.
-
-        **str_to** (`str`): the target string.
-
-        **allow_replace** (`bool`; default is `True`): whether to allow the
-        **replace** edit operation.
-
-        **allow_copy** (`bool`; default is `True`): whether to allow the
-        **copy** edit operation.
-
-        Returns the `tuple` of edit operations that is needed to transform
-        **str_from** to **str_to**.
-        """
-        res = []
-        for op, idx_dst, idx_src in editops(str_from, str_to):
-            if op == 'delete':
-                res.append(('d', idx_dst, None))
-            else:
-                ch_src = str_to[idx_src]
-                if op == 'replace' and allow_replace:
-                    res.append(('r', idx_dst, ch_src))
-                elif op in ['insert', 'replace']:
-                    op_prev, idx_prev, ch_prev = res[-1] if res else [0] * 3
-                    if allow_copy and idx_prev \
-                                  and str_from[idx_prev - 1] == ch_src \
-                                  and (op_prev == 'c' or idx_prev != idx_dst):
-                        res.append(('c', idx_dst, None))
-                    else:
-                        res.append(('i', idx_dst, str_to[idx_src]))
-                    if op == 'replace':
-                        res.append(('d', idx_dst, None))
-                else:
-                    raise ValueError("Unexpected operation code '{}'"
-                                         .format(op))
-        return tuple(res)
-
-    @staticmethod
-    def apply_editops(str_from, ops):
-        """Applies edit operations to the **str_from**.
-
-        Args:
-
-        **str_from** (`str`): the source string to apply edit operations.
-
-        **ops** (`tuple([str])`): the `tuple`/`list` with edit operations.
-
-        Returns **str_from** with **ops** applied.
-        """
-        str_from = list(str_from)
-        for op, idx, ch in reversed(ops):
-            if op == 'd':
-                del str_from[idx]
-            elif op == 'i':
-                str_from.insert(idx, ch)
-            elif op == 'r':
-                str_from[idx] = ch
-            elif op == 'c':
-                str_from.insert(idx, str_from[idx - 1])
-        return ''.join(str_from)
 
     def load(self, name, device=None,
              dataset_emb_path=None, dataset_device=None, log_file=LOG_FILE):
@@ -222,13 +61,30 @@ class LemmaTagger(BaseTagger):
         **log_file** (`file`; default is `sys.stdout`): the stream for info
         messages.
         """
-        args, kwargs = get_func_params(LemmaTagger.load, locals())
-        super().load(FeatTaggerModel, *args, **kwargs)
+        args, kwargs = get_func_params(UposTagger.load, locals())
+        super().load(UposTaggerModel, *args, **kwargs)
+
+    def _check_cdict(self, sentence, use_cdict_coef):
+        if use_cdict_coef not in [None, False]:
+            isfirst = True
+            for token in sentence[0] if isinstance(sentence, tuple) else \
+                sentence:
+                id_, form = token['ID'], token['FORM']
+                if form and '-' not in id_:
+                    guess, coef = \
+                        self._cdict.predict_tag(form, isfirst=isfirst)
+                    isfirst = False
+                    if coef is not None \
+                   and coef >= (CDICT_COEF_THRESH
+                                    if use_cdict_coef is True else
+                                use_cdict_coef):
+                        token['UPOS'] = guess
+        return sentence
 
     def predict(self, corpus, use_cdict_coef=False, with_orig=False,
                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
                 save_to=None, log_file=LOG_FILE):
-        """Predicts tags in the LEMMA field of the corpus.
+        """Predicts tags in the UPOS field of the corpus.
 
         Args:
 
@@ -267,88 +123,14 @@ class LemmaTagger(BaseTagger):
         **log_file** (`file`; default is `sys.stdout`): the stream for info
         messages.
 
-        Returns the corpus with lemmata predicted.
+        Returns the corpus with tags predicted in the UPOS field.
         """
-        assert self._ds is not None, \
-               "ERROR: The tagger doesn't have a dataset. Call the train() " \
-               'method first'
-        assert not with_orig or save_to is None, \
-               'ERROR: `with_orig` can be True only if save_to is None'
-        args, kwargs = get_func_params(LemmaTagger.predict, locals())
-        del kwargs['use_cdict_coef']
-        kwargs['save_to'] = None
+        assert self._field == 'UPOS' or use_cdict_coef in [None, False], \
+            'ERROR: "use_cdict_coef" param may be used only with UPOS field'
+        args, kwargs = get_func_params(UposTagger.predict, locals())
+        return super().predict(self._field, None, *args, **kwargs)
 
-        cdict = self._cdict
-        yof = len([x for x in cdict._wforms if 'ё' in x or 'Ё' in x])
-        yol = len([x for x in cdict._lemmata if 'ё' in x or 'Ё' in x])
-        remove_yo = yol / yof < 10
-
-        def apply_editops(str_from, upos, ops_t, isfirst):
-            if str_from and ops_t not in [None, (None,)]:
-                str_from_ = None
-                if use_cdict_coef not in [None, False]:
-                    str_from_, coef = \
-                        cdict.predict_lemma(str_from, upos, isfirst=isfirst)
-                    if coef is not None \
-                   and coef >= (CDICT_COEF_THRESH \
-                                    if use_cdict_coef is True else \
-                                use_cdict_coef):
-                        str_from = str_from_
-                    else:
-                        str_from_ = None
-                if str_from_ is None:
-                    try:
-                        ops_p, ops_s, ops_c = ops_t
-                        str_from_ = ''.join(reversed(
-                            self.apply_editops(reversed(
-                                self.apply_editops(str_from, ops_p)
-                            ), ops_s)
-                        ))
-                        if str_from_:
-                            str_from = str_from_
-                            if 'ё' in str_from or 'Ё' in str_from:
-                                if not cdict.lemma_isknown(str_from, upos):
-                                    str_from_ = str_from.replace('ё', 'е') \
-                                                        .replace('Ё', 'Е')
-                                    if remove_yo \
-                                    or cdict.lemma_isknown(str_from_, upos):
-                                        str_from = str_from_
-                    except IndexError:
-                        pass
-                    if ops_c == _OP_C_LOWER:
-                        str_from = str_from.lower()
-                    elif ops_c == _OP_C_TITLE:
-                        str_from = str_from.title()
-            return str_from
-
-        def process(corpus):
-            for sentence in corpus:
-                sentence_ = sentence[0] if with_orig else sentence
-                if isinstance(sentence_, tuple):
-                    sentence_ = sentence_[0]
-                isfirst = True
-                for token in sentence_:
-                    id_, form = token['ID'], token['FORM']
-                    if form and '-' not in id_:
-                        token[self._field] = \
-                            apply_editops(form, token['UPOS'],
-                                          token[self._field], isfirst=isfirst)
-                        isfirst = False
-                yield sentence
-
-        key_vals = self._ds.get_dataset('t_0').transform_dict
-        corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
-        corpus = self._transform_upos(corpus, key_vals=key_vals)
-        corpus = super().predict(self._field, 'UPOS', corpus, **kwargs)
-        corpus = self._restore_upos(corpus)
-        corpus = process(corpus)
-
-        if save_to:
-            self.save_conllu(corpus, save_to, log_file=None)
-            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
-        return corpus
-
-    def evaluate(self, gold, test=None, use_cdict_coef=False,
+    def evaluate(self, gold, test=None, label=None, use_cdict_coef=False,
                  batch_size=BATCH_SIZE, split=None, clone_ds=False,
                  log_file=LOG_FILE):
         """Evaluate the tagger model.
@@ -362,10 +144,6 @@ class LemmaTagger(BaseTagger):
         **test** (default is `None`): the corpus of sentences with predicted
         target values. If `None` (default), the **gold** corpus will be
         retagged on-the-fly, and the result will be used as the **test**.
-
-        **feats** (`str | list([str])`; default is `None`): one or several
-        subfields of the key-value type fields like `FEATS` or `MISC` to be
-        evaluated separatedly.
 
         **label** (`str`; default is `None`): the specific label of the target
         field to be evaluated separatedly, e.g. `field='UPOS', label='VERB'`
@@ -395,16 +173,14 @@ class LemmaTagger(BaseTagger):
 
         The method prints metrics and returns evaluation accuracy.
         """
-        args, kwargs = get_func_params(LemmaTagger.evaluate, locals())
-        del kwargs['use_cdict_coef']
-        return super().evaluate(self._field, *args, **kwargs,
-                                use_cdict_coef=use_cdict_coef)
+        args, kwargs = get_func_params(UposTagger.evaluate, locals())
+        return super().evaluate(self._field, *args, **kwargs)
 
     def train(self, save_as,
               device=None, control_metric='accuracy', max_epochs=None,
               min_epochs=0, bad_epochs=5, batch_size=TRAIN_BATCH_SIZE,
               max_grad_norm=None, tags_to_remove=None, word_emb_type='bert',
-              word_emb_path=None, word_transform_kwargs=None,
+              word_emb_path='xlm-roberta-base', word_transform_kwargs=None,
                   # BertDataset.transform() (for BERT-descendant models)
                   # params:
                   # {'max_len': 0, 'batch_size': 64, 'hidden_ids': '10',
@@ -433,12 +209,12 @@ class LemmaTagger(BaseTagger):
               stages=[1, 2, 3, 1, 2], save_stages=False, load_from=None,
               learn_on_padding=True, remove_padding_intent=False,
               seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
-              rnn_emb_dim=384, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              upos_emb_dim=256, emb_bn=True, emb_do=.2,
+              rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
+              emb_bn=True, emb_do=.2,
               final_emb_dim=512, pre_bn=True, pre_do=.5,
               lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
               post_bn=True, post_do=.4):
-        """Creates and trains the LEMMA prediction model.
+        """Creates and trains the UPOS tagger model.
 
         During training, the best model is saved after each successful epoch.
 
@@ -480,7 +256,7 @@ class LemmaTagger(BaseTagger):
         default is `None`): the tags, tokens with those must be removed from
         the corpus. It's the `dict` with field names as keys and values you
         want to remove. Applied only to fields with atomic values (like
-        *UPOS*). This argument may be used, for example, to remove some
+        UPOS). This argument may be used, for example, to remove some
         infrequent or just excess tags from the corpus. Note, that we remove
         the tokens from the train corpus completely, not just replace those
         tags to `None`.
@@ -595,7 +371,7 @@ class LemmaTagger(BaseTagger):
 
         *The model hyperparameters*:
 
-        **rnn_emb_dim** (`int`; default is `384`): the internal character RNN
+        **rnn_emb_dim** (`int`; default is `None`): the internal character RNN
         (LSTM) embedding dimensionality. If `None`, the layer is skipped.
 
         **cnn_emb_dim** (`int`; default is `None`): the internal character CNN
@@ -604,9 +380,6 @@ class LemmaTagger(BaseTagger):
         **cnn_kernels** (`list([int])`; default is `[1, 2, 3, 4, 5, 6]`): CNN
         kernel sizes of the internal CNN embedding layer. Relevant if
         **cnn_emb_dim** is not `None`.
-
-        **upos_emb_dim** (`int`; default is `256`): the auxiliary UPOS label
-        embedding dimensionality.
 
         **emb_bn** (`bool`; default is `True`): whether batch normalization
         layer should be applied after the embedding concatenation.
@@ -643,11 +416,9 @@ class LemmaTagger(BaseTagger):
 
         The method returns the train statistics.
         """
-        assert self._train_corpus, 'ERROR: Train corpus is not loaded yet'
-
         if not start_time:
             start_time = time.time()
-        args, kwargs = get_func_params(LemmaTagger.train, locals())
+        args, kwargs = get_func_params(UposTagger.train, locals())
 
         self._cdict = CorpusDict(
             corpus=(x for x in [self._train_corpus,
@@ -657,134 +428,5 @@ class LemmaTagger(BaseTagger):
             format='conllu_parsed', log_file=log_file
         )
 
-        if log_file:
-            print('\nPreliminary trainset preparation:', file=log_file)
-            print('stage 1 of 3...', end=' ', file=log_file)
-            log_file.flush()
-
-        def find_affixes(form, lemma):
-            if form and lemma:
-                a = self.find_affixes(form, lemma)
-                res = a[0], a[2], a[3], a[5]
-            else:
-                res = None,
-            return lemma, res
-
-        for _ in (
-            x.update({self._field: find_affixes(x['FORM'], x[self._field])})
-                for x in [self._train_corpus,
-                          self._test_corpus if self._test_corpus else []]
-                for x in x
-                for x in x
-        ):
-            pass
-
-        if self._test_corpus:
-            for _ in self._transform_upos(self._train_corpus):
-                pass
-            key_vals = set(x['UPOS'] for x in self._train_corpus for x in x
-                               if x['FORM'] and x['UPOS']
-                                            and '-' not in x['ID'])
-            for _ in self._transform_upos(self._test_corpus, key_vals):
-                pass
-
-        if log_file:
-            print('done.', file=log_file)
-            print('stage 2 of 3...', end=' ', file=log_file)
-            log_file.flush()
-
-        ops = []
-        get_editops_kwargs = [{'allow_replace': x, 'allow_copy': y}
-                                  for x in [True, False]
-                                  for y in [True, False]]
-        for kwargs_ in get_editops_kwargs:
-            ops_ = []
-            ops.append(ops_)
-            for sent in self._train_corpus:
-                for tok in sent:
-                    lemma, affixes = tok[self._field]
-                    if affixes != (None,):
-                        f_p, f_s, l_p, l_s = affixes
-                        ops_p = self.get_editops(f_p, l_p, **kwargs_)
-                        ops_s = self.get_editops(''.join(reversed(f_s)),
-                                                 ''.join(reversed(l_s)),
-                                                 **kwargs_)
-                        if lemma:
-                            if lemma.istitle():
-                                ops_c = _OP_C_TITLE
-                            elif lemma.islower():
-                                ops_c = _OP_C_LOWER
-                            else:
-                                ops_c = _OP_C_ASIS
-                        else:
-                            ops_c = _OP_C_ASIS
-                        ops_.append((ops_p, ops_s, ops_c))
-                    else:
-                        ops_.append((None,))
-
-        if log_file:
-            print('done.', file=log_file)
-            head_ = 'Lengths: ['
-            print(head_, end='', file=log_file)
-        num, idx, key_vals = len(self._train_corpus), -1, None
-        for idx_, (ops_, kwargs_) in enumerate(zip(ops, get_editops_kwargs)):
-            key_vals_ = set(ops_)
-            num_ = len(key_vals_)
-            if log_file:
-                print('{}{} {}'
-                          .format(',\n' + (' ' * len(head_)) if idx_ else '',
-                                  num_, kwargs_),
-                      end='', file=log_file)
-            if num_ < num:
-                num, idx, key_vals = num_, idx_, key_vals_
-        if log_file:
-            print(']', file=log_file)
-            print('min = {}'.format(get_editops_kwargs[idx]), file=log_file)
-            print('stage 3 of 3...', end=' ', file=log_file)
-            log_file.flush()
-
-        kwargs_ = get_editops_kwargs[idx]
-        for sent in self._test_corpus:
-            for tok in sent:
-                lemma, affixes = tok[self._field]
-                if affixes != (None,):
-                    f_p, f_s, l_p, l_s = affixes
-                    ops_p = self.get_editops(f_p, l_p, **kwargs_)
-                    ops_s = self.get_editops(''.join(reversed(f_s)),
-                                             ''.join(reversed(l_s)),
-                                             **kwargs_)
-                    if lemma:
-                        if lemma.istitle():
-                            ops_c = _OP_C_TITLE
-                        elif lemma.islower():
-                            ops_c = _OP_C_LOWER
-                        else:
-                            ops_c = _OP_C_ASIS
-                    else:
-                        ops_c = _OP_C_ASIS
-                    tok[self._field] = ops_p, ops_s, ops_c
-                else:
-                    tok[self._field] = None,
-
-        ops = iter(ops[idx])
-        for sent in self._train_corpus:
-            for tok in sent:
-                ops_ = next(ops)
-                tok[self._field] = ops_
-
-        del ops
-        if log_file:
-            print('done.\n', file=log_file)
-
-        for _ in (
-            None if x[self._field] in key_vals else
-            x.update({self._field: ((), (),
-                                    x[self._field][2]
-                                        if x[self._field] != (None,) else
-                                    _OP_C_ASIS)})
-                for x in self._test_corpus for x in x
-        ):
-            pass
-
-        return super().train(self._field, 'UPOS', FeatTaggerModel, 'upos',
+        return super().train(self._field, None, UposTaggerModel, None,
                              *args, **kwargs)

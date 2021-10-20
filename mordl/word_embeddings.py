@@ -27,7 +27,7 @@ import junky
 from junky.dataset import BaseDataset, BertDataset, LenDataset, \
                           WordCatDataset, WordDataset
 from junky.trainer import Trainer, TrainerConfig
-from mordl2.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE
+from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE
 import numpy as np
 import os
 from sklearn.metrics import accuracy_score, confusion_matrix, \

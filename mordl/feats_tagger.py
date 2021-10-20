@@ -12,10 +12,10 @@ from difflib import get_close_matches
 import itertools
 import json
 from junky import clear_tqdm, get_func_params, seconds_to_strtime
-from mordl2 import FeatTagger
-from mordl2.base_tagger import BaseTagger
-from mordl2.defaults import BATCH_SIZE, CONFIG_EXT, LOG_FILE, TRAIN_BATCH_SIZE
-from mordl2.feat_tagger_model import FeatTaggerModel
+from mordl import FeatTagger
+from mordl.base_tagger import BaseTagger
+from mordl.defaults import BATCH_SIZE, CONFIG_EXT, LOG_FILE, TRAIN_BATCH_SIZE
+from mordl.feat_tagger_model import FeatTaggerModel
 import time
 from typing import Iterator
 

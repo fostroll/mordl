@@ -16,10 +16,10 @@ import junky
 from junky.dataset import CharDataset, DummyDataset, FrameDataset, \
                           LabelDataset, LenDataset, TokenDataset
 from morra.base_parser import BaseParser
-from mordl2 import WordEmbeddings
-from mordl2.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE, \
+from mordl import WordEmbeddings
+from mordl.defaults import BATCH_SIZE, CONFIG_ATTR, CONFIG_EXT, LOG_FILE, \
                            NONE_TAG, TRAIN_BATCH_SIZE
-from mordl2.lib.conll18_ud_eval import main as _conll18_ud_eval
+from mordl.lib.conll18_ud_eval import main as _conll18_ud_eval
 #import numpy as np
 import os
 #from sklearn.metrics import accuracy_score, f1_score, \

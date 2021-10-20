@@ -7,7 +7,7 @@
 Provides a base class for MorDL models.
 """
 import json
-from mordl2.defaults import CONFIG_ATTR, LOG_FILE
+from mordl.defaults import CONFIG_ATTR, LOG_FILE
 import torch
 import torch.nn as nn
 

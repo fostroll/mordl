@@ -1,32 +1,30 @@
 # -*- coding: utf-8 -*-
-# MorDL project: FEATS:feat tagger
+# MorDL project: DEPREL tagger
 #
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
-Provides a single-tag FEAT tagger class.
+Provides classes of DEPREL taggers.
 """
-from corpuscula import CorpusDict
-from difflib import get_close_matches
+from copy import deepcopy
+import itertools
+import junky
 from junky import get_func_params
-from mordl2.base_tagger import BaseTagger
-from mordl2.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
-from mordl2.feat_tagger_model import FeatTaggerModel
+from mordl import FeatTagger
+from mordl.defaults import BATCH_SIZE, LOG_FILE, TRAIN_BATCH_SIZE
+from mordl.deprel_tagger_model import DeprelTaggerModel
 import time
+import torch
+from typing import Iterator
 
 
-class FeatTagger(BaseTagger):
+# LAS on *SynTagRus*: 97.60
+# with supp_tagger of `DeprelSeqTagger` type: 97.60
+class DeprelTagger(FeatTagger):
     """
-    The class of single-feature tagger.
+    The DEPREL tagger class.
 
     Args:
-
-    **feat** (`str`): the name of the feat which needs to be predicted by the
-    tagger. May contains a prefix, separated by the colon (`:`). In that case,
-    the prefix is treated as a field name. Also, if **feat** starts with the
-    colon, we get `'FEATS'` as a field name. Otherwise, if **feat** contains
-    no colon, the field name set to **feat** itself. Examples: `'MISC:NE'`,
-    `':Animacy'`, `'DEPREL'`.
 
     **feats_prune_coef** (`int`; default is `6`): the feature prunning
     coefficient which allows to eliminate all features that have a low
@@ -38,7 +36,10 @@ class FeatTagger(BaseTagger):
     * `feats_prune_coef=None` means "use all feats";
     * default `feats_prune_coef=6`.
 
-    **NB**: the argument is relevant only if **feat** is not from FEATS field.
+    **supp_tagger** (default is `None`): an object of another DEPREL tagger
+    which method `.predict()` has the same signature as
+    `DeprelTagger.predict()` and no excess `'root'` tags in the return. The
+    instance of `DeprelSeqTagger` class may be used here.
 
     **embs** (`dict({str: object}); default is `None`): the `dict` with paths
     to embeddings files as keys and corresponding embedding models as values.
@@ -49,68 +50,212 @@ class FeatTagger(BaseTagger):
     object, and this attribute may be used further to share already loaded
     embeddings with another taggers.
     """
-    def __init__(self, feat, feats_prune_coef=6, embs=None):
-        assert feat != 'UPOS', 'ERROR: for UPOS field use UposTagger class'
-        super().__init__(embs=embs)
-        if feat[0] == ':':
-            feat = 'FEATS' + feat
-        self._field = feat
-        if feat.startswith('FEATS:'):
-            feats_prune_coef = 0
-        self._feats_prune_coef = feats_prune_coef
-        self._model_class = FeatTaggerModel
+    def __init__(self, feats_prune_coef=6, supp_tagger=None, embs=None):
+        super().__init__('DEPREL', feats_prune_coef=feats_prune_coef,
+                         embs=embs)
+        self._supp_tagger = supp_tagger
 
-    def _transform_upos(self, corpus, key_vals=None):
-        rel_feats = {}
-        prune_coef = self._feats_prune_coef
-        if prune_coef != 0:
-            tags = self._cdict.get_tags_freq()
-            if tags:
-                thresh = tags[0][1] / prune_coef if prune_coef else 0
-                tags = [x[0] for x in tags if x[1] > thresh]
-            for tag in tags:
-                feats_ = rel_feats[tag] = set()
-                tag_feats = self._cdict.get_feats_freq(tag)
-                if tag_feats:
-                    thresh = tag_feats[0][1] / prune_coef if prune_coef else 0
-                    [feats_.add(x[0]) for x in tag_feats if x[1] > thresh]
+    def predict(self, corpus, use_cdict_coef=False, with_orig=False,
+                batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                save_to=None, log_file=LOG_FILE):
+        """Predicts tags in the DEPREL field of the corpus.
 
-        for sent in corpus:
-            for tok in sent[0] if isinstance(sent, tuple) else sent:
-                upos = tok['UPOS']
-                if upos:
-                    upos = upos_ = upos.split(' ')[0]
-                    feats = tok['FEATS']
-                    if feats:
-                        rel_feats_ = rel_feats.get(upos)
-                        if rel_feats_:
-                            for feat, val in sorted(feats.items()):
-                                if feat in rel_feats_:
-                                    upos_ += ' ' + feat + ':' + val
-                        upos = upos_ \
-                                   if not key_vals or upos_ in key_vals else \
-                               [*get_close_matches(upos_,
-                                                   key_vals, n=1), upos][0]
-                    tok['UPOS'] = upos
-            yield sent
+        Args:
+
+        **corpus**: the corpus which will be used for the feature extraction
+        and predictions. May be either the name of the file in *CoNLL-U*
+        format or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
+
+        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+        we use our prediction only. If `True`, we replace our prediction to
+        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+        method if its `coef` >= `.99`. Also, you can specify your own
+        threshold as the value of the param.
+
+        **with_orig** (`bool`; default is `False`): if `True`, instead of just
+        the sequence with predicted labels, return the sequence of tuples
+        where the first element is the sentence with predicted labels and the
+        second element is the original sentence. **with_orig** can be `True`
+        only if **save_to** is `None`.
+
+        **batch_size** (`int`; default is `64`): the number of sentences per
+        batch.
+
+        **split** (`int`; default is `None`): the number of lines in sentences
+        split. Allows to process a large dataset in pieces ("splits"). If
+        **split** is `None` (default), all the dataset is processed without
+        splits.
+
+        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
+        cloned and transformed. If `False`, `transform_collate` is used
+        without cloning the dataset. There is no big differences between the
+        variants. Both should produce identical results.
+
+        **save_to** (`str`; default is `None`): the file name where the
+        predictions will be saved.
+
+        **log_file** (`file`; default is `sys.stdout`): the stream for info
+        messages.
+
+        Returns the corpus with tags predicted in the DEPREL field.
+        """
+        assert self._ds is not None, \
+               "ERROR: The tagger doesn't have a dataset. Call the train() " \
+               'method first'
+        assert not with_orig or save_to is None, \
+               'ERROR: `with_orig` can be True only if save_to is None'
+        args, kwargs = get_func_params(FeatTagger.predict, locals())
+
+        kwargs['save_to'] = None
+
+        corpus2 = None
+        if self._supp_tagger:
+            kwargs2 = kwargs.copy()
+            kwargs2['with_orig'] = True
+            corpus2 = self._supp_tagger.predict(*args, **kwargs2)
+
+        corpus = super().predict(*args, **kwargs)
+
+        def add_root(corpus):
+            for sent in corpus:
+                sent0 = sent[0] if isinstance(sent, tuple) \
+                               and not isinstance(sent[0], tuple) \
+                               and not isinstance(sent[1], tuple) else \
+                        sent
+                if isinstance(sent0, tuple):
+                    sent0 = sent0[0]
+                if corpus2:
+                    sent2 = next(corpus2)[1]
+                    if isinstance(sent2, tuple):
+                        sent2 = sent2[0]
+                for i, tok in enumerate(sent0):
+                    if tok['HEAD'] == '0':
+                        tok['DEPREL'] = 'root'
+                    elif corpus2 and tok['DEPREL'] == 'root':
+                        tok['DEPREL'] = sent2[i]['DEPREL']
+                yield sent
+
+        corpus = add_root(corpus)
+
+        if save_to:
+            self.save_conllu(corpus, save_to, log_file=None)
+            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
+
+        return corpus
+
+NODES_UP, NODES_DOWN = 2, 2
+PAD = '[PAD]'
+PAD_TOKEN = {'ID': '0', 'FORM': PAD, 'LEMMA': PAD,
+                         'UPOS': PAD, 'FEATS': {}, 'DEPREL': None}
+
+class DeprelSeqTagger(FeatTagger):
+    """
+    A DEPREL tagger class with sequence model.
+
+    **WARNING**: Works long, takes huge amoont of RAM, but accuracy is 
+    less than of `DeprelTagger`. But may be useful as suppplement tagger
+    for it.
+
+    Args:
+
+    **feats_prune_coef** (`int`): feature prunning coefficient which allows to
+    eliminate all features that have a low frequency. For each UPOS tag, we
+    get a number of occurences of the most frequent feature from FEATS field,
+    divide it by **feats_prune_coef** and use only those features, number of
+    occurences of which is greater than that value, to improve the prediction
+    quality.
+    * `feats_prune_coef=0` means "do not use feats";
+    * `feats_prune_coef=None` means "use all feats";
+    * default `feats_prune_coef=6`.
+    """
+    def __init__(self, feats_prune_coef=6):
+        super().__init__('DEPREL', feats_prune_coef=feats_prune_coef)
+        self._model_class = DeprelTaggerModel
 
     @staticmethod
-    def _restore_upos(corpus, with_orig=False):
-        def restore_upos(sent):
+    def _preprocess_corpus(corpus):
+
+        def nodes_down(sent, id_, ids, nodes, span_len):
+            link_ids = nodes.get(id_, [])
+            res = []
+            for link_id in link_ids:
+                idx = ids[link_id]
+                token = sent[idx]
+                if span_len == 1:
+                    res.append([token])
+                else:
+                    for nodes_down_ in nodes_down(sent, link_id, ids,
+                                                  nodes, span_len - 1):
+                        res.append([token] + nodes_down_)
+            if not res:
+                res = [[PAD_TOKEN] * span_len]
+            return res
+
+        def next_sent(sent, upper_sent, id_, ids, nodes):
+            link_ids = nodes.get(id_, [])
+            for link_id in link_ids:
+                idx = ids[link_id]
+                token = sent[idx]
+                label = token['DEPREL']
+                s = upper_sent[-NODES_UP:]
+                s.append(token)
+                for nodes_down_ in nodes_down(sent, link_id, ids,
+                                              nodes, NODES_DOWN):
+                    s_ = ([PAD_TOKEN] * (NODES_UP + 1 - len(s))) \
+                       + s[:] + nodes_down_
+                    yield s_, idx, label
+                for data_ in next_sent(sent, s, link_id, ids, nodes):
+                    yield data_
+
+        res_corpus, labels, restore_data = [], [], []
+        for i, sent in enumerate(corpus):
+            if isinstance(sent, tuple):
+                sent = sent[0]
+            root_id, root_token, ids, nodes = None, None, {}, {}
+            for idx, token in enumerate(sent):
+                id_, head = token['ID'], token['HEAD']
+                if head:
+                    if not token['FORM']:
+                        token['FORM'] = PAD
+                    if head == '0':
+                        root_id, root_token = id_, token
+                    ids[id_] = idx
+                    nodes.setdefault(head, []).append(id_)
+            if root_id:
+                for s, idx, label in next_sent(sent, [root_token],
+                                               root_id, ids, nodes):
+                    res_corpus.append(s)
+                    labels.append(label)
+                    restore_data.append((i, idx))
+
+        return res_corpus, labels, restore_data
+
+    @staticmethod
+    def _postprocess_corpus(corpus, labels, restore_data):
+        for label, (i, idx) in zip(labels, restore_data):
+            token = corpus[i][idx]
+            if not isinstance(token['DEPREL'], list):
+                token['DEPREL'] = [label]
+            else:
+                token['DEPREL'].append(label)
+        for sent in corpus:
             if isinstance(sent, tuple):
                 sent = sent[0]
             for tok in sent:
-                upos = tok['UPOS']
-                if upos:
-                    tok['UPOS'] = upos.split(' ')[0]
-        for sent in corpus:
-            for tok in sent:
-                if with_orig:
-                    restore_upos(sent[0])
-                    restore_upos(sent[1])
+                if tok['HEAD'] == '0':
+                    tok['DEPREL'] = 'root'
                 else:
-                    restore_upos(sent)
-            yield sent
+                    deprel = tok['DEPREL']
+                    if isinstance(deprel, list):
+                        tok['DEPREL'] = max(set(deprel), key=deprel.count)
+        return corpus
+
+    def _prepare_corpus(self, corpus, fields, tags_to_remove=None):
+        res = super()._prepare_corpus(corpus, fields,
+                                      tags_to_remove=tags_to_remove)
+        res = list(res)
+        res[-1] = [x[NODES_UP] for x in res[-1]]
+        return tuple(res)
 
     def load(self, name, device=None,
              dataset_emb_path=None, dataset_device=None, log_file=LOG_FILE):
@@ -118,41 +263,32 @@ class FeatTagger(BaseTagger):
 
         Args:
 
-        **name** (`str`): the name of the previously saved internal state.
+        **name** (`str`): name of the previously saved internal state.
 
-        **device** (`str`; default is `None`): the device for the loaded model
-        if you want to override the value from the config.
+        **device**: a device for the loaded model if you want to override
+        the value from config.
 
-        **dataset_emb_path** (`str`; default is `None`): the path where the
-        dataset's embeddings to load from if you want to override the value
-        from the config.
+        **dataset_emb_path**: a path where dataset's embeddings to load from
+        if you want to override the value from config.
 
-        **dataset_device** (`str`; default is `None`): the device for the
-        loaded dataset if you want to override the value from the config.
+        **dataset_device**: a device for the loaded dataset if you want to
+        override the value from config.
 
-        **log_file** (`file`; default is `sys.stdout`): the stream for info
-        messages.
+        **log_file**: a stream for info messages. Default is `sys.stdout`.
         """
-        args, kwargs = get_func_params(FeatTagger.load, locals())
-        super().load(FeatTaggerModel, *args, **kwargs)
+        args, kwargs = get_func_params(DeprelTagger.load, locals())
+        super(self.__class__.__base__, self).load(DeprelTaggerModel,
+                                                  *args, **kwargs)
 
-    def predict(self, corpus, use_cdict_coef=False, with_orig=False,
-                batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                save_to=None, log_file=LOG_FILE, **_):
-        """Predicts values in the certain feature of the key-value type field
-        of the specified **corpus**.
+    def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
+                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
+        """Predicts tags in the DEPREL field of the corpus.
 
         Args:
 
         **corpus**: a corpus which will be used for feature extraction and
         predictions. May be either a name of the file in *CoNLL-U* format or a
         list/iterator of sentences in *Parsed CoNLL-U*.
-
-        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
-        we use our prediction only. If `True`, we replace our prediction to
-        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
-        method if its `coef` >= `.99`. Also, you can specify your own
-        threshold as the value of the param.
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
@@ -176,78 +312,108 @@ class FeatTagger(BaseTagger):
 
         **log_file**: a stream for info messages. Default is `sys.stdout`.
 
-        Returns the corpus with predicted values of certain feature in the
-        key-value type field.
+        Returns corpus with tags predicted in the DEPREL field.
         """
         assert self._ds is not None, \
                "ERROR: The tagger doesn't have a dataset. Call the train() " \
                'method first'
+        assert self._model, \
+               "ERROR: The tagger doesn't have a model. Call the train() " \
+               'method first'
         assert not with_orig or save_to is None, \
                'ERROR: `with_orig` can be True only if save_to is None'
-        args, kwargs = get_func_params(FeatTagger.predict, locals())
+        args, kwargs = get_func_params(DeprelTagger.predict, locals())
 
         if self._feats_prune_coef != 0:
-            kwargs['save_to'] = None
             key_vals = self._ds.get_dataset('t_0').transform_dict
             corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
             corpus = self._transform_upos(corpus, key_vals=key_vals)
 
-        corpus = super().predict(self._field, 'UPOS', corpus, **kwargs)
+        field = 'DEPREL'
+        add_fields = self._normalize_field_names('UPOS')
+
+        def process(corpus):
+
+            corpus = self._get_corpus(corpus, asis=True, log_file=log_file)
+            device = next(self._model.parameters()).device or junky.CPU
+
+            ds_y = self._ds.get_dataset('y')
+            if clone_ds:
+                ds = self._ds.clone()
+                ds.remove('y')
+
+            for start in itertools.count(step=split if split else 1):
+                if isinstance(corpus, Iterator):
+                    if split:
+                        corpus_ = []
+                        for i, sentence in enumerate(corpus, start=1):
+                            corpus_.append(sentence)
+                            if i == split:
+                                break
+                    else:
+                        corpus_ = list(corpus)
+                else:
+                    if split:
+                        corpus_ = corpus[start:start + split]
+                    else:
+                        corpus_ = corpus
+                if not corpus_:
+                    break
+
+                orig_corpus = corpus_
+                corpus_, _, restore_data = self._preprocess_corpus(corpus_)
+                
+                res = \
+                    junky.extract_conllu_fields(
+                        corpus_, fields=add_fields,
+                        with_empty=True, return_nones=True
+                    )
+                sentences, tags, empties, nones = \
+                    res[0], res[1:-2], res[-2], res[-1]
+                if clone_ds:
+                    self._transform(
+                        sentences, tags=tags, batch_size=batch_size, ds=ds,
+                        log_file=log_file
+                    )
+                    loader = ds.create_loader(batch_size=batch_size,
+                                              shuffle=False)
+                else:
+                    loader = self._transform_collate(
+                        sentences, tags=tags, batch_size=batch_size,
+                        log_file=log_file
+                    )
+                preds = []
+                for batch in loader:
+                    batch = junky.to_device(batch, device)
+                    with torch.no_grad():
+                        pred = self._model(*batch)
+                    pred_indices = pred.argmax(-1)
+                    preds.extend(pred_indices.cpu().numpy().tolist())
+                values = ds_y.reconstruct(preds)
+                if with_orig:
+                    res_corpus_ = deepcopy(orig_corpus)
+                    res_corpus_ = \
+                        self._postprocess_corpus(res_corpus_,
+                                                 values, restore_data)
+                    for orig_sentence, sentence in zip(orig_corpus,
+                                                       res_corpus_):
+                        yield sentence, orig_sentence
+                else:
+                    res_corpus_ = \
+                        self._postprocess_corpus(orig_corpus,
+                                                 values, restore_data)
+                    for sentence in res_corpus_:
+                        yield sentence
+
+        corpus = process(corpus)
 
         if self._feats_prune_coef != 0:
             corpus = self._restore_upos(corpus)
 
-            if save_to:
-                self.save_conllu(corpus, save_to, log_file=None)
-                corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
-
+        if save_to:
+            self.save_conllu(corpus, save_to, log_file=None)
+            corpus = self._get_corpus(save_to, asis=True, log_file=log_file)
         return corpus
-
-    def evaluate(self, gold, test=None, label=None, use_cdict_coef=False,
-                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                 log_file=LOG_FILE):
-        """Evaluate the tagger model.
-
-        Args:
-
-        **gold**: the corpus of sentences with actual target values to score
-        the tagger on. May be either the name of the file in *CoNLL-U* format
-        or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
-
-        **test** (default is `None`): the corpus of sentences with predicted
-        target values. If `None` (default), the **gold** corpus will be
-        retagged on-the-fly, and the result will be used as the **test**.
-
-        **label** (`str`; default is `None`): the specific label of the target
-        field to be evaluated separatedly, e.g. `field='UPOS', label='VERB'`
-        or `field='FEATS:Animacy', label='Inan'`.
-
-        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
-        we use our prediction only. If `True`, we replace our prediction to
-        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
-        method if its `coef` >= `.99`. Also, you can specify your own
-        threshold as the value of the param.
-
-        **batch_size** (`int`; default is `64`): the number of sentences per
-        batch.
-
-        **split** (`int`; default is `None`): the number of lines in sentences
-        split. Allows to process a large dataset in pieces ("splits"). If
-        **split** is `None` (default), all the dataset is processed without
-        splits.
-
-        **clone_ds** (`bool`; default is `False`): if `True`, the dataset is
-        cloned and transformed. If `False`, `transform_collate` is used
-        without cloning the dataset. There is no big differences between the
-        variants. Both should produce identical results.
-
-        **log_file** (`file`; default is `sys.stdout`): the stream for info
-        messages.
-
-        The method prints metrics and returns evaluation accuracy.
-        """
-        args, kwargs = get_func_params(FeatTagger.evaluate, locals())
-        return super().evaluate(self._field, *args, **kwargs)
 
     def train(self, save_as,
               device=None, control_metric='accuracy', max_epochs=None,
@@ -287,7 +453,7 @@ class FeatTagger(BaseTagger):
               final_emb_dim=512, pre_bn=True, pre_do=.5,
               lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
               post_bn=True, post_do=.4):
-        """Creates and trains the feature tagger model.
+        """Creates and trains the DEPREL tagger model.
 
         During training, the best model is saved after each successful epoch.
 
@@ -494,38 +660,13 @@ class FeatTagger(BaseTagger):
         """
         if not start_time:
             start_time = time.time()
-        args, kwargs = get_func_params(FeatTagger.train, locals())
+        args, kwargs = get_func_params(DeprelTagger.train, locals())
 
-        if self._feats_prune_coef != 0:
-            for _ in (
-                x.update({'LEMMA': x['FORM']})
-                    for x in [self._train_corpus,
-                              self._test_corpus if self._test_corpus else []]
-                    for x in x
-                    for x in x
-            ):
-                pass
-            self._cdict = CorpusDict(
-                corpus=(x for x in [self._train_corpus,
-                                    self._test_corpus
-                                        if self._test_corpus else
-                                    []]
-                          for x in x),
-                format='conllu_parsed', log_file=log_file
-            )
-            self._save_cdict(save_as + '.cdict.pickle')
-            if log_file:
-                print(file=log_file)
+        if self._train_corpus:
+            self._train_corpus, _, _ = \
+                self._preprocess_corpus(self._train_corpus)
+        if self._test_corpus:
+            self._test_corpus, _, _ = \
+                self._preprocess_corpus(self._test_corpus)
 
-            if self._test_corpus:
-                for _ in self._transform_upos(self._train_corpus):
-                    pass
-                key_vals = set(x['UPOS'] for x in self._train_corpus
-                                         for x in x
-                                   if x['FORM'] and x['UPOS']
-                                                and '-' not in x['ID'])
-                for _ in self._transform_upos(self._test_corpus, key_vals):
-                    pass
-
-        return super().train(self._field, 'UPOS', self._model_class, 'upos',
-                             *args, **kwargs)
+        return super().train(*args, **kwargs)

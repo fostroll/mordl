@@ -7,14 +7,13 @@
 """
 from collections.abc import Iterable
 from junky import get_func_params
-from mordl2.base_tagger_model import BaseTaggerModel
-from mordl2.defaults import CONFIG_ATTR
+from mordl.base_tagger_sequence_model import BaseTaggerSequenceModel
+from mordl.defaults import CONFIG_ATTR
 
 
-class FeatTaggerModel(BaseTaggerModel):
+class DeprelTaggerModel(BaseTaggerSequenceModel):
     """
-    The class for prediction the content of a key-value type field. Separated
-    implementation (predict only one particular field at a time).
+    The DEPREL tagger class.
 
     Args:
 
@@ -80,8 +79,8 @@ class FeatTaggerModel(BaseTaggerModel):
     **lstm_do** (`float`; default is `0`): the dropout between LSTM layers.
     Only relevant, if `lstm_layers` > `1`.
 
-    **tran_layers** (`int`; default is `None`): the number of Transformer
-    Encoder layers. If `None`, they are not created.
+    **tran_layers** (`int`; default is `None`): the number of Transformer Encoder
+    layers. If `None`, they are not created.
 
     **tran_heads** (`int`; default is `8`): the number of attention heads of
     Transformer Encoder layers. Only relevant, if `tran_layers` > `1`.
@@ -102,7 +101,7 @@ class FeatTaggerModel(BaseTaggerModel):
                  post_bn=True, post_do=.4):
         if isinstance(cnn_kernels, Iterable):
             cnn_kernels = list(cnn_kernels)
-        args, kwargs = get_func_params(FeatTaggerModel.__init__, locals())
+        args, kwargs = get_func_params(DeprelTaggerModel.__init__, locals())
         kwargs_ = {x: y for x, y in kwargs.items() if x not in [
             'upos_emb_dim', 'upos_num', 'upos_pad_idx'
         ]}

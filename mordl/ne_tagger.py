@@ -6,7 +6,7 @@
 """
 Provides a Named-entity tagger class.
 """
-from mordl2 import FeatTagger
+from mordl import FeatTagger
 
 
 class NeTagger(FeatTagger):
