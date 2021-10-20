@@ -136,9 +136,9 @@ class FeatTagger(BaseTagger):
         args, kwargs = get_func_params(FeatTagger.load, locals())
         super().load(FeatTaggerModel, *args, **kwargs)
 
-    def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
-                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE,
-                **_):
+    def predict(self, corpus, use_cdict_coef=False, with_orig=False,
+                batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                save_to=None, log_file=LOG_FILE, **_):
         """Predicts values in the certain feature of the key-value type field
         of the specified **corpus**.
 
@@ -147,6 +147,12 @@ class FeatTagger(BaseTagger):
         **corpus**: a corpus which will be used for feature extraction and
         predictions. May be either a name of the file in *CoNLL-U* format or a
         list/iterator of sentences in *Parsed CoNLL-U*.
+
+        **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+        we use our prediction only. If `True`, we replace our prediction to
+        the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+        method if its `coef` >= `.99`. Also, you can specify your own
+        threshold as the value of the param.
 
         **with_orig** (`bool`): if `True`, instead of only a sequence with
         predicted labels, returns a sequence of tuples where the first element
@@ -197,8 +203,9 @@ class FeatTagger(BaseTagger):
 
         return corpus
 
-    def evaluate(self, gold, test=None, label=None, batch_size=BATCH_SIZE,
-                 split=None, clone_ds=False, log_file=LOG_FILE):
+    def evaluate(self, gold, test=None, label=None, use_cdict_coef=False,
+                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                 log_file=LOG_FILE):
         """Evaluate the tagger model.
 
         Args:

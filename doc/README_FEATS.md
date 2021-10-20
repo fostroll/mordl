@@ -336,8 +336,8 @@ When the training is done, you may evaluate the model quality using the test
 or the development test corpus:
 ```python
 tagger.evaluate(gold, test=None, feats=None, label=None,
-                batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                log_file=LOG_FILE)
+                use_cdict_coef=False, batch_size=BATCH_SIZE, split=None,
+                clone_ds=False, log_file=LOG_FILE)
 ```
 
 Args:
@@ -387,8 +387,9 @@ The method prints metrics and returns evaluation accuracy.
 Using the trained tagger, for the specified corpus, predict content of the
 key-value type field:
 ```python
-tagger.predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
-               split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
+tagger.predict(self, corpus, use_cdict_coef=False, with_orig=False,
+               batch_size=BATCH_SIZE, split=None, clone_ds=False,
+               save_to=None, log_file=LOG_FILE):
 ```
 
 Args:

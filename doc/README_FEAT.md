@@ -348,8 +348,9 @@ chapter.
 When the training is done, you may evaluate the model quality using either
 the test or the development test corpus:
 ```python
-tagger.evaluate(gold, test=None, label=None, batch_size=BATCH_SIZE,
-                split=None, clone_ds=False, log_file=LOG_FILE)
+tagger.evaluate(gold, test=None, label=None, use_cdict_coef=False,
+                batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                log_file=LOG_FILE)
 ```
 
 Args:
@@ -395,8 +396,9 @@ The method prints metrics and returns evaluation accuracy.
 Using the trained tagger, predicts values of the certain feature of the
 key-value type field of the specified corpus:
 ```python
-tagger.predict(corpus, with_orig=False, batch_size=BATCH_SIZE,
-               split=None, clone_ds=False, save_to=None, log_file=LOG_FILE)
+tagger.predict(corpus, use_cdict_coef=False, with_orig=False,
+               batch_size=BATCH_SIZE, split=None, clone_ds=False,
+               save_to=None, log_file=LOG_FILE)
 ```
 
 Args:
@@ -404,6 +406,12 @@ Args:
 **corpus**: a corpus which will be used for feature extraction and
 predictions. May be either a name of the file in *CoNLL-U* format or a
 list/iterator of sentences in *Parsed CoNLL-U*.
+
+**use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
+we use our prediction only. If `True`, we replace our prediction to
+the value returned by the `corpuscula.CorpusDict.predict_<field>()`
+method if its `coef` >= `.99`. Also, you can specify your own
+threshold as the value of the param.
 
 **with_orig** (`bool`): if `True`, instead of only a sequence with
 predicted labels, returns a sequence of tuples where the first element

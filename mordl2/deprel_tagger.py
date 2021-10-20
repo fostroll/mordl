@@ -55,8 +55,9 @@ class DeprelTagger(FeatTagger):
                          embs=embs)
         self._supp_tagger = supp_tagger
 
-    def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
-                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
+    def predict(self, corpus, use_cdict_coef=False, with_orig=False,
+                batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                save_to=None, log_file=LOG_FILE):
         """Predicts tags in the DEPREL field of the corpus.
 
         Args:

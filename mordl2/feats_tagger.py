@@ -68,9 +68,9 @@ class FeatsJointTagger(BaseTagger):
         args, kwargs = get_func_params(FeatsJointTagger.load, locals())
         super().load(FeatTaggerModel, *args, **kwargs)
 
-    def predict(self, corpus, with_orig=False, batch_size=BATCH_SIZE,
-                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE,
-                **_):
+    def predict(self, corpus, use_cdict_coef=False, with_orig=False,
+                batch_size=BATCH_SIZE, split=None, clone_ds=False,
+                save_to=None, log_file=LOG_FILE, **_):
         """Predicts feature keys and values in the key-value type field of the
         corpus.
 
@@ -142,8 +142,8 @@ class FeatsJointTagger(BaseTagger):
         return corpus
 
     def evaluate(self, gold, test=None, feats=None, label=None,
-                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                 log_file=LOG_FILE):
+                 use_cdict_coef=False, batch_size=BATCH_SIZE, split=None,
+                 clone_ds=False, log_file=LOG_FILE):
         """Evaluate the tagger model.
 
         Args:
@@ -556,8 +556,8 @@ class FeatsSeparateTagger(BaseTagger):
                   file=log_file)
 
     def predict(self, corpus, feats=None, remove_excess_feats=True,
-                with_orig=False, batch_size=BATCH_SIZE, split=None,
-                clone_ds=False, save_to=None, log_file=LOG_FILE):
+                use_cdict_coef=False, with_orig=False, batch_size=BATCH_SIZE,
+                split=None, clone_ds=False, save_to=None, log_file=LOG_FILE):
         """Predicts feature keys and values in the FEATS field of the corpus.
 
         Args:
@@ -565,6 +565,19 @@ class FeatsSeparateTagger(BaseTagger):
         **corpus**: the corpus which will be used for the feature extraction
         and predictions. May be either the name of the file in *CoNLL-U*
         format or the `list`/`iterator` of sentences in *Parsed CoNLL-U*.
+
+        **feats** (`str | list([str])`; default is `None`): one or several
+        subfields of the key-value type fields like `FEATS` or `MISC` to be
+        predicted separatedly.
+
+        **remove_excess_feats** (`bool`): if `True` (default), the tagger
+        removes all unrelevant features from the predicted field ("unrelevant"
+        means, that the tagger don't have a models for them). For example, if
+        you trained the tagger only for "Case" and "Gender" features, the
+        tagger predicts only them (or, only one of them, if you specify it in
+        the **feats** field) and removes all the rest. Elsewise, if
+        **remove_excess_feats** is `False`, all unrelevant feats are stayed
+        intact.
 
         **use_cdict_coef** (`bool` | `float`; default is `False`): if `False`,
         we use our prediction only. If `True`, we replace our prediction to
@@ -677,8 +690,8 @@ class FeatsSeparateTagger(BaseTagger):
         return corpus
 
     def evaluate(self, gold, test=None, feats=None, label=None,
-                 batch_size=BATCH_SIZE, split=None, clone_ds=False,
-                 log_file=LOG_FILE):
+                 use_cdict_coef=False, batch_size=BATCH_SIZE, split=None,
+                 clone_ds=False, log_file=LOG_FILE):
         """Evaluate the tagger model.
 
         Args:
