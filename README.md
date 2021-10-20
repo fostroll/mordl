@@ -5,24 +5,24 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/mordl?color=blue)](https://www.python.org/)
 [![License: BSD-3](https://img.shields.io/badge/License-BSD-brightgreen.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
-***MorDL*** is a tool to organize a pipeline for complete morphological
+***MorDL*** is a tool to organize the pipeline for complete morphological
 sentence parsing (POS-tagging, lemmatization, morphological feature tagging)
 and Named-entity recognition.
 
-Scores (accuracy) on *SynTagRus*: UPOS: `99.16%`; FEATS: `98.29%` (tokens),
-`98.88%` (tags); LEMMA: `99.46%` (sic!). In all experiments we used `seed=42`.
-Some other `seed` values may help to achive better results. Models'
+Scores (accuracy) on *SynTagRus* test dataset: UPOS: `99.35%`; FEATS: `98.80%`
+(tokens), `99.27%` (tags); LEMMA: `99.49%`. In all experiments, we used
+`seed=42`. Some other `seed` values may help to achive better results. Models'
 hyperparameters are also allowed to tune.
 
 The validation with the
 [official evaluation script](http://universaldependencies.org/conll18/conll18_ud_eval.py)
 of
 [CoNLL 2018 Shared Task](https://universaldependencies.org/conll18/results.html):
-* For inference on the *SynTagRus* test corpus, when predicted fields were
+* For the inference on the *SynTagRus* test corpus, when predicted fields were
 emptied and all other fields were stayed intact, the scores are the same as
 outlined above.
-* Serial inference with UPOS - FEATS - LEMMA taggers resulted with scores:
-UPOS: `99.16%`; UFeats: `97.76%`; AllTags: `98.58`; Lemmas: `98.66%`.
+* The serial inference with UPOS - FEATS - LEMMA taggers resulted with scores:
+UPOS: `99.35%`; UFeats: `98.35%`; AllTags: `98.20`; Lemmas: `98.86%`.
 
 For completeness, we included that script in our distribution, so you can use
 it for your model evaluation, too. To simplify it, we also made a wrapper 
@@ -33,7 +33,8 @@ for it.
 
 ### pip
 
-***MorDL*** supports *Python 3.5* or later. To install via *pip*, run:
+***MorDL*** supports *Python 3.6* and *Transformers 4.3.3* or later. To
+install via *pip*, run:
 ```sh
 $ pip install mordl
 ```
@@ -81,11 +82,10 @@ tagger_n.predict(
 Any tagger in our pipeline may be replaced with a better one if you have it.
 The weakness of separate taggers is that they take more space. If all models
 were created with BERT embeddings, and you load them in memory simultaneously,
-they may eat up to 9Gb on GPU. Or even more, if you use them as a part of a
-multiprocess server (for example, as a part of *Flask* application). In that
-case, during loading you have to use params **device** and **dataset_device**
-to distribute your models on various GPUs. Alternatively, if you need just to
-tag some corpus once, you may load models serially:
+they may eat up to 9Gb on GPU. If it does not fit to your GPU, during loading,
+you can use params **device** and **dataset_device** to distribute your models
+on various GPUs. Alternatively, if you need just to tag some corpus once, you
+may load models serially:
 
 ```python
 tagger = UposTagger()
@@ -104,13 +104,15 @@ del tagger
 
 Don't use identical names for input and output file names when you call the
 `.predict()` methods. Normally, there will be no problem, because the methods
-by default load all input file in memory before tagging. But if the input file
-is large, you may want to use **split** parameter for that the methods handle
-the file by parts. In that case, saving of the first part of the tagging data
-occurs before loading next. So, identical names will entail data loss.
+by default load all the input file in memory before tagging. But if the input
+file is large, you may want to use the **split** parameter for the methods
+handle the file by parts. In that case, saving of the first part of the
+tagging data occurs before loading next. So, identical names will entail data
+loss.
 
-Training process is also simple. If you have training corpora and you don't
-want any experiments, just run:
+The training process is also simple. If you have training corpora and you
+don't want any experiments, just run:
+
 ```python
 from mordl import UposTagger
 
@@ -127,7 +129,7 @@ embeddings anew to possibly achieve better results, set the
 **word_emb_tune_params** to `None`.
 
 For a more complete understanding of ***MorDL*** toolkit usage, refer to the
-Python notebook with pipeline examples in the `examples` directory of the
+Python notebook with pipeline example in the `examples` directory of the
 ***MorDL*** GitHub repository. Also, the detailed descriptions are available
 in the docs:
 
