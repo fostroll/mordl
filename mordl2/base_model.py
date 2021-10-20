@@ -93,6 +93,25 @@ class BaseModel(nn.Module):
         if log_file:
             print('Creating model...', end=' ', file=log_file)
             log_file.flush()
+        ### backward compatibility ###########################################
+        for old_kwarg, new_kwarg in zip(
+            ['bn1', 'bn2', 'bn3', 'do1', 'do2', 'do3', 'emb_out_dim'],
+            ['emb_bn', 'pre_bn', 'post_bn', 'emb_do', 'pre_do', 'post_do',
+             'final_emb_dim']
+        ):
+            if old_kwarg in kwargs:
+                assert new_kwarg not in kwargs, \
+                   f'ERROR: The parameter {old_kwarg} in the config file ' \
+                   f"can't be used together with {new_kwarg}."
+            kwargs[new_kwarg] = kwargs[old_kwargs]
+            del kwargs[old_kwargs]
+        if 'lstm_hidden_dim' in kwargs:
+            assert kwargs['lstm_hidden_dim'] \
+                == kwargs['final_emb_dim'] // 2, \
+               f'ERROR: Models with `lstm_hidden_dim` not equals to ' \
+               f'`emb_out_dim // 2` are not supported anymore.'
+            del kwargs['lstm_hidden_dim']
+        ######################################################################
         model = cls(*args, **kwargs)
         if device:
             model.to(device)
