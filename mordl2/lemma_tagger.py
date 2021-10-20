@@ -425,16 +425,17 @@ class LemmaTagger(BaseTagger):
                   #  'max_epochs': None, 'min_epochs': None,
                   #  'bad_epochs': None, 'batch_size': None,
                   #  'max_grad_norm': None}
-              stage3_params={'save_as': None},
+              stage3_params={'save_as': None, 'lr': 1e-5,
+                             'num_warmup_steps': 2},
                   # {'save_as': None, 'epochs': 3, 'batch_size': 8,
-                  #  'lr': 2e-5, 'betas': (0.9, 0.999), 'eps': 1e-8,
+                  #  'lr': 1e-5, 'betas': (0.9, 0.999), 'eps': 1e-8,
                   #  'weight_decay': .01, 'amsgrad': False,
-                  #  'num_warmup_steps': 3, 'max_grad_norm': 1.}
+                  #  'num_warmup_steps': 2, 'max_grad_norm': 1.}
               stages=[1, 2, 3, 1, 2], save_stages=False, load_from=None,
-              learn_on_padding=True, remove_padding_intent=False,
+              learn_on_padding=False, remove_padding_intent=False,
               seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
-              rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              upos_emb_dim=300, emb_bn=True, emb_do=.2,
+              rnn_emb_dim=384, cnn_emb_dim=None, cnn_kernels=range(1, 7),
+              upos_emb_dim=256, emb_bn=True, emb_do=.2,
               final_emb_dim=512, pre_bn=True, pre_do=.5,
               lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
               post_bn=True, post_do=.4):
