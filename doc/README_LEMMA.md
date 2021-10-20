@@ -102,14 +102,13 @@ stat = tagger.train(save_as,
                         #  'max_epochs': None, 'min_epochs': None,
                         #  'bad_epochs': None, 'batch_size': None,
                         #  'max_grad_norm': None}
-                    stage3_params={'save_as': None, 'lr': 1e-5,
-                                   'num_warmup_steps': 2},
+                    stage3_params={'save_as': None},
                         # {'save_as': None, 'epochs': 3, 'batch_size': 8,
                         #  'lr': 2e-5, 'betas': (0.9, 0.999), 'eps': 1e-8,
                         #  'weight_decay': .01, 'amsgrad': False,
                         #  'num_warmup_steps': 3, 'max_grad_norm': 1.}
                     stages=[1, 2, 3, 1, 2], save_stages=False, load_from=None,
-                    learn_on_padding=False, remove_padding_intent=False,
+                    learn_on_padding=True, remove_padding_intent=False,
                     seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
                     rnn_emb_dim=384, cnn_emb_dim=None, cnn_kernels=range(1, 7),
                     upos_emb_dim=256, emb_bn=True, emb_do=.2,
@@ -274,7 +273,7 @@ messages.
 
 *The model hyperparameters*:
 
-**rnn_emb_dim** (`int`; default is `None`): the internal character RNN
+**rnn_emb_dim** (`int`; default is `384`): the internal character RNN
 (LSTM) embedding dimensionality. If `None`, the layer is skipped.
 
 **cnn_emb_dim** (`int`; default is `None`): the internal character CNN
@@ -284,22 +283,22 @@ embedding dimensionality. If `None`, the layer is skipped.
 kernel sizes of the internal CNN embedding layer. Relevant if
 **cnn_emb_dim** is not `None`.
 
-**upos_emb_dim** (`int`): the auxiliary UPOS label embedding
-dimensionality. Default `upos_emb_dim=300`.
+**upos_emb_dim** (`int`; default is `256`): the auxiliary UPOS label
+embedding dimensionality.
 
-**emb_bn** (`bool`; default is 'True'): whether batch normalization
+**emb_bn** (`bool`; default is `True`): whether batch normalization
 layer should be applied after the embedding concatenation.
 
-**emb_do** (`float`; default is '.2'): the dropout rate after the
+**emb_do** (`float`; default is `.2`): the dropout rate after the
 embedding concatenation.
 
 **final_emb_dim** (`int`; default is `512`): the output dimesionality
 of the linear transformation applying to concatenated embeddings.
 
-**pre_bn** (`bool`; default is 'True'): whether batch normalization
+**pre_bn** (`bool`; default is `True`): whether batch normalization
 layer should be applied before the main part of the algorithm.
 
-**pre_do** (`float`; default is '.5'): the dropout rate before the
+**pre_do** (`float`; default is `.5`): the dropout rate before the
 main part of the algorithm.
 
 **lstm_layers** (`int`; default is `1`): the number of Bidirectional
@@ -314,10 +313,10 @@ Encoder layers. If `None`, they are not created.
 **tran_heads** (`int`; default is `8`): the number of attention heads
 of Transformer Encoder layers. Only relevant, if `tran_layers` > `1`.
 
-**post_bn** (`bool`; default is 'True'): whether batch normalization
+**post_bn** (`bool`; default is `True`): whether batch normalization
 layer should be applied after the main part of the algorithm.
 
-**post_do** (`float`; default is '.4'): the dropout rate after the
+**post_do** (`float`; default is `.4`): the dropout rate after the
 main part of the algorithm.
 
 The method returns the train statistics.

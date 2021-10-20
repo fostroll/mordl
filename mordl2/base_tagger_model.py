@@ -71,19 +71,19 @@ class BaseTaggerModel(BaseModel):
     for additional `junky.dataset.TokenDataset` outputs. If `None`, the layers
     are not created.
 
-    **emb_bn** (`bool`; default is 'True'): whether batch normalization layer
+    **emb_bn** (`bool`; default is `True`): whether batch normalization layer
     should be applied after the embedding concatenation.
 
-    **emb_do** (`float`; default is '.2'): the dropout rate after the
+    **emb_do** (`float`; default is `.2`): the dropout rate after the
     embedding concatenation.
 
     **final_emb_dim** (`int`; default is `512`): the output dimesionality of
     the linear transformation applying to concatenated embeddings.
 
-    **pre_bn** (`bool`; default is 'True'): whether batch normalization layer
+    **pre_bn** (`bool`; default is `True`): whether batch normalization layer
     should be applied before the main part of the algorithm.
 
-    **pre_do** (`float`; default is '.5'): the dropout rate before the main
+    **pre_do** (`float`; default is `.5`): the dropout rate before the main
     part of the algorithm.
 
     **lstm_layers** (`int`; default is `1`): the number of Bidirectional LSTM
@@ -98,10 +98,10 @@ class BaseTaggerModel(BaseModel):
     **tran_heads** (`int`; default is `8`): the number of attention heads of
     Transformer Encoder layers. Only relevant, if `tran_layers` > `1`.
 
-    **post_bn** (`bool`; default is 'True'): whether batch normalization layer
+    **post_bn** (`bool`; default is `True`): whether batch normalization layer
     should be applied after the main part of the algorithm.
 
-    **post_do** (`float`; default is '.4'): the dropout rate after the main
+    **post_do** (`float`; default is `.4`): the dropout rate after the main
     part of the algorithm.
     """
     def __init__(self, num_labels, labels_pad_idx=-100, vec_emb_dim=None,

@@ -454,22 +454,22 @@ class FeatTagger(BaseTagger):
         kernel sizes of the internal CNN embedding layer. Relevant if
         **cnn_emb_dim** is not `None`.
 
-        **upos_emb_dim** (`int`): the auxiliary UPOS label embedding
-        dimensionality. Default `upos_emb_dim=300`.
+        **upos_emb_dim** (`int`; default is `300`): the auxiliary UPOS label
+        embedding dimensionality.
 
-        **emb_bn** (`bool`; default is 'True'): whether batch normalization
+        **emb_bn** (`bool`; default is `True`): whether batch normalization
         layer should be applied after the embedding concatenation.
 
-        **emb_do** (`float`; default is '.2'): the dropout rate after the
+        **emb_do** (`float`; default is `.2`): the dropout rate after the
         embedding concatenation.
 
         **final_emb_dim** (`int`; default is `512`): the output dimesionality
         of the linear transformation applying to concatenated embeddings.
 
-        **pre_bn** (`bool`; default is 'True'): whether batch normalization
+        **pre_bn** (`bool`; default is `True`): whether batch normalization
         layer should be applied before the main part of the algorithm.
 
-        **pre_do** (`float`; default is '.5'): the dropout rate before the
+        **pre_do** (`float`; default is `.5`): the dropout rate before the
         main part of the algorithm.
 
         **lstm_layers** (`int`; default is `1`): the number of Bidirectional
@@ -484,10 +484,10 @@ class FeatTagger(BaseTagger):
         **tran_heads** (`int`; default is `8`): the number of attention heads
         of Transformer Encoder layers. Only relevant, if `tran_layers` > `1`.
 
-        **post_bn** (`bool`; default is 'True'): whether batch normalization
+        **post_bn** (`bool`; default is `True`): whether batch normalization
         layer should be applied after the main part of the algorithm.
 
-        **post_do** (`float`; default is '.4'): the dropout rate after the
+        **post_do** (`float`; default is `.4`): the dropout rate after the
         main part of the algorithm.
 
         The method returns the train statistics.
