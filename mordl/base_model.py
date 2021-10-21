@@ -103,8 +103,8 @@ class BaseModel(nn.Module):
                 assert new_kwarg not in kwargs, \
                    f'ERROR: The parameter {old_kwarg} in the config file ' \
                    f"can't be used together with {new_kwarg}."
-            kwargs[new_kwarg] = kwargs[old_kwargs]
-            del kwargs[old_kwargs]
+            kwargs[new_kwarg] = kwargs[old_kwarg]
+            del kwargs[old_kwarg]
         if 'lstm_hidden_dim' in kwargs:
             assert kwargs['lstm_hidden_dim'] \
                 == kwargs['final_emb_dim'] // 2, \
