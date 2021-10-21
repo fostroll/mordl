@@ -93,7 +93,7 @@ class BaseModel(nn.Module):
         if log_file:
             print('Creating model...', end=' ', file=log_file)
             log_file.flush()
-        ### backward compatibility ###########################################
+        '''### backward compatibility ###########################################
         for old_kwarg, new_kwarg in zip(
             ['bn1', 'bn2', 'bn3', 'do1', 'do2', 'do3', 'emb_out_dim'],
             ['emb_bn', 'pre_bn', 'post_bn', 'emb_do', 'pre_do', 'post_do',
@@ -111,7 +111,7 @@ class BaseModel(nn.Module):
                f'ERROR: Models with `lstm_hidden_dim` not equals to ' \
                f'`emb_out_dim // 2` are not supported anymore.'
             del kwargs['lstm_hidden_dim']
-        ######################################################################
+        ######################################################################'''
         model = cls(*args, **kwargs)
         if device:
             model.to(device)
