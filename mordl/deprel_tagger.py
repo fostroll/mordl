@@ -579,18 +579,19 @@ class DeprelSeqTagger(FeatTagger):
         *Other options*:
 
         **learn_on_padding** (`bool`; default is `True`): while training, we
-        can calculate loss taking in account predictions made for padding
-        tokens or without it. The common practice is don't use padding when
-        calculate loss. However, we note that using padding makes the
-        resulting model performance slightly better.
+        can calculate loss either taking in account predictions made for
+        padding tokens or without it. The common practice is don't use padding
+        when calculate loss. However, we note that using padding sometimes
+        makes the resulting model performance slightly better.
 
         **remove_padding_intent** (`bool`; default is `False`): if you set
         **learn_on_padding** param to `False`, you may want not to use padding
         intent during training at all. I.e. padding tokens would be tagged
         with some of real tags, and they would just ignored during computing
         loss. As a result, the model would have the output dimensionality of
-        the final layer less by one. Theoretically, it could increase the
-        performance, but in our experiments, such effect appeared not always.
+        the final layer less by one. On the first sight, such approach could
+        increase the performance, but in our experiments, such effect appeared
+        not always.
 
         **seed** (`int`; default is `None`): init value for the random number
         generator if you need reproducibility. Note that each stage will have
