@@ -206,7 +206,7 @@ class BaseTaggerModel(BaseModel):
         self.pre_seq_l = nn.Sequential(modules)
         ######################################################################
 
-        if lstm_layers > 0:
+        if lstm_layers:
             self.lstm_l = nn.LSTM(
                 input_size=final_emb_dim,
                 hidden_size=final_emb_dim // 2,
@@ -218,7 +218,7 @@ class BaseTaggerModel(BaseModel):
         else:
             self.lstm_l = None
 
-        if tran_layers > 0:
+        if tran_layers:
             tran_enc_l = nn.TransformerEncoderLayer(
                 final_emb_dim, tran_heads, dim_feedforward=2048,
                 dropout=0.1, activation='relu'#, layer_norm_eps=1e-5
