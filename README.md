@@ -9,8 +9,8 @@
 sentence parsing (POS-tagging, lemmatization, morphological feature tagging)
 and Named-entity recognition.
 
-Scores (accuracy) on *SynTagRus* test dataset: UPOS: `99.35%`; FEATS: `98.80%`
-(tokens), `99.27%` (tags); LEMMA: `99.49%`. In all experiments, we used
+Scores (accuracy) on *SynTagRus* test dataset: UPOS: `99.35%`; FEATS: `98.87%`
+(tokens), `99.31%` (tags); LEMMA: `99.49%`. In all experiments, we used
 `seed=42`. Some other `seed` values may help to achive better results. Models'
 hyperparameters are also allowed to tune.
 
@@ -22,7 +22,7 @@ of
 emptied and all other fields were stayed intact, the scores are the same as
 outlined above.
 * The serial inference with UPOS - FEATS - LEMMA taggers resulted with scores:
-UPOS: `99.35%`; UFeats: `98.35%`; AllTags: `98.20`; Lemmas: `98.86%`.
+UPOS: `99.35%`; UFeats: `98.36%`; AllTags: `98.21`; Lemmas: `98.86%`.
 
 For completeness, we included that script in our distribution, so you can use
 it for your model evaluation, too. To simplify it, we also made a wrapper 
@@ -120,16 +120,15 @@ tagger = UposTagger()
 tagger.load_train_corpus(train_corpus)
 tagger.load_test_corpus(dev_corpus)
 
-stat = tagger.train('upos_model', device='cuda:0', word_emb_tune_params={})
+stat = tagger.train('upos_model', device='cuda:0',
+                    stage3_params={'save_as': 'upos_bert_model'})
 ```
 
-It is training pipeline for the UPOS tagger; pipelines for other taggers are
-identical. If you want to train the model again without re-training word
-embeddings anew to possibly achieve better results, set the
-**word_emb_tune_params** to `None`.
+It is a training pipeline for the UPOS tagger; pipelines for other taggers are
+identical.
 
 For a more complete understanding of ***MorDL*** toolkit usage, refer to the
-Python notebook with pipeline example in the `examples` directory of the
+Python notebook with the pipeline example in the `examples` directory of the
 ***MorDL*** GitHub repository. Also, the detailed descriptions are available
 in the docs:
 
@@ -147,8 +146,9 @@ in the docs:
 
 [Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md#start)
 
-This project was developed with a focus on Russian language, but a few nuances
-we used are unlikely to worsen the quality of processing other languages.
+This project was developed with the focus on Russian language, but a few
+nuances we use for it are unlikely to worsen the quality of processing other
+languages.
 
 ***MorDL's*** supports
 [*CoNLL-U*](https://universaldependencies.org/format.html) (if input/output is
