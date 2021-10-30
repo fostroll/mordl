@@ -108,7 +108,7 @@ stat = tagger.train(save_as,
                         #  'weight_decay': .01, 'amsgrad': False,
                         #  'num_warmup_steps': 3, 'max_grad_norm': 1.}
                     stages=[1, 2, 3, 1, 2], save_stages=False, load_from=None,
-                    learn_on_padding=True, remove_padding_intent=False,
+                    learn_on_padding=False, remove_padding_intent=False,
                     seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
                     rnn_emb_dim=384, cnn_emb_dim=None, cnn_kernels=range(1, 7),
                     upos_emb_dim=256, emb_bn=True, emb_do=.2,
