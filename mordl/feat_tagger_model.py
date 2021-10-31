@@ -51,12 +51,12 @@ class FeatTaggerModel(BaseTaggerModel):
     kernel sizes of the internal CNN embedding layer. Relevant if
     **cnn_emb_dim** is not `None`.
 
-    **upos_emb_dim** (`int`): the auxiliary UPOS label embedding
-    dimensionality. Default `upos_emb_dim=300`.
+    **upos_emb_dim** (`int`; default is `300`): the auxiliary UPOS label
+    embedding dimensionality.
 
     **upos_num** (`int`): the length of UPOS vocabulary.
 
-    **upos_pad_idx** (`int`; default is `300`): the index of padding element
+    **upos_pad_idx** (`int`; default is `0`): the index of padding element
     in the UPOS vocabulary.
 
     **emb_bn** (`bool`; default is `True`): whether batch normalization layer
