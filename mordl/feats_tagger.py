@@ -955,8 +955,8 @@ class FeatsSeparateTagger(BaseTagger):
         kernel sizes of the internal CNN embedding layer. Relevant if
         **cnn_emb_dim** is not `None`.
 
-        **upos_emb_dim** (`int`): the auxiliary UPOS label embedding
-        dimensionality. Default `upos_emb_dim=300`.
+        **upos_emb_dim** (`int`; default is `300`): the auxiliary UPOS label
+        embedding dimensionality.
 
         **emb_bn** (`bool`; default is 'True'): whether batch normalization
         layer should be applied after the embedding concatenation.
