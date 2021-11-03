@@ -530,13 +530,10 @@ class FeatsSeparateTagger(BaseTagger):
 
         Args:
 
-        **name** (`str`): the name of the previously saved internal state.
+        **name**: a name of the tagger's config.
 
         **log_file** (`file`; default is `sys.stdout`): the stream for info
         messages.
-        **name**: a name of the tagger's config.
-
-        **log_file**: a stream for info messages. Default is `sys.stdout`.
         """
         if not name.endswith(CONFIG_EXT):
             name += CONFIG_EXT
@@ -548,7 +545,8 @@ class FeatsSeparateTagger(BaseTagger):
             if log_file:
                 print('\n--- {}:'.format(feat), file=log_file)
             name_ = self._feats[feat]
-            tagger = FeatTagger(feat, feats_prune_coef=self._feats_prune_coef,
+            tagger = FeatTagger(self._field + ':' + feat,
+                                feats_prune_coef=self._feats_prune_coef,
                                 embs=self.embs)
             tagger.load(name_)
             self._feats[feat] = [name, tagger]
