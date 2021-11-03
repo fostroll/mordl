@@ -998,7 +998,11 @@ class FeatsSeparateTagger(BaseTagger):
         start_time = time.time()
         args, kwargs = get_func_params(FeatsSeparateTagger.train, locals())
         del kwargs['feats']
-        del kwargs['word_emb_path_suffix']
+        if 'stage3_params' in kwargs and 'save_as' in kwargs['stage3_params']:
+            word_emb_path_suffix = kwargs['stage3_params']['save_as']
+            del kwargs['stage3_params']['save_as']
+        else:
+            word_emb_path_suffix = None
 
         if log_file:
             print('###### {} TAGGER TRAINING PIPELINE ######'
@@ -1030,7 +1034,7 @@ class FeatsSeparateTagger(BaseTagger):
             tagger._train_corpus, tagger._test_corpus = \
                 self._train_corpus, self._test_corpus
             if word_emb_path_suffix:
-                kwargs['word_emb_path'] = \
+                kwargs['stage3_params']['save_as'] = \
                     '{}-{}_{}'.format(self._field.lower(), feat.lower(),
                                       word_emb_path_suffix)
             res[feat] = tagger.train(save_as_, **kwargs,
