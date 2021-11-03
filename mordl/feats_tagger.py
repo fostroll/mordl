@@ -797,7 +797,11 @@ class FeatsSeparateTagger(BaseTagger):
         to the `.save()` method's help for the broad definition (see the
         **name** arg there).
 
-        **device** (`str`, default is `None`): the device for the model. E.g.:
+        **feats** (`str | list([str])`; default is `None`): one or several
+        subfields of the key-value type fields like `FEATS` or `MISC` to be
+        predicted separatedly.
+
+        **device** (`str`; default is `None`): the device for the model. E.g.:
         'cuda:0'. If `None`, we don't move the model to any device (it is
         placed right where it's created).
 
@@ -1015,6 +1019,8 @@ class FeatsSeparateTagger(BaseTagger):
             feats = sorted(set(x for x in self._train_corpus
                                  for x in x
                                  for x in x[self._field].keys()))
+        elif isinstance(feats, str):
+            feats = [feats]
         if log_file:
             print(', '.join(feats), file=log_file)
 
