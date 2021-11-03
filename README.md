@@ -10,7 +10,7 @@ sentence parsing (POS-tagging, lemmatization, morphological feature tagging)
 and Named-entity recognition.
 
 Scores (accuracy) on *SynTagRus* test dataset: UPOS: `99.35%`; FEATS: `98.87%`
-(tokens), `99.31%` (tags); LEMMA: `99.49%`. In all experiments, we used
+(tokens), `99.31%` (tags); LEMMA: `99.50%`. In all experiments, we used
 `seed=42`. Some other `seed` values may help to achive better results. Models'
 hyperparameters are also allowed to tune.
 
@@ -21,8 +21,8 @@ of
 * For the inference on the *SynTagRus* test corpus, when predicted fields were
 emptied and all other fields were stayed intact, the scores are the same as
 outlined above.
-* The serial inference with UPOS - FEATS - LEMMA taggers resulted with scores:
-UPOS: `99.35%`; UFeats: `98.36%`; AllTags: `98.21`; Lemmas: `98.86%`.
+* The inference of UPOS - FEATS - LEMMA taggers applied serially resulted with
+scores: UPOS: `99.35%`; UFeats: `98.36%`; AllTags: `98.21`; Lemmas: `98.88%`.
 
 For completeness, we included that script in our distribution, so you can use
 it for your model evaluation, too. To simplify it, we also made a wrapper 
