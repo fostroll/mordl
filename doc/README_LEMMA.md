@@ -70,7 +70,7 @@ chapter.
 lemmata prediction as a sequence labelling task, rather than a
 sequence-to-sequence problem. The model may be either the BiLSTM or the
 Transformer Encoder based. The latter may have slightly better performance
-(but to achieve it, you have to tune other params too), though on very long
+(but to achieve it, you have to tune other params, too), though on very long
 sentences it may cause *CUDA out of memory* error on the inference.
 
 **NB:** By this step, you should have the tagger object created and training

@@ -77,7 +77,7 @@ chapter.
 
 ***MorDL*** allows you to train either the BiLSTM or the Transformer Encoder
 base single morphological feature prediction model. The latter may have
-slightly better performance (but to achieve it, you have to tune other params
+slightly better performance (but to achieve it, you have to tune other params,
 too), though on very long sentences it may cause *CUDA out of memory* error on
 the inference.
 

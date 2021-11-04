@@ -64,7 +64,7 @@ chapter.
 
 ***MorDL*** allows you to train either the BiLSTM or the Transformer Encoder
 based joint multiple feature prediction model. The latter may have slightly
-better performance (but to achieve it, you have to tune other params too),
+better performance (but to achieve it, you have to tune other params, too),
 though on very long sentences it may cause *CUDA out of memory* error on the
 inference.
 
