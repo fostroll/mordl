@@ -118,8 +118,8 @@ stat = tagger.train(save_as,
                     stages=[1, 2, 3, 1, 2], save_stages=False, load_from=None,
                     learn_on_padding=True, remove_padding_intent=False,
                     seed=None, start_time=None, keep_embs=False, log_file=LOG_FILE,
-                    rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-                    upos_emb_dim=300, emb_bn=True, emb_do=.2,
+                    rnn_emb_dim=None, cnn_emb_dim=200, cnn_kernels=range(1, 7),
+                    upos_emb_dim=200, emb_bn=True, emb_do=.2,
                     final_emb_dim=512, pre_bn=True, pre_do=.5,
                     lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
                     post_bn=True, post_do=.4)
@@ -285,14 +285,14 @@ messages.
 **rnn_emb_dim** (`int`; default is `None`): the internal character RNN
 (LSTM) embedding dimensionality. If `None`, the layer is skipped.
 
-**cnn_emb_dim** (`int`; default is `None`): the internal character CNN
+**cnn_emb_dim** (`int`; default is `200`): the internal character CNN
 embedding dimensionality. If `None`, the layer is skipped.
 
 **cnn_kernels** (`list([int])`; default is `[1, 2, 3, 4, 5, 6]`): CNN
 kernel sizes of the internal CNN embedding layer. Relevant if
 **cnn_emb_dim** is not `None`.
 
-**upos_emb_dim** (`int`; default is `300`): the auxiliary UPOS label
+**upos_emb_dim** (`int`; default is `200`): the auxiliary UPOS label
 embedding dimensionality.
 
 **emb_bn** (`bool`; default is `True`): whether batch normalization
