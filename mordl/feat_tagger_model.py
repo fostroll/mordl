@@ -44,14 +44,14 @@ class FeatTaggerModel(BaseTaggerModel):
     **rnn_emb_dim** (`int`; default is `None`): the internal character RNN
     (LSTM) embedding dimensionality. If `None`, the layer is skipped.
 
-    **cnn_emb_dim** (`int`; default is `None`): the internal character CNN
+    **cnn_emb_dim** (`int`; default is `200`): the internal character CNN
     embedding dimensionality. If `None`, the layer is skipped.
 
     **cnn_kernels** (`list([int])`; default is `[1, 2, 3, 4, 5, 6]`): CNN
     kernel sizes of the internal CNN embedding layer. Relevant if
     **cnn_emb_dim** is not `None`.
 
-    **upos_emb_dim** (`int`; default is `300`): the auxiliary UPOS label
+    **upos_emb_dim** (`int`; default is `200`): the auxiliary UPOS label
     embedding dimensionality.
 
     **upos_num** (`int`): the length of UPOS vocabulary.
@@ -94,8 +94,8 @@ class FeatTaggerModel(BaseTaggerModel):
     """
     def __init__(self, num_labels, labels_pad_idx=-100, vec_emb_dim=None,
                  alphabet_size=0, char_pad_idx=0, rnn_emb_dim=None,
-                 cnn_emb_dim=None, cnn_kernels=[1, 2, 3, 4, 5, 6],
-                 upos_emb_dim=300, upos_num=0, upos_pad_idx=0,
+                 cnn_emb_dim=200, cnn_kernels=[1, 2, 3, 4, 5, 6],
+                 upos_emb_dim=200, upos_num=0, upos_pad_idx=0,
                  emb_bn=True, emb_do=.2,
                  final_emb_dim=512, pre_bn=True, pre_do=.5,
                  lstm_layers=1, lstm_do=0, tran_layers=None, tran_heads=8,
