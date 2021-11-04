@@ -779,11 +779,11 @@ class FeatsSeparateTagger(BaseTagger):
                   #  'lr': 2e-5, 'betas': (0.9, 0.999), 'eps': 1e-8,
                   #  'weight_decay': .01, 'amsgrad': False,
                   #  'num_warmup_steps': 3, 'max_grad_norm': 1.}
-              stages=[1, 2, 3, 1, 2], save_stages=False, load_from=None,
+              stages=[1, 2, 3, 1, 2], save_stages=False,
               learn_on_padding=True, remove_padding_intent=False,
               seed=None, keep_embs=False, log_file=LOG_FILE,
-              rnn_emb_dim=None, cnn_emb_dim=None, cnn_kernels=range(1, 7),
-              upos_emb_dim=300, emb_bn=True, emb_do=.2,
+              rnn_emb_dim=None, cnn_emb_dim=200, cnn_kernels=range(1, 7),
+              upos_emb_dim=200, emb_bn=True, emb_do=.2,
               final_emb_dim=512, pre_bn=True, pre_do=.5,
               lstm_layers=1, lstm_do=0, tran_layers=0, tran_heads=8,
               post_bn=True, post_do=.4):
@@ -891,26 +891,13 @@ class FeatsSeparateTagger(BaseTagger):
         of these models would have the suffix `_<idx>(stage<stage_type>)`
         where `<idx>` is an ordinal number of the stage. We can then use it to
         continue training from any particular stage number (changing next
-        stages or their parameters) using the parameter **load_from**. Note
-        that we save only stages of the head model. The embedding model as a
-        part of the full model usually tune only once, so we don't make its
-        copy.
-
-        **load_from** (`str`; default is `None`): if you want to continue
-        training from one of previously saved stages, you can specify the name
-        of the model from that stage. Note, that if your model is already
-        trained on stage type `3`, then you want to set param
-        **word_emb_path** to `None`. Otherwise, you'll load wrong embedding
-        model. Any other params of the model may be overwritten (and most
-        likely, this would cause error), but they are equivalent when the
-        training is just starts and when it's continues. But the
-        **word_emb_path** is different if you already passed stage type `3`,
-        so don't forget to set it to `None` in that case. (Example: you want
-        to repeat training on stage no `5`, so you specify in the
-        **load_from** param something like `'model_4(stage1)'` and set the
-        **word_emb_path** to `None` and the **stages_param** to
-        `'[0, 0, 0, 0, 2]'` (or, if you don't care of reproducibility, you
-        could just specify `[2]` here).
+        stages or their parameters) using the parameter **load_from** (with
+        separate tagger the tuning is more complicated: one have to load and
+        tune each model separately as standalone instance of the `FeatTagger`
+        class; the `FeatsSeparateTagger.predict()` method doesn't even have
+        **load_from** argument). Note that we save only stages of the head
+        model. The embedding model as a part of the full model usually tune
+        only once, so we don't make its copy.
 
         *Other options*:
 
@@ -947,14 +934,14 @@ class FeatsSeparateTagger(BaseTagger):
         **rnn_emb_dim** (`int`; default is `None`): the internal character RNN
         (LSTM) embedding dimensionality. If `None`, the layer is skipped.
 
-        **cnn_emb_dim** (`int`; default is `None`): the internal character CNN
+        **cnn_emb_dim** (`int`; default is `200`): the internal character CNN
         embedding dimensionality. If `None`, the layer is skipped.
 
         **cnn_kernels** (`list([int])`; default is `[1, 2, 3, 4, 5, 6]`): CNN
         kernel sizes of the internal CNN embedding layer. Relevant if
         **cnn_emb_dim** is not `None`.
 
-        **upos_emb_dim** (`int`; default is `300`): the auxiliary UPOS label
+        **upos_emb_dim** (`int`; default is `200`): the auxiliary UPOS label
         embedding dimensionality.
 
         **emb_bn** (`bool`; default is 'True'): whether batch normalization
