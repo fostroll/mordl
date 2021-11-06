@@ -1038,10 +1038,11 @@ class FeatsSeparateTagger(BaseTagger):
                   file=log_file)
             print(("Now, check the separate {} models' and datasets' "
                    'config files and consider to change some device names '
-                   'to be able load all the models jointly. You can find '
+                   'to be able to load all the models jointly. You can find '
                    'the separate models\' list in the "{}" config file. '
                    "Then, use the `.load('{}')` method to start working "
-                   'with the {} tagger.').format(self._field, save_as,
-                                                 save_as, self._field),
+                   'with the {} tagger.')
+                       .format(self._field, save_as + CONFIG_EXT, save_as,
+                               self._field),
                       file=log_file)
         return res
