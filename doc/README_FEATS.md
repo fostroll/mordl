@@ -447,14 +447,16 @@ tagger = FeatsSeparateTagger(field='FEATS', feats_prune_coef=6, embs=None)
 The tagger creates separate models for each feat and uses them all serially to
 fill the content of the field predicting. Obviously, it needs much more memory
 to load (if you use BERT embeddings, you will have separate BERT model for
-each feat, too) and much more time to train. By an order more. However, the
-evaluation results of it are slightly lower than the results of the joint
-tagger. Maybe, just a couple of separate feats would have a better accuracy.
-Thereby, we can't find many reasons to use this class. However, we kept this
-class in the project.
+each feat, too) and much more time to train. By an order of magnitude more.
+Nevertheless, the resulting performance of the separate tagger can be even
+lower than that of the joint one. Although, at least a few of separate feats
+will most likely have a better accuracy. Anyway, we can't find many reasons to
+use this class. However, we kept this class in the project and even make the
+[example notebook](https://github.com/fostroll/mordl/blob/master/examples/mordl-feats_sep.ipynb)
+for it.
 
-The separate tagger has the same methods as the joint tagger. But the
-arguments of the base methods slightly differ. You can explore it with Python
+The separate tagger has the same methods as the joint one. But the arguments
+of the base methods slightly differ. You can explore it with Python
 `help()` command:
 ```python
 help(tagger.train)

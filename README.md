@@ -146,6 +146,9 @@ in the docs:
 
 [Supplements](https://github.com/fostroll/mordl/blob/master/doc/README_SUPPLEMENTS.md#start)
 
+Also, you can find training pipelines for different taggers in our
+[example notebook](https://github.com/fostroll/mordl/blob/master/examples/mordl.ipynb).
+
 This project was developed with the focus on Russian language, but a few
 nuances we use for it are unlikely to worsen the quality of processing other
 languages.
