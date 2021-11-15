@@ -122,6 +122,8 @@ class BaseTaggerModel(BaseModel):
 
         self.num_labels = num_labels
         self.labels_pad_idx = labels_pad_idx
+        if vec_emb_dim is None:
+            vec_emb_dim = 0
         self.vec_emb_dim = vec_emb_dim
 
         if rnn_emb_dim:
