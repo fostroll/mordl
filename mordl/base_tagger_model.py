@@ -168,6 +168,8 @@ class BaseTaggerModel(BaseModel):
                         self.tag_emb_ls.append(None)
 
         joint_emb_dim = vec_emb_dim + rnn_emb_dim + cnn_emb_dim + tag_emb_dim
+        assert joint_emb_dim, \
+            'ERROR: At least one of `*_emb_dim` must be specified.'
 
         # PREPROCESS #########################################################
         modules = OrderedDict()
