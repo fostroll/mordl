@@ -248,6 +248,7 @@ class WordEmbeddings:
             optimizer_grouped_parameters = \
                 [{'params': [p for n, p in param_optimizer]}]
 
+        '''
         if FULL_FINETUNING:
             param_optimizer = list(full_model.emb_model.named_parameters())
             no_decay = ['bias', 'gamma', 'beta']
@@ -264,6 +265,7 @@ class WordEmbeddings:
                 list(full_model.emb_model.classifier.named_parameters())
             optimizer_grouped_parameters = \
                 [{'params': [p for n, p in param_optimizer]}]
+        '''
 
         optimizer_grouped_parameters.append(
             {'params': list(full_model.model_head.parameters())}
