@@ -4,6 +4,7 @@
 # Copyright (C) 2020-present by Sergei Ternovykh, Anastasiya Nikiforova
 # License: BSD, see LICENSE for details
 """
+Provides FEAT tagger model inherited from `mordl.BaseTaggerModel`.
 """
 from collections.abc import Iterable
 from junky import get_func_params
