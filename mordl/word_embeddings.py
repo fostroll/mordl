@@ -232,24 +232,6 @@ class WordEmbeddings:
         full_model = WordEmbeddingsModel(bert_ds, model)
 
         FULL_FINETUNING = True
-        '''
-        if FULL_FINETUNING:
-            param_optimizer = list(model.named_parameters())
-            no_decay = ['bias', 'gamma', 'beta']
-            optimizer_grouped_parameters = [
-                {'params': [p for n, p in param_optimizer
-                                  if not any(nd in n for nd in no_decay)],
-                 'weight_decay_rate': .01},
-                {'params': [p for n, p in param_optimizer
-                                  if any(nd in n for nd in no_decay)],
-                 'weight_decay_rate': .0}
-            ]
-        else:
-            param_optimizer = list(model.classifier.named_parameters())
-            optimizer_grouped_parameters = \
-                [{'params': [p for n, p in param_optimizer]}]
-        '''
-
         if FULL_FINETUNING:
             param_optimizer = list(full_model.emb_model.named_parameters())
             no_decay = ['bias', 'gamma', 'beta']
