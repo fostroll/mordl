@@ -196,7 +196,7 @@ class WordEmbeddings:
                         transform_kwargs['aggregate_hiddens_op'],
                     aggregate_subtokens_op=
                         transform_kwargs['aggregate_subtokens_op'],
-                    with_grad=True, save=False, loglevel=0
+                    with_grad=self.training, save=False, loglevel=0
                 )
                 x, x_lens = self.ds._collate(x, with_lens=True)
                 return self.model_head(x, x_lens, *args, labels=labels)
