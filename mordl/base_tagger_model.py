@@ -8,8 +8,8 @@ Provides a base model for MorDL taggers.
 """
 from collections import OrderedDict
 from collections.abc import Iterable
-from junky import CharEmbeddingRNN, CharEmbeddingCNN, Masking, \
-                  get_func_params, to_device
+from junky import get_func_params, to_device
+from junky.layers import CharEmbeddingRNN, CharEmbeddingCNN
 from mordl.base_model import BaseModel
 from mordl.defaults import CONFIG_ATTR
 import torch

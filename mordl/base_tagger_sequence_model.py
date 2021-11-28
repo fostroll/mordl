@@ -7,7 +7,8 @@
 Provides a base model for MorDL taggers.
 """
 from collections.abc import Iterable
-from junky import CharEmbeddingRNN, CharEmbeddingCNN, get_func_params
+from junky import get_func_params
+from junky.layers import CharEmbeddingRNN, CharEmbeddingCNN
 from mordl.base_model import BaseModel
 from mordl.defaults import CONFIG_ATTR
 import torch
