@@ -1264,8 +1264,8 @@ class BaseTagger(BaseParser):
             tags_to_remove=tags_to_remove
         ) if self._test_corpus is not None else None
 
-        if device:
-            torch.cuda.set_device(device)
+        # if device:
+        #     torch.cuda.set_device(device)
 
         # 2. Create datasets
         def stage_ds(idx):
