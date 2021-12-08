@@ -1210,6 +1210,7 @@ class BaseTagger(BaseParser):
                         model, save_to, model_save_method,
                         (ds_train, ds_test),
                         (train[0], test[0]) if test else train[0],
+                        device=device,
                         control_metric=control_metric, best_score=best_score,
                         **params, transform_kwargs=word_transform_kwargs,
                         seed=None, log_file=log_file
@@ -1263,9 +1264,6 @@ class BaseTagger(BaseParser):
             self._test_corpus, fields=fields,
             tags_to_remove=tags_to_remove
         ) if self._test_corpus is not None else None
-
-        # if device:
-        #     torch.cuda.set_device(device)
 
         # 2. Create datasets
         def stage_ds(idx):

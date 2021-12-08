@@ -66,8 +66,8 @@ class WordEmbeddings:
 
     @staticmethod
     def full_tune(model, model_save_as, model_save_method,
-                  datasets, sents_data, control_metric='accuracy',
-                  best_score=None,
+                  datasets, sents_data, device=None,
+                  control_metric='accuracy', best_score=None,
                   # word_emb_tune_params ##################
                   save_as=None, epochs=3, batch_size=8,
                   lr=2e-5, betas=(0.9, 0.999), eps=1e-8,
@@ -105,6 +105,9 @@ class WordEmbeddings:
         corresponds to the data in **datasets**. It is used to train the
         embedding model inside the `'x'` nested dataset of the train part of
         the **datasets**.
+
+        **device**: if not `None`, the full model will be transfered to the
+        specified device.
 
         **control_metric** (of `str` type; default is `'accuracy'`): the
         metric to control the model performance in the validation time. The
@@ -283,7 +286,8 @@ class WordEmbeddings:
                 lambda model, paths: full_model.save_pretrained(paths)
         )
         trainer = Trainer(trainer_config, full_model, train_dl,
-                          test_dataloader=test_dl if test_sents else None)
+                          test_dataloader=test_dl if test_sents else None,
+                          device=device)
 
         try:
             res = trainer.train(best_score=best_score)
